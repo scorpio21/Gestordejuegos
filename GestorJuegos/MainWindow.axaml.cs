@@ -28,7 +28,28 @@ public partial class MainWindow : Window
         BtnDelete.Click += BtnDelete_Click;
         BtnSelectCover.Click += BtnSelectCover_Click;
         BtnClearCover.Click += BtnClearCover_Click;
+        
         LstGames.SelectionChanged += LstGames_SelectionChanged;
+        LstGamesGrid.SelectionChanged += LstGames_SelectionChanged;
+        
+        BtnViewList.Click += BtnViewList_Click;
+        BtnViewGrid.Click += BtnViewGrid_Click;
+    }
+
+    private void BtnViewList_Click(object? sender, RoutedEventArgs e)
+    {
+        LstGames.IsVisible = true;
+        LstGamesGrid.IsVisible = false;
+        BtnViewList.Background = Avalonia.Media.Brush.Parse("#444444");
+        BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
+    }
+
+    private void BtnViewGrid_Click(object? sender, RoutedEventArgs e)
+    {
+        LstGames.IsVisible = false;
+        LstGamesGrid.IsVisible = true;
+        BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
+        BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#444444");
     }
 
     private void LoadPlatforms()
@@ -60,12 +81,20 @@ public partial class MainWindow : Window
         if (_selectedPlatform == null) return;
         var games = _gameService.GetGamesByPlatform(_selectedPlatform.Id);
         LstGames.ItemsSource = games;
+        LstGamesGrid.ItemsSource = games;
     }
 
     private void LstGames_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (LstGames.SelectedItem is Game game)
+        var listBox = sender as ListBox;
+        if (listBox?.SelectedItem is Game game)
         {
+            // Sync selection
+            if (sender == LstGames && LstGamesGrid.SelectedItem != game)
+                LstGamesGrid.SelectedItem = game;
+            else if (sender == LstGamesGrid && LstGames.SelectedItem != game)
+                LstGames.SelectedItem = game;
+
             _selectedGame = game;
             TxtName.Text = game.Name;
             NumYear.Value = game.Year;
@@ -103,6 +132,7 @@ public partial class MainWindow : Window
         UpdateCoverImage();
 
         LstGames.SelectedItem = null;
+        LstGamesGrid.SelectedItem = null;
         BtnDelete.IsVisible = false;
         PnlGameDetails.IsVisible = true;
     }

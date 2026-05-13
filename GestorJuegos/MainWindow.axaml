@@ -22,22 +22,52 @@
             <!-- Left panel: Game list -->
             <Border Grid.Column="0" BorderBrush="#333333" BorderThickness="0,0,1,0" Padding="10">
                 <DockPanel>
-                    <TextBlock Name="TxtSelectedPlatform" Text="Seleccione una plataforma" DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <TextBlock Name="TxtSelectedPlatform" Text="Seleccione una plataforma" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
+                            <Button Name="BtnViewList" Content="≡ Lista" Padding="5,2" Background="#444444"/>
+                            <Button Name="BtnViewGrid" Content="▤ Galería" Padding="5,2" Background="#222222"/>
+                        </StackPanel>
+                    </DockPanel>
+                    
                     <Button Name="BtnAddGame" Content="Añadir Juego" DockPanel.Dock="Bottom" Margin="0,10,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <ListBox Name="LstGames" Background="Transparent" DockPanel.Dock="Top" Height="400">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate x:DataType="models:Game">
-                                <Grid ColumnDefinitions="Auto, *, Auto, Auto, Auto, Auto" Margin="5">
-                                    <Image Grid.Column="0" Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="40" Height="55" Stretch="UniformToFill" Margin="0,0,10,0"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Grid.Column="2" Text="{Binding Platform.Name}" Margin="10,0" Foreground="#aaaaaa" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="3" Text="{Binding Genre}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="4" Text="{Binding Year}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="5" Text="{Binding Region}" Margin="5,0" VerticalAlignment="Center" FontSize="16"/>
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                    
+                    <Panel DockPanel.Dock="Top" Height="400">
+                        <!-- Vista Lista -->
+                        <ListBox Name="LstGames" Background="Transparent">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:Game">
+                                    <Grid ColumnDefinitions="Auto, *, Auto, Auto, Auto, Auto" Margin="5">
+                                        <Image Grid.Column="0" Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="40" Height="55" Stretch="UniformToFill" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Platform.Name}" Margin="10,0" Foreground="#aaaaaa" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding Genre}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="4" Text="{Binding Year}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="5" Text="{Binding Region}" Margin="5,0" VerticalAlignment="Center" FontSize="16"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <!-- Vista Cuadrícula (Galería) -->
+                        <ListBox Name="LstGamesGrid" Background="Transparent" IsVisible="False">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel ItemWidth="110" />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:Game">
+                                    <StackPanel Spacing="5" Margin="5">
+                                        <Border BorderBrush="#555555" BorderThickness="1" Width="90" Height="125">
+                                            <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill" />
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" Width="90"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Panel>
                 </DockPanel>
             </Border>
             
