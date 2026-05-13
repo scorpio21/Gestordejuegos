@@ -3,10 +3,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:models="clr-namespace:GestorJuegos.Models"
+        xmlns:utils="clr-namespace:GestorJuegos.Utils"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
         x:Class="GestorJuegos.MainWindow"
         Title="Gestor de Juegos"
         Background="#1e1e1e" Foreground="White">
+        
+    <Window.Resources>
+        <utils:ByteArrayToBitmapConverter x:Key="ByteToBitmap" />
+    </Window.Resources>
+
     <DockPanel>
         <Menu DockPanel.Dock="Top" Background="#333333">
             <MenuItem Header="_Plataformas" Name="MenuPlataformas" />
@@ -21,12 +27,13 @@
                     <ListBox Name="LstGames" Background="Transparent" DockPanel.Dock="Top" Height="400">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="models:Game">
-                                <Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto" Margin="5">
-                                    <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Platform.Name}" Margin="10,0" Foreground="#aaaaaa" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="2" Text="{Binding Genre}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="3" Text="{Binding Year}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="4" Text="{Binding Region}" Margin="5,0" VerticalAlignment="Center" FontSize="16"/>
+                                <Grid ColumnDefinitions="Auto, *, Auto, Auto, Auto, Auto" Margin="5">
+                                    <Image Grid.Column="0" Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="40" Height="55" Stretch="UniformToFill" Margin="0,0,10,0"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Platform.Name}" Margin="10,0" Foreground="#aaaaaa" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding Genre}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding Year}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="5" Text="{Binding Region}" Margin="5,0" VerticalAlignment="Center" FontSize="16"/>
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
