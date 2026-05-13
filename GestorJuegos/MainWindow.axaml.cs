@@ -34,6 +34,32 @@ public partial class MainWindow : Window
         
         BtnViewList.Click += BtnViewList_Click;
         BtnViewGrid.Click += BtnViewGrid_Click;
+
+        BtnAddPlatform.Click += BtnAddPlatform_Click;
+        BtnCancelPlatform.Click += BtnCancelPlatform_Click;
+        BtnSavePlatform.Click += BtnSavePlatform_Click;
+    }
+
+    private void BtnAddPlatform_Click(object? sender, RoutedEventArgs e)
+    {
+        TxtNewPlatformName.Text = string.Empty;
+        OverlayAddPlatform.IsVisible = true;
+    }
+
+    private void BtnCancelPlatform_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayAddPlatform.IsVisible = false;
+    }
+
+    private void BtnSavePlatform_Click(object? sender, RoutedEventArgs e)
+    {
+        var platformName = TxtNewPlatformName.Text?.Trim();
+        if (!string.IsNullOrEmpty(platformName))
+        {
+            _gameService.AddPlatform(new Platform { Name = platformName });
+            LoadPlatforms();
+        }
+        OverlayAddPlatform.IsVisible = false;
     }
 
     private void BtnViewList_Click(object? sender, RoutedEventArgs e)
@@ -99,6 +125,7 @@ public partial class MainWindow : Window
             TxtName.Text = game.Name;
             NumYear.Value = game.Year;
             TxtGenre.Text = game.Genre;
+            TxtLanguages.Text = game.Languages;
             
             // Set the selected region in the ComboBox
             var regionItem = CmbRegion.Items.Cast<ComboBoxItem>().FirstOrDefault(i => i.Content?.ToString() == game.Region);
@@ -127,6 +154,7 @@ public partial class MainWindow : Window
         TxtName.Text = string.Empty;
         NumYear.Value = _selectedGame.Year;
         TxtGenre.Text = string.Empty;
+        TxtLanguages.Text = string.Empty;
         CmbRegion.SelectedIndex = 0;
         _currentCover = null;
         UpdateCoverImage();
@@ -144,6 +172,7 @@ public partial class MainWindow : Window
         _selectedGame.Name = TxtName.Text ?? string.Empty;
         _selectedGame.Year = (int)(NumYear.Value ?? DateTime.Now.Year);
         _selectedGame.Genre = TxtGenre.Text ?? string.Empty;
+        _selectedGame.Languages = TxtLanguages.Text ?? string.Empty;
         _selectedGame.Region = (CmbRegion.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "🇺🇸 US";
         _selectedGame.Cover = _currentCover;
 

@@ -15,6 +15,14 @@ namespace GestorJuegos.Services
             return context.Platforms.ToList();
         }
 
+        public void AddPlatform(Platform platform)
+        {
+            using var context = new AppDbContext();
+            context.Database.EnsureCreated();
+            context.Platforms.Add(platform);
+            context.SaveChanges();
+        }
+
         public List<Game> GetGamesByPlatform(int platformId)
         {
             using var context = new AppDbContext();

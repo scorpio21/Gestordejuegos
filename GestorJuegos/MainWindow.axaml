@@ -4,112 +4,166 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:models="clr-namespace:GestorJuegos.Models"
         xmlns:utils="clr-namespace:GestorJuegos.Utils"
-        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
         x:Class="GestorJuegos.MainWindow"
         Title="Gestor de Juegos"
-        Background="#1e1e1e" Foreground="White">
+        Background="#0f172a" Foreground="#f8fafc"
+        WindowStartupLocation="CenterScreen">
         
     <Window.Resources>
         <utils:ByteArrayToBitmapConverter x:Key="ByteToBitmap" />
+        <SolidColorBrush x:Key="AccentBrush">#6366f1</SolidColorBrush>
+        <SolidColorBrush x:Key="PanelBrush">#1e293b</SolidColorBrush>
     </Window.Resources>
 
-    <DockPanel>
-        <Menu DockPanel.Dock="Top" Background="#333333">
-            <MenuItem Header="_Plataformas" Name="MenuPlataformas" />
-        </Menu>
-        
-        <Grid ColumnDefinitions="450, *">
-            <!-- Left panel: Game list -->
-            <Border Grid.Column="0" BorderBrush="#333333" BorderThickness="0,0,1,0" Padding="10">
+    <Grid>
+        <DockPanel>
+            <!-- Top Navigation Bar -->
+            <Border DockPanel.Dock="Top" Background="{StaticResource PanelBrush}" Height="50" Padding="15,0" BorderBrush="#334155" BorderThickness="0,0,0,1">
                 <DockPanel>
-                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
-                        <TextBlock Name="TxtSelectedPlatform" Text="Seleccione una plataforma" FontWeight="Bold" VerticalAlignment="Center"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
-                            <Button Name="BtnViewList" Content="≡ Lista" Padding="5,2" Background="#444444"/>
-                            <Button Name="BtnViewGrid" Content="▤ Galería" Padding="5,2" Background="#222222"/>
-                        </StackPanel>
-                    </DockPanel>
-                    
-                    <Button Name="BtnAddGame" Content="Añadir Juego" DockPanel.Dock="Bottom" Margin="0,10,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    
-                    <Panel DockPanel.Dock="Top" Height="400">
-                        <!-- Vista Lista -->
-                        <ListBox Name="LstGames" Background="Transparent">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate x:DataType="models:Game">
-                                    <Grid ColumnDefinitions="Auto, *, Auto, Auto, Auto, Auto" Margin="5">
-                                        <Image Grid.Column="0" Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="40" Height="55" Stretch="UniformToFill" Margin="0,0,10,0"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding Platform.Name}" Margin="10,0" Foreground="#aaaaaa" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="3" Text="{Binding Genre}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="4" Text="{Binding Year}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="5" Text="{Binding Region}" Margin="5,0" VerticalAlignment="Center" FontSize="16"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-
-                        <!-- Vista Cuadrícula (Galería) -->
-                        <ListBox Name="LstGamesGrid" Background="Transparent" IsVisible="False">
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel ItemWidth="110" />
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate x:DataType="models:Game">
-                                    <StackPanel Spacing="5" Margin="5">
-                                        <Border BorderBrush="#555555" BorderThickness="1" Width="90" Height="125">
-                                            <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill" />
-                                        </Border>
-                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" Width="90"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </Panel>
+                    <TextBlock Text="🎮 Colección Retro" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Foreground="#e2e8f0"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" VerticalAlignment="Center">
+                        <Menu Background="Transparent">
+                            <MenuItem Header="Plataformas ⏷" Name="MenuPlataformas" FontSize="14" Foreground="#cbd5e1"/>
+                        </Menu>
+                        <Button Name="BtnAddPlatform" Content="+ Añadir Plataforma" Background="{StaticResource AccentBrush}" Foreground="White" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="0"/>
+                    </StackPanel>
                 </DockPanel>
             </Border>
             
-            <!-- Right panel: Game details -->
-            <ScrollViewer Grid.Column="1" Padding="20">
-                <StackPanel Name="PnlGameDetails" IsVisible="False" Spacing="10">
-                    <TextBlock Text="Detalles del Juego" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
-                    
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="100,*">
-                        <TextBlock Text="Nombre:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
-                        <TextBox Name="TxtName" Grid.Row="0" Grid.Column="1" Margin="0,5"/>
+            <Grid ColumnDefinitions="*, 350">
+                <!-- Main Content Panel -->
+                <Border Grid.Column="0" Padding="20">
+                    <DockPanel>
+                        <!-- Header with View Toggles -->
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+                            <TextBlock Name="TxtSelectedPlatform" Text="Seleccione una plataforma" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                                <Button Name="BtnViewList" Content="≡ Lista" Padding="10,6" Background="#334155" Foreground="White" CornerRadius="6"/>
+                                <Button Name="BtnViewGrid" Content="▤ Galería" Padding="10,6" Background="Transparent" Foreground="#94a3b8" CornerRadius="6" BorderBrush="#334155" BorderThickness="1"/>
+                            </StackPanel>
+                        </DockPanel>
                         
-                        <TextBlock Text="Año:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
-                        <NumericUpDown Name="NumYear" Grid.Row="1" Grid.Column="1" Margin="0,5" Minimum="1950" Maximum="2100" FormatString="0"/>
+                        <!-- Main Views -->
+                        <Panel>
+                            <!-- List View -->
+                            <ListBox Name="LstGames" Background="Transparent" BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Game">
+                                        <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Margin="0,0,0,8" Padding="10">
+                                            <Grid ColumnDefinitions="Auto, *, Auto, Auto">
+                                                <Border Grid.Column="0" CornerRadius="4" ClipToBounds="True" Margin="0,0,15,0">
+                                                    <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="45" Height="60" Stretch="UniformToFill"/>
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Margin="0,0,0,4"/>
+                                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                                        <TextBlock Text="{Binding Genre}" Foreground="#94a3b8" FontSize="13"/>
+                                                        <TextBlock Text="•" Foreground="#475569"/>
+                                                        <TextBlock Text="{Binding Year}" Foreground="#94a3b8" FontSize="13"/>
+                                                        <TextBlock Text="•" Foreground="#475569"/>
+                                                        <TextBlock Text="{Binding Languages}" Foreground="#94a3b8" FontSize="13"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="2" Text="{Binding Region}" VerticalAlignment="Center" FontSize="24" Margin="0,0,15,0"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <!-- Grid View -->
+                            <ListBox Name="LstGamesGrid" Background="Transparent" IsVisible="False" BorderThickness="0">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel ItemWidth="140" />
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Game">
+                                        <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Margin="8" Padding="10">
+                                            <StackPanel Spacing="8">
+                                                <Border CornerRadius="4" ClipToBounds="True" Height="150">
+                                                    <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill" />
+                                                </Border>
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Region}" TextAlignment="Center" FontSize="18"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Panel>
+                    </DockPanel>
+                </Border>
+                
+                <!-- Right Side Panel (Details) -->
+                <Border Grid.Column="1" Background="{StaticResource PanelBrush}" BorderBrush="#334155" BorderThickness="1,0,0,0" Padding="20">
+                    <DockPanel>
+                        <Button Name="BtnAddGame" Content="+ Añadir Nuevo Juego" DockPanel.Dock="Top" Background="#10b981" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,0,20"/>
                         
-                        <TextBlock Text="Género:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
-                        <TextBox Name="TxtGenre" Grid.Row="2" Grid.Column="1" Margin="0,5"/>
-                        
-                        <TextBlock Text="Región:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
-                        <ComboBox Name="CmbRegion" Grid.Row="3" Grid.Column="1" Margin="0,5" SelectedIndex="0">
-                            <ComboBoxItem Content="🇺🇸 US" />
-                            <ComboBoxItem Content="🇪🇺 EU" />
-                            <ComboBoxItem Content="🇯🇵 JP" />
-                            <ComboBoxItem Content="🌎 World" />
-                        </ComboBox>
-                    </Grid>
-                    
-                    <TextBlock Text="Carátula:" Margin="0,10,0,0"/>
-                    <Border BorderBrush="#555555" BorderThickness="1" Width="200" Height="280" HorizontalAlignment="Left">
-                        <Image Name="ImgCover" Stretch="Uniform"/>
-                    </Border>
-                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
-                        <Button Name="BtnSelectCover" Content="Seleccionar Imagen"/>
-                        <Button Name="BtnClearCover" Content="Borrar Imagen"/>
-                    </StackPanel>
-                    
-                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,30,0,0" HorizontalAlignment="Right">
-                        <Button Name="BtnDelete" Content="Eliminar" Background="#aa0000" Foreground="White"/>
-                        <Button Name="BtnSave" Content="Guardar" Background="#00aa00" Foreground="White"/>
+                        <ScrollViewer>
+                            <StackPanel Name="PnlGameDetails" IsVisible="False" Spacing="15">
+                                <TextBlock Text="Detalles del Juego" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" Foreground="#e2e8f0"/>
+                                
+                                <TextBlock Text="Nombre" Foreground="#94a3b8" FontSize="12" Margin="0,0,0,-10"/>
+                                <TextBox Name="TxtName" CornerRadius="4" Background="#0f172a" BorderBrush="#334155"/>
+                                
+                                <Grid ColumnDefinitions="*,*">
+                                    <StackPanel Grid.Column="0" Margin="0,0,5,0" Spacing="5">
+                                        <TextBlock Text="Año" Foreground="#94a3b8" FontSize="12"/>
+                                        <NumericUpDown Name="NumYear" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" Minimum="1950" Maximum="2100" FormatString="0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="5,0,0,0" Spacing="5">
+                                        <TextBlock Text="Región" Foreground="#94a3b8" FontSize="12"/>
+                                        <ComboBox Name="CmbRegion" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" HorizontalAlignment="Stretch" SelectedIndex="0">
+                                            <ComboBoxItem Content="🇺🇸 US" />
+                                            <ComboBoxItem Content="🇪🇺 EU" />
+                                            <ComboBoxItem Content="🇯🇵 JP" />
+                                            <ComboBoxItem Content="🌎 World" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <TextBlock Text="Género" Foreground="#94a3b8" FontSize="12" Margin="0,0,0,-10"/>
+                                <TextBox Name="TxtGenre" CornerRadius="4" Background="#0f172a" BorderBrush="#334155"/>
+
+                                <TextBlock Text="Idiomas (Ej. En,Fr,Es)" Foreground="#94a3b8" FontSize="12" Margin="0,0,0,-10"/>
+                                <TextBox Name="TxtLanguages" CornerRadius="4" Background="#0f172a" BorderBrush="#334155"/>
+                                
+                                <TextBlock Text="Carátula" Foreground="#94a3b8" FontSize="12" Margin="0,10,0,0"/>
+                                <Border BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Height="250" Background="#0f172a" ClipToBounds="True">
+                                    <Image Name="ImgCover" Stretch="UniformToFill"/>
+                                </Border>
+                                <Grid ColumnDefinitions="*,*">
+                                    <Button Grid.Column="0" Name="BtnSelectCover" Content="Seleccionar" Margin="0,0,5,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#334155" CornerRadius="4"/>
+                                    <Button Grid.Column="1" Name="BtnClearCover" Content="Quitar" Margin="5,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#334155" CornerRadius="4"/>
+                                </Grid>
+                                
+                                <Grid ColumnDefinitions="*,*" Margin="0,20,0,0">
+                                    <Button Grid.Column="0" Name="BtnDelete" Content="Eliminar" Margin="0,0,5,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#ef4444" Foreground="White" FontWeight="Bold" CornerRadius="4"/>
+                                    <Button Grid.Column="1" Name="BtnSave" Content="Guardar" Margin="5,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="4"/>
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </DockPanel>
+        
+        <!-- Add Platform Overlay -->
+        <Border Name="OverlayAddPlatform" Background="#AA000000" IsVisible="False" ZIndex="100">
+            <Border Background="{StaticResource PanelBrush}" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Añadir Nueva Plataforma" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+                    <TextBlock Text="Nombre de la Plataforma (Ej. PlayStation 1)" Foreground="#94a3b8" FontSize="14"/>
+                    <TextBox Name="TxtNewPlatformName" CornerRadius="6" Background="#0f172a" BorderBrush="#334155" FontSize="16" Padding="10"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,15,0,0">
+                        <Button Name="BtnCancelPlatform" Content="Cancelar" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="15,8"/>
+                        <Button Name="BtnSavePlatform" Content="Guardar Plataforma" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="15,8"/>
                     </StackPanel>
                 </StackPanel>
-            </ScrollViewer>
-        </Grid>
-    </DockPanel>
+            </Border>
+        </Border>
+    </Grid>
 </Window>
