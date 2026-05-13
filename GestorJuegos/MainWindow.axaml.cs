@@ -16,11 +16,13 @@ public partial class MainWindow : Window
     private Platform? _selectedPlatform;
     private Game? _selectedGame;
     private byte[]? _currentCover;
+    private readonly IgdbService _igdbService;
 
     public MainWindow()
     {
         InitializeComponent();
         _gameService = new GameService();
+        _igdbService = new IgdbService("bxnnsyzvp41wdhew76021kut5p5wsu", "9xpfkki4n8k5j3itnc6atc5ry8bo9h");
         LoadPlatforms();
 
         BtnAddGame.Click += BtnAddGame_Click;
@@ -52,6 +54,10 @@ public partial class MainWindow : Window
         MenuImportDB.Click += MenuImportDB_Click;
 
         BtnCloseMessage.Click += BtnCloseMessage_Click;
+        
+        BtnSearchIgdb.Click += BtnSearchIgdb_Click;
+        BtnCancelIgdb.Click += BtnCancelIgdb_Click;
+        BtnSelectIgdb.Click += BtnSelectIgdb_Click;
     }
 
     private void ShowMessage(string message)
@@ -239,6 +245,73 @@ public partial class MainWindow : Window
             catch (Exception ex)
             {
                 ShowMessage($"Error al importar: {ex.Message}. Asegúrese de no tener otras aplicaciones bloqueando el archivo.");
+            }
+        }
+    }
+
+    private async void BtnSearchIgdb_Click(object? sender, RoutedEventArgs e)
+    {
+        string query = TxtName.Text?.Trim() ?? "";
+        if (string.IsNullOrEmpty(query))
+        {
+            ShowMessage("Por favor, escriba el nombre del juego antes de buscar.");
+            return;
+        }
+
+        OverlayIgdbSearch.IsVisible = true;
+        TxtIgdbStatus.Text = $"Buscando '{query}'...";
+        LstIgdbResults.ItemsSource = null;
+
+        try
+        {
+            var results = await _igdbService.SearchGamesAsync(query);
+            LstIgdbResults.ItemsSource = results;
+            if (results.Count == 0)
+            {
+                TxtIgdbStatus.Text = "No se encontraron resultados.";
+            }
+            else
+            {
+                TxtIgdbStatus.Text = "Resultados de Búsqueda (IGDB)";
+            }
+        }
+        catch (Exception ex)
+        {
+            TxtIgdbStatus.Text = "Error al buscar en IGDB.";
+            ShowMessage($"Error de API: {ex.Message}");
+        }
+    }
+
+    private void BtnCancelIgdb_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayIgdbSearch.IsVisible = false;
+    }
+
+    private async void BtnSelectIgdb_Click(object? sender, RoutedEventArgs e)
+    {
+        if (LstIgdbResults.SelectedItem is IgdbSearchResult result)
+        {
+            TxtName.Text = result.Name;
+            if (result.Year.HasValue)
+                NumYear.Value = result.Year.Value;
+            if (!string.IsNullOrEmpty(result.Genre))
+                TxtGenre.Text = result.Genre;
+
+            OverlayIgdbSearch.IsVisible = false;
+
+            if (!string.IsNullOrEmpty(result.CoverUrl))
+            {
+                try
+                {
+                    ShowMessage("Descargando carátula...");
+                    _currentCover = await _igdbService.DownloadCoverAsync(result.CoverUrl);
+                    UpdateCoverImage();
+                    OverlayMessage.IsVisible = false; // Ocultar mensaje al terminar
+                }
+                catch
+                {
+                    ShowMessage("No se pudo descargar la carátula.");
+                }
             }
         }
     }

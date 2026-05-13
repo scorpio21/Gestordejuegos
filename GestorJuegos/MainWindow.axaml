@@ -115,7 +115,10 @@
                                 <TextBlock Text="Detalles del Juego" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" Foreground="#e2e8f0"/>
                                 
                                 <TextBlock Text="Nombre" Foreground="#94a3b8" FontSize="12" Margin="0,0,0,-10"/>
-                                <TextBox Name="TxtName" CornerRadius="4" Background="#0f172a" BorderBrush="#334155"/>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBox Grid.Column="0" Name="TxtName" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" Margin="0,0,5,0"/>
+                                    <Button Grid.Column="1" Name="BtnSearchIgdb" Content="🔍 IGDB" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="4" Padding="10,5"/>
+                                </Grid>
                                 
                                 <Grid ColumnDefinitions="*,*">
                                     <StackPanel Grid.Column="0" Margin="0,0,5,0" Spacing="5">
@@ -249,6 +252,33 @@
                     </StackPanel>
                     
                     <Button Grid.Row="2" Name="BtnCloseStatistics" Content="Cerrar" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="20,8" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                </Grid>
+            </Border>
+        </Border>
+        <!-- IGDB Search Overlay -->
+        <Border Name="OverlayIgdbSearch" Background="#AA000000" IsVisible="False" ZIndex="170">
+            <Border Background="{StaticResource PanelBrush}" Width="500" Height="600" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
+                <Grid RowDefinitions="Auto, *, Auto">
+                    <TextBlock Grid.Row="0" Name="TxtIgdbStatus" Text="Buscando en IGDB..." FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,15" HorizontalAlignment="Center"/>
+                    
+                    <ListBox Grid.Row="1" Name="LstIgdbResults" Background="#0f172a" CornerRadius="6" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,15">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:CompileBindings="False">
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <StackPanel Grid.Column="1" Margin="10,5">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="White" FontSize="16" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding Year}" Foreground="#10b981" FontSize="14"/>
+                                        <TextBlock Text="{Binding Genre}" Foreground="#94a3b8" FontSize="12"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Grid Grid.Row="2" ColumnDefinitions="*,*">
+                        <Button Grid.Column="0" Name="BtnCancelIgdb" Content="Cancelar" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="15,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,5,0"/>
+                        <Button Grid.Column="1" Name="BtnSelectIgdb" Content="Seleccionar" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="15,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="5,0,0,0"/>
+                    </Grid>
                 </Grid>
             </Border>
         </Border>
