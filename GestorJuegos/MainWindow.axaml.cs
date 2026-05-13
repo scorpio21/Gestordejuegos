@@ -38,6 +38,19 @@ public partial class MainWindow : Window
         BtnAddPlatform.Click += BtnAddPlatform_Click;
         BtnCancelPlatform.Click += BtnCancelPlatform_Click;
         BtnSavePlatform.Click += BtnSavePlatform_Click;
+        
+        BtnCloseMessage.Click += BtnCloseMessage_Click;
+    }
+
+    private void ShowMessage(string message)
+    {
+        TxtMessageContent.Text = message;
+        OverlayMessage.IsVisible = true;
+    }
+
+    private void BtnCloseMessage_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayMessage.IsVisible = false;
     }
 
     private void BtnAddPlatform_Click(object? sender, RoutedEventArgs e)
@@ -148,7 +161,11 @@ public partial class MainWindow : Window
 
     private void BtnAddGame_Click(object? sender, RoutedEventArgs e)
     {
-        if (_selectedPlatform == null) return;
+        if (_selectedPlatform == null)
+        {
+            ShowMessage("Por favor, selecciona primero una plataforma en el menú superior antes de intentar añadir un juego.");
+            return;
+        }
 
         _selectedGame = new Game { PlatformId = _selectedPlatform.Id, Year = DateTime.Now.Year };
         TxtName.Text = string.Empty;

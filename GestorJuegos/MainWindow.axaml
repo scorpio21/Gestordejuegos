@@ -165,5 +165,16 @@
                 </StackPanel>
             </Border>
         </Border>
+        
+        <!-- Message Overlay -->
+        <Border Name="OverlayMessage" Background="#AA000000" IsVisible="False" ZIndex="200">
+            <Border Background="{StaticResource PanelBrush}" Width="350" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Aviso" FontSize="20" FontWeight="Bold" Foreground="#fbbf24" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                    <TextBlock Name="TxtMessageContent" Text="Mensaje de error." Foreground="#e2e8f0" FontSize="15" TextWrapping="Wrap" TextAlignment="Center"/>
+                    <Button Name="BtnCloseMessage" Content="Entendido" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="20,8" HorizontalAlignment="Center" Margin="0,15,0,0"/>
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </Window>
