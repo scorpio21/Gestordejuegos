@@ -71,7 +71,7 @@ GestorJuegos/
 ## 📝 Próximos pasos y Mejoras (Roadmap)
 - [x] Implementar un modo de visualización en forma de cuadrícula de imágenes.
 - [x] Gestión interactiva de plataformas desde la UI.
-- [ ] Incorporar estadísticas de la colección (Total de juegos, Total por consola).
+- [x] Incorporar estadísticas de la colección (Total de juegos, Total por consola).
 - [ ] Añadir una funcionalidad de exportación / importación de la base de datos.
 - [ ] Extracción automática de información de juegos desde una API pública.
 
