@@ -27,7 +27,7 @@
                             <MenuItem Header="Plataformas ⏷" Name="MenuPlataformas" FontSize="14" Foreground="#cbd5e1"/>
                         </Menu>
                         <Menu Background="Transparent">
-                            <MenuItem Header="💾 Respaldos" FontSize="14" Foreground="#cbd5e1">
+                            <MenuItem Name="MenuRespaldos" Header="💾 Respaldos" FontSize="14" Foreground="#cbd5e1">
                                 <MenuItem Name="MenuExportDB" Header="Exportar Base de Datos"/>
                                 <MenuItem Name="MenuImportDB" Header="Importar Base de Datos"/>
                             </MenuItem>

@@ -108,6 +108,18 @@ public partial class MainWindow : Window
         var platforms = _gameService.GetPlatforms();
         MenuPlataformas.Items.Clear();
 
+        bool hasPlatforms = platforms.Count > 0;
+        
+        // Disable requested UI elements when there are no platforms
+        MenuPlataformas.IsEnabled = hasPlatforms;
+        BtnStatistics.IsEnabled = hasPlatforms;
+        BtnManagePlatforms.IsEnabled = hasPlatforms;
+        BtnAddGame.IsEnabled = hasPlatforms;
+        BtnViewList.IsEnabled = hasPlatforms;
+        BtnViewGrid.IsEnabled = hasPlatforms;
+        MenuExportDB.IsEnabled = hasPlatforms;
+        // Note: MenuImportDB is NOT disabled, so the user can import a backup even if the DB is empty.
+
         foreach (var platform in platforms)
         {
             var menuItem = new MenuItem { Header = platform.Name, Tag = platform };
