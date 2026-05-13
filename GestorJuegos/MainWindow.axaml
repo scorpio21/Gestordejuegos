@@ -1,0 +1,78 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:GestorJuegos.Models"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        x:Class="GestorJuegos.MainWindow"
+        Title="Gestor de Juegos"
+        Background="#1e1e1e" Foreground="White">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" Background="#333333">
+            <MenuItem Header="_Plataformas" Name="MenuPlataformas" />
+        </Menu>
+        
+        <Grid ColumnDefinitions="450, *">
+            <!-- Left panel: Game list -->
+            <Border Grid.Column="0" BorderBrush="#333333" BorderThickness="0,0,1,0" Padding="10">
+                <DockPanel>
+                    <TextBlock Name="TxtSelectedPlatform" Text="Seleccione una plataforma" DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <Button Name="BtnAddGame" Content="Añadir Juego" DockPanel.Dock="Bottom" Margin="0,10,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <ListBox Name="LstGames" Background="Transparent" DockPanel.Dock="Top" Height="400">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:Game">
+                                <Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto" Margin="5">
+                                    <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Platform.Name}" Margin="10,0" Foreground="#aaaaaa" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Genre}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding Year}" Margin="10,0" Foreground="Gray" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding Region}" Margin="5,0" VerticalAlignment="Center" FontSize="16"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+            
+            <!-- Right panel: Game details -->
+            <ScrollViewer Grid.Column="1" Padding="20">
+                <StackPanel Name="PnlGameDetails" IsVisible="False" Spacing="10">
+                    <TextBlock Text="Detalles del Juego" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+                    
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="100,*">
+                        <TextBlock Text="Nombre:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+                        <TextBox Name="TxtName" Grid.Row="0" Grid.Column="1" Margin="0,5"/>
+                        
+                        <TextBlock Text="Año:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+                        <NumericUpDown Name="NumYear" Grid.Row="1" Grid.Column="1" Margin="0,5" Minimum="1950" Maximum="2100" FormatString="0"/>
+                        
+                        <TextBlock Text="Género:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
+                        <TextBox Name="TxtGenre" Grid.Row="2" Grid.Column="1" Margin="0,5"/>
+                        
+                        <TextBlock Text="Región:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
+                        <ComboBox Name="CmbRegion" Grid.Row="3" Grid.Column="1" Margin="0,5" SelectedIndex="0">
+                            <ComboBoxItem Content="🇺🇸 US" />
+                            <ComboBoxItem Content="🇪🇺 EU" />
+                            <ComboBoxItem Content="🇯🇵 JP" />
+                            <ComboBoxItem Content="🌎 World" />
+                        </ComboBox>
+                    </Grid>
+                    
+                    <TextBlock Text="Carátula:" Margin="0,10,0,0"/>
+                    <Border BorderBrush="#555555" BorderThickness="1" Width="200" Height="280" HorizontalAlignment="Left">
+                        <Image Name="ImgCover" Stretch="Uniform"/>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
+                        <Button Name="BtnSelectCover" Content="Seleccionar Imagen"/>
+                        <Button Name="BtnClearCover" Content="Borrar Imagen"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,30,0,0" HorizontalAlignment="Right">
+                        <Button Name="BtnDelete" Content="Eliminar" Background="#aa0000" Foreground="White"/>
+                        <Button Name="BtnSave" Content="Guardar" Background="#00aa00" Foreground="White"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DockPanel>
+</Window>

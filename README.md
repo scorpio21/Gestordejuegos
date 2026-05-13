@@ -1,0 +1,75 @@
+# 🎮 Gestor de Juegos
+
+![AvaloniaUI](https://img.shields.io/badge/Avalonia-12.0.2-purple.svg?style=for-the-badge&logo=avalonia)
+![.NET](https://img.shields.io/badge/.NET-9.0-512BD4.svg?style=for-the-badge&logo=dotnet)
+![SQLite](https://img.shields.io/badge/SQLite-003B57.svg?style=for-the-badge&logo=sqlite)
+![Entity Framework Core](https://img.shields.io/badge/EF_Core-9.0-blue.svg?style=for-the-badge)
+
+Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9**, diseñada para catalogar y gestionar colecciones de videojuegos retro. Permite organizar los juegos por plataformas, almacenar detalles como el año de lanzamiento, género y mantener un registro visual con la carátula de cada juego.
+
+---
+
+## ✨ Características Principales
+
+- **Gestión por Plataformas:** Clasifica tus juegos fácilmente a través de un menú dinámico (Atari 2600, Super Nintendo, Sega Genesis, etc.).
+- **CRUD Completo:** Añade, visualiza, edita y elimina información sobre tus juegos.
+- **Soporte de Imágenes:** Capacidad de adjuntar y almacenar carátulas o portadas nativamente en la base de datos local.
+- **Base de Datos Embebida:** Utiliza SQLite para almacenar todos los datos de forma local, rápida y portátil. No requiere servidores ni configuraciones complejas.
+- **Compatible con el Diseñador Visual:** La arquitectura AXAML permite modificar la interfaz cómodamente utilizando el diseñador de Avalonia dentro de Visual Studio.
+
+## 🛠️ Tecnologías
+
+- **C# / .NET 9.0:** Motor principal de la aplicación.
+- **Avalonia UI (v12.0.2):** Framework multiplataforma utilizado para crear una interfaz de usuario fluida, moderna e independiente del sistema operativo.
+- **Entity Framework Core 9:** ORM encargado del manejo y comunicación con la base de datos mediante migraciones automatizadas.
+- **SQLite:** Motor de base de datos ligero y robusto para almacenamiento local en el cliente.
+
+---
+
+## 📁 Estructura del Proyecto
+
+El proyecto está organizado de manera modular, facilitando su escalabilidad y fácil mantenimiento en el futuro:
+
+```text
+GestorJuegos/
+├── Data/            # Configuración de Entity Framework y Contexto SQLite (AppDbContext)
+├── Models/          # Modelos de datos y entidades de negocio (Game, Platform)
+├── Services/        # Lógica de negocio y abstracción de la base de datos (GameService)
+├── GestorJuegos/    # Interfaz gráfica y vistas de Avalonia (MainWindow.axaml)
+└── GestorJuegos.sln # Archivo de solución principal de Visual Studio
+```
+
+---
+
+## 🚀 Instalación y Uso
+
+### Prerrequisitos
+- [SDK de .NET 9.0](https://dotnet.microsoft.com/download) instalado en tu equipo.
+- **Visual Studio 2022** (Recomendado).
+- Extensión **[Avalonia para Visual Studio 2022](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS)** (para previsualizar la interfaz de usuario en el diseñador).
+
+### Pasos
+
+1. **Clonar o descargar** el repositorio.
+2. Navegar a la carpeta raíz del proyecto y abrir la solución `GestorJuegos.sln` con Visual Studio 2022.
+3. Compilar el proyecto pulsando `F6` (o desde el menú Compilar -> Compilar solución). En este paso se restaurarán automáticamente los paquetes de NuGet necesarios.
+4. Ejecutar el programa pulsando `F5`.
+
+> **Nota:** En su primer arranque, la aplicación generará de forma automática el archivo `GestorJuegos.db` en el directorio de ejecución y populará las consolas de inicio.
+
+---
+
+## 📸 Capturas de Pantalla
+
+*(Aquí puedes añadir capturas de la interfaz una vez que personalices los estilos y comiences a añadir juegos).*
+
+---
+
+## 📝 Próximos pasos y Mejoras (Roadmap)
+- [ ] Implementar un modo de visualización en forma de cuadrícula de imágenes.
+- [ ] Incorporar estadísticas de la colección (Total de juegos, Total por consola).
+- [ ] Añadir una funcionalidad de exportación / importación de la base de datos.
+- [ ] Extracción automática de información de juegos desde una API pública.
+
+---
+**Desarrollado con ❤️ para los amantes del coleccionismo de videojuegos.**
