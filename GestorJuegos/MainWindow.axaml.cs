@@ -22,7 +22,23 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         _gameService = new GameService();
-        _igdbService = new IgdbService("bxnnsyzvp41wdhew76021kut5p5wsu", "9xpfkki4n8k5j3itnc6atc5ry8bo9h");
+        string clientId = "";
+        string clientSecret = "";
+        try
+        {
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+            if (File.Exists(configPath))
+            {
+                var json = File.ReadAllText(configPath);
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                var igdbConfig = doc.RootElement.GetProperty("IGDB");
+                clientId = igdbConfig.GetProperty("ClientId").GetString() ?? "";
+                clientSecret = igdbConfig.GetProperty("ClientSecret").GetString() ?? "";
+            }
+        }
+        catch { }
+
+        _igdbService = new IgdbService(clientId, clientSecret);
         LoadPlatforms();
 
         BtnAddGame.Click += BtnAddGame_Click;
