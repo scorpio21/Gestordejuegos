@@ -218,15 +218,11 @@
 
         <!-- Statistics Overlay -->
         <Border Name="OverlayStatistics" Background="#AA000000" IsVisible="False" ZIndex="160">
-            <Border Background="{StaticResource PanelBrush}" Width="400" Height="450" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
-                <DockPanel>
-                    <TextBlock Text="Estadísticas de la Colección" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,15" DockPanel.Dock="Top"/>
+            <Border Background="{StaticResource PanelBrush}" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
+                <Grid RowDefinitions="Auto, *, Auto">
+                    <TextBlock Grid.Row="0" Text="Estadísticas de la Colección" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,15" HorizontalAlignment="Center"/>
                     
-                    <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="0,20,0,0">
-                        <Button Name="BtnCloseStatistics" Content="Cerrar" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="20,8"/>
-                    </StackPanel>
-
-                    <StackPanel Spacing="15">
+                    <StackPanel Grid.Row="1" Spacing="15">
                         <Border Background="#0f172a" CornerRadius="8" Padding="15" BorderBrush="#334155" BorderThickness="1">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="Total de Juegos" Foreground="#94a3b8" FontSize="14" HorizontalAlignment="Center"/>
@@ -236,20 +232,24 @@
 
                         <TextBlock Text="Juegos por Plataforma:" Foreground="#e2e8f0" FontWeight="SemiBold" Margin="0,10,0,0"/>
                         
-                        <ListBox Name="LstPlatformStats" Background="Transparent" BorderThickness="0" Height="200">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate x:CompileBindings="False">
-                                    <Grid ColumnDefinitions="*, Auto" Margin="0,5">
-                                        <TextBlock Grid.Column="0" Text="{Binding Key}" Foreground="#cbd5e1" FontSize="15" VerticalAlignment="Center"/>
-                                        <Border Grid.Column="1" Background="#334155" CornerRadius="12" Padding="10,2">
-                                            <TextBlock Text="{Binding Value}" Foreground="White" FontWeight="Bold"/>
-                                        </Border>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                        <ScrollViewer Height="180">
+                            <ListBox Name="LstPlatformStats" Background="Transparent" BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:CompileBindings="False">
+                                        <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                                            <TextBlock Grid.Column="0" Text="{Binding Key}" Foreground="#cbd5e1" FontSize="15" VerticalAlignment="Center"/>
+                                            <Border Grid.Column="1" Background="#334155" CornerRadius="12" Padding="10,2">
+                                                <TextBlock Text="{Binding Value}" Foreground="White" FontWeight="Bold"/>
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
                     </StackPanel>
-                </DockPanel>
+                    
+                    <Button Grid.Row="2" Name="BtnCloseStatistics" Content="Cerrar" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="20,8" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                </Grid>
             </Border>
         </Border>
     </Grid>
