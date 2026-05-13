@@ -26,6 +26,7 @@
                         <Menu Background="Transparent">
                             <MenuItem Header="Plataformas ⏷" Name="MenuPlataformas" FontSize="14" Foreground="#cbd5e1"/>
                         </Menu>
+                        <Button Name="BtnManagePlatforms" Content="⚙️ Gestionar" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
                         <Button Name="BtnAddPlatform" Content="+ Añadir Plataforma" Background="{StaticResource AccentBrush}" Foreground="White" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="0"/>
                     </StackPanel>
                 </DockPanel>
@@ -174,6 +175,37 @@
                     <TextBlock Name="TxtMessageContent" Text="Mensaje de error." Foreground="#e2e8f0" FontSize="15" TextWrapping="Wrap" TextAlignment="Center"/>
                     <Button Name="BtnCloseMessage" Content="Entendido" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="20,8" HorizontalAlignment="Center" Margin="0,15,0,0"/>
                 </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- Manage Platforms Overlay -->
+        <Border Name="OverlayManagePlatforms" Background="#AA000000" IsVisible="False" ZIndex="150">
+            <Border Background="{StaticResource PanelBrush}" Width="450" Height="500" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
+                <DockPanel>
+                    <TextBlock Text="Gestionar Plataformas" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,15" DockPanel.Dock="Top"/>
+                    
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
+                        <Button Name="BtnCloseManagePlatforms" Content="Cerrar" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="15,8"/>
+                    </StackPanel>
+
+                    <!-- Edit Section -->
+                    <StackPanel Name="PnlEditPlatform" DockPanel.Dock="Bottom" IsVisible="False" Spacing="10" Margin="0,20,0,0">
+                        <TextBlock Text="Editar Nombre:" Foreground="#94a3b8" FontSize="14"/>
+                        <TextBox Name="TxtEditPlatformName" CornerRadius="6" Background="#0f172a" BorderBrush="#334155" FontSize="16" Padding="8"/>
+                        <Grid ColumnDefinitions="*,*">
+                            <Button Grid.Column="0" Name="BtnDeletePlatform" Content="Eliminar" Background="#ef4444" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="10" Margin="0,0,5,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                            <Button Grid.Column="1" Name="BtnSaveEditPlatform" Content="Guardar" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="10" Margin="5,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <ListBox Name="LstManagePlatforms" Background="#0f172a" CornerRadius="6" BorderBrush="#334155" BorderThickness="1">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:Platform">
+                                <TextBlock Text="{Binding Name}" Padding="5" Foreground="#e2e8f0"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
             </Border>
         </Border>
     </Grid>

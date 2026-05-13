@@ -23,6 +23,24 @@ namespace GestorJuegos.Services
             context.SaveChanges();
         }
 
+        public void UpdatePlatform(Platform platform)
+        {
+            using var context = new AppDbContext();
+            context.Platforms.Update(platform);
+            context.SaveChanges();
+        }
+
+        public void DeletePlatform(int platformId)
+        {
+            using var context = new AppDbContext();
+            var platform = context.Platforms.Find(platformId);
+            if (platform != null)
+            {
+                context.Platforms.Remove(platform);
+                context.SaveChanges();
+            }
+        }
+
         public List<Game> GetGamesByPlatform(int platformId)
         {
             using var context = new AppDbContext();

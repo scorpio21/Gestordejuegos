@@ -39,6 +39,12 @@ public partial class MainWindow : Window
         BtnCancelPlatform.Click += BtnCancelPlatform_Click;
         BtnSavePlatform.Click += BtnSavePlatform_Click;
         
+        BtnManagePlatforms.Click += BtnManagePlatforms_Click;
+        BtnCloseManagePlatforms.Click += BtnCloseManagePlatforms_Click;
+        BtnSaveEditPlatform.Click += BtnSaveEditPlatform_Click;
+        BtnDeletePlatform.Click += BtnDeletePlatform_Click;
+        LstManagePlatforms.SelectionChanged += LstManagePlatforms_SelectionChanged;
+
         BtnCloseMessage.Click += BtnCloseMessage_Click;
     }
 
@@ -112,6 +118,69 @@ public partial class MainWindow : Window
             TxtSelectedPlatform.Text = $"Plataforma: {platform.Name}";
             LoadGames();
             PnlGameDetails.IsVisible = false;
+        }
+    }
+
+    private void BtnManagePlatforms_Click(object? sender, RoutedEventArgs e)
+    {
+        LstManagePlatforms.ItemsSource = _gameService.GetPlatforms();
+        PnlEditPlatform.IsVisible = false;
+        OverlayManagePlatforms.IsVisible = true;
+    }
+
+    private void BtnCloseManagePlatforms_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayManagePlatforms.IsVisible = false;
+    }
+
+    private void LstManagePlatforms_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (LstManagePlatforms.SelectedItem is Platform platform)
+        {
+            TxtEditPlatformName.Text = platform.Name;
+            PnlEditPlatform.IsVisible = true;
+        }
+    }
+
+    private void BtnSaveEditPlatform_Click(object? sender, RoutedEventArgs e)
+    {
+        if (LstManagePlatforms.SelectedItem is Platform platform)
+        {
+            var newName = TxtEditPlatformName.Text?.Trim();
+            if (!string.IsNullOrEmpty(newName))
+            {
+                platform.Name = newName;
+                _gameService.UpdatePlatform(platform);
+                LoadPlatforms();
+                LstManagePlatforms.ItemsSource = _gameService.GetPlatforms();
+                
+                // Update currently selected text if it was modified
+                if (_selectedPlatform?.Id == platform.Id)
+                {
+                    TxtSelectedPlatform.Text = $"Plataforma: {platform.Name}";
+                }
+            }
+        }
+    }
+
+    private void BtnDeletePlatform_Click(object? sender, RoutedEventArgs e)
+    {
+        if (LstManagePlatforms.SelectedItem is Platform platform)
+        {
+            _gameService.DeletePlatform(platform.Id);
+            LoadPlatforms();
+            LstManagePlatforms.ItemsSource = _gameService.GetPlatforms();
+            PnlEditPlatform.IsVisible = false;
+
+            // Reset current view if the deleted platform was the active one
+            if (_selectedPlatform?.Id == platform.Id)
+            {
+                _selectedPlatform = null;
+                TxtSelectedPlatform.Text = "Seleccione una plataforma";
+                LstGames.ItemsSource = null;
+                LstGamesGrid.ItemsSource = null;
+                PnlGameDetails.IsVisible = false;
+            }
         }
     }
 
