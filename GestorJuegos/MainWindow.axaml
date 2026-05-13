@@ -26,6 +26,12 @@
                         <Menu Background="Transparent">
                             <MenuItem Header="Plataformas ⏷" Name="MenuPlataformas" FontSize="14" Foreground="#cbd5e1"/>
                         </Menu>
+                        <Menu Background="Transparent">
+                            <MenuItem Header="💾 Respaldos" FontSize="14" Foreground="#cbd5e1">
+                                <MenuItem Name="MenuExportDB" Header="Exportar Base de Datos"/>
+                                <MenuItem Name="MenuImportDB" Header="Importar Base de Datos"/>
+                            </MenuItem>
+                        </Menu>
                         <Button Name="BtnStatistics" Content="📊 Estadísticas" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
                         <Button Name="BtnManagePlatforms" Content="⚙️ Gestionar" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
                         <Button Name="BtnAddPlatform" Content="+ Añadir Plataforma" Background="{StaticResource AccentBrush}" Foreground="White" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="0"/>

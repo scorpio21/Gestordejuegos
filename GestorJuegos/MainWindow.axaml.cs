@@ -48,6 +48,9 @@ public partial class MainWindow : Window
         BtnStatistics.Click += BtnStatistics_Click;
         BtnCloseStatistics.Click += BtnCloseStatistics_Click;
 
+        MenuExportDB.Click += MenuExportDB_Click;
+        MenuImportDB.Click += MenuImportDB_Click;
+
         BtnCloseMessage.Click += BtnCloseMessage_Click;
     }
 
@@ -150,6 +153,82 @@ public partial class MainWindow : Window
     private void BtnCloseStatistics_Click(object? sender, RoutedEventArgs e)
     {
         OverlayStatistics.IsVisible = false;
+    }
+
+    private async void MenuExportDB_Click(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Exportar Base de Datos",
+            SuggestedFileName = "GestorJuegos_Backup.db",
+            FileTypeChoices = new[] { new FilePickerFileType("SQLite Database") { Patterns = new[] { "*.db" } } }
+        });
+
+        if (file != null)
+        {
+            try
+            {
+                string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GestorJuegos.db");
+                if (File.Exists(dbPath))
+                {
+                    using var sourceStream = new FileStream(dbPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    using var destinationStream = await file.OpenWriteAsync();
+                    await sourceStream.CopyToAsync(destinationStream);
+                    ShowMessage("Base de datos exportada con éxito.");
+                }
+                else
+                {
+                    ShowMessage("No se encontró la base de datos local para exportar.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error al exportar: {ex.Message}");
+            }
+        }
+    }
+
+    private async void MenuImportDB_Click(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Importar Base de Datos",
+            AllowMultiple = false,
+            FileTypeFilter = new[] { new FilePickerFileType("SQLite Database") { Patterns = new[] { "*.db" } } }
+        });
+
+        if (files.Count > 0)
+        {
+            try
+            {
+                var file = files[0];
+                string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GestorJuegos.db");
+
+                using var sourceStream = await file.OpenReadAsync();
+                using var destinationStream = new FileStream(dbPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                await sourceStream.CopyToAsync(destinationStream);
+
+                // Clear UI and reload
+                _selectedPlatform = null;
+                TxtSelectedPlatform.Text = "Seleccione una plataforma";
+                LstGames.ItemsSource = null;
+                LstGamesGrid.ItemsSource = null;
+                PnlGameDetails.IsVisible = false;
+                LoadPlatforms();
+
+                ShowMessage("Base de datos importada con éxito.");
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error al importar: {ex.Message}. Asegúrese de no tener otras aplicaciones bloqueando el archivo.");
+            }
+        }
     }
 
     private void LstManagePlatforms_SelectionChanged(object? sender, SelectionChangedEventArgs e)
