@@ -18,12 +18,7 @@ namespace GestorJuegos.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Platform>().HasData(
-                new Platform { Id = 1, Name = "Atari 2600" },
-                new Platform { Id = 2, Name = "Atari 5200" },
-                new Platform { Id = 3, Name = "Sega Genesis" },
-                new Platform { Id = 4, Name = "Super Nintendo" }
-            );
+            // Ya no hay datos semilla. La base de datos comenzará 100% en blanco.
         }
     }
 }
