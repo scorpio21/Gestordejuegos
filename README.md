@@ -11,17 +11,19 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## ✨ Características Principales
 
-- **Gestión por Plataformas:** Clasifica tus juegos fácilmente a través de un menú dinámico (Atari 2600, Super Nintendo, Sega Genesis, etc.).
+- **Gestión por Plataformas Dinámica:** Crea, edita y elimina tus propias plataformas (PlayStation, Super Nintendo, etc.) desde un menú de gestión interactivo.
+- **Vistas Personalizables:** Alterna entre una **vista de Lista** detallada o una **vista de Galería (Cuadrícula)** enfocada en las carátulas.
 - **CRUD Completo:** Añade, visualiza, edita y elimina información sobre tus juegos.
+- **Campos Detallados:** Soporte para nombre, año, género, región y múltiples **idiomas** (Ej. En,Fr,Es).
 - **Soporte de Imágenes:** Capacidad de adjuntar y almacenar carátulas o portadas nativamente en la base de datos local.
-- **Base de Datos Embebida:** Utiliza SQLite para almacenar todos los datos de forma local, rápida y portátil. No requiere servidores ni configuraciones complejas.
-- **Compatible con el Diseñador Visual:** La arquitectura AXAML permite modificar la interfaz cómodamente utilizando el diseñador de Avalonia dentro de Visual Studio.
+- **Base de Datos Embebida:** Utiliza SQLite para almacenar todos los datos de forma local, rápida y portátil. No requiere servidores.
+- **Diseño Dark Premium:** Interfaz elegante con estética moderna, bordes redondeados y colores cuidados para menor fatiga visual.
 
 ## 🛠️ Tecnologías
 
 - **C# / .NET 9.0:** Motor principal de la aplicación.
 - **Avalonia UI (v12.0.2):** Framework multiplataforma utilizado para crear una interfaz de usuario fluida, moderna e independiente del sistema operativo.
-- **Entity Framework Core 9:** ORM encargado del manejo y comunicación con la base de datos mediante migraciones automatizadas.
+- **Entity Framework Core 9:** ORM encargado del manejo y comunicación con la base de datos.
 - **SQLite:** Motor de base de datos ligero y robusto para almacenamiento local en el cliente.
 
 ---
@@ -35,6 +37,7 @@ GestorJuegos/
 ├── Data/            # Configuración de Entity Framework y Contexto SQLite (AppDbContext)
 ├── Models/          # Modelos de datos y entidades de negocio (Game, Platform)
 ├── Services/        # Lógica de negocio y abstracción de la base de datos (GameService)
+├── Utils/           # Utilidades y Convertidores (ByteArrayToBitmapConverter)
 ├── GestorJuegos/    # Interfaz gráfica y vistas de Avalonia (MainWindow.axaml)
 └── GestorJuegos.sln # Archivo de solución principal de Visual Studio
 ```
@@ -55,7 +58,7 @@ GestorJuegos/
 3. Compilar el proyecto pulsando `F6` (o desde el menú Compilar -> Compilar solución). En este paso se restaurarán automáticamente los paquetes de NuGet necesarios.
 4. Ejecutar el programa pulsando `F5`.
 
-> **Nota:** En su primer arranque, la aplicación generará de forma automática el archivo `GestorJuegos.db` en el directorio de ejecución y populará las consolas de inicio.
+> **Nota:** En su primer arranque, la aplicación generará de forma automática el archivo `GestorJuegos.db` en el directorio de ejecución, listo para que comiences a añadir tus plataformas y juegos.
 
 ---
 
@@ -66,7 +69,8 @@ GestorJuegos/
 ---
 
 ## 📝 Próximos pasos y Mejoras (Roadmap)
-- [ ] Implementar un modo de visualización en forma de cuadrícula de imágenes.
+- [x] Implementar un modo de visualización en forma de cuadrícula de imágenes.
+- [x] Gestión interactiva de plataformas desde la UI.
 - [ ] Incorporar estadísticas de la colección (Total de juegos, Total por consola).
 - [ ] Añadir una funcionalidad de exportación / importación de la base de datos.
 - [ ] Extracción automática de información de juegos desde una API pública.
