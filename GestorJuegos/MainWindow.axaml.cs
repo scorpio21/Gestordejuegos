@@ -45,6 +45,9 @@ public partial class MainWindow : Window
         BtnDeletePlatform.Click += BtnDeletePlatform_Click;
         LstManagePlatforms.SelectionChanged += LstManagePlatforms_SelectionChanged;
 
+        BtnStatistics.Click += BtnStatistics_Click;
+        BtnCloseStatistics.Click += BtnCloseStatistics_Click;
+
         BtnCloseMessage.Click += BtnCloseMessage_Click;
     }
 
@@ -131,6 +134,22 @@ public partial class MainWindow : Window
     private void BtnCloseManagePlatforms_Click(object? sender, RoutedEventArgs e)
     {
         OverlayManagePlatforms.IsVisible = false;
+    }
+
+    private void BtnStatistics_Click(object? sender, RoutedEventArgs e)
+    {
+        var totalGames = _gameService.GetTotalGamesCount();
+        TxtTotalGames.Text = totalGames.ToString();
+
+        var stats = _gameService.GetGamesCountByPlatform();
+        LstPlatformStats.ItemsSource = stats;
+
+        OverlayStatistics.IsVisible = true;
+    }
+
+    private void BtnCloseStatistics_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayStatistics.IsVisible = false;
     }
 
     private void LstManagePlatforms_SelectionChanged(object? sender, SelectionChangedEventArgs e)

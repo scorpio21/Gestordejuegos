@@ -78,5 +78,21 @@ namespace GestorJuegos.Services
                 context.SaveChanges();
             }
         }
+
+        public int GetTotalGamesCount()
+        {
+            using var context = new AppDbContext();
+            context.Database.EnsureCreated();
+            return context.Games.Count();
+        }
+
+        public Dictionary<string, int> GetGamesCountByPlatform()
+        {
+            using var context = new AppDbContext();
+            context.Database.EnsureCreated();
+            return context.Platforms
+                .Select(p => new { p.Name, Count = p.Games.Count })
+                .ToDictionary(x => x.Name, x => x.Count);
+        }
     }
 }
