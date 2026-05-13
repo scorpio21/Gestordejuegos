@@ -102,8 +102,8 @@
                     <DockPanel>
                         <Button Name="BtnAddGame" Content="+ Añadir Nuevo Juego" DockPanel.Dock="Top" Background="#10b981" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,0,20"/>
                         
-                        <ScrollViewer>
-                            <StackPanel Name="PnlGameDetails" IsVisible="False" Spacing="15">
+                        <ScrollViewer Padding="0,0,15,0">
+                            <StackPanel Name="PnlGameDetails" IsVisible="False" Spacing="15" Margin="0,0,5,0">
                                 <TextBlock Text="Detalles del Juego" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" Foreground="#e2e8f0"/>
                                 
                                 <TextBlock Text="Nombre" Foreground="#94a3b8" FontSize="12" Margin="0,0,0,-10"/>
