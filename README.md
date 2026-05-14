@@ -95,4 +95,10 @@ Crea un archivo llamado `appsettings.json` en la misma carpeta que el ejecutable
 Obtén tus credenciales registrando una aplicación en la [Consola de Desarrolladores de Twitch](https://dev.twitch.tv/console).
 
 ---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia Pública General de GNU v3.0 (GPL-3.0). Para más detalles, consulta el archivo [LICENSE](LICENSE) incluido en este repositorio.
+
+---
 **Desarrollado con ❤️ para los amantes del coleccionismo de videojuegos.**
