@@ -82,10 +82,7 @@
                                                         <TextBlock Text="{Binding Languages}" Foreground="#94a3b8" FontSize="13"/>
                                                     </StackPanel>
                                                 </StackPanel>
-                                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="0,0,15,0">
-                                                    <Image Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="32" Height="24" Stretch="Uniform" />
-                                                    <TextBlock Text="{Binding Region}" FontSize="20" VerticalAlignment="Center" />
-                                                </StackPanel>
+                                                <Image Grid.Column="2" Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="40" Height="30" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,15,0" />
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -107,10 +104,7 @@
                                                     <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="Uniform" />
                                                 </Border>
                                                 <TextBlock Text="{Binding Name}" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                                                    <Image Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="24" Height="18" Stretch="Uniform" />
-                                                    <TextBlock Text="{Binding Region}" FontSize="16" VerticalAlignment="Center" />
-                                                </StackPanel>
+                                                <Image Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="32" Height="24" Stretch="Uniform" HorizontalAlignment="Center" />
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
