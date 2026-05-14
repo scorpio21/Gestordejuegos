@@ -9,6 +9,7 @@ namespace GestorJuegos.Models
         public string Region { get; set; } = "🇺🇸 US"; // Default to US or none
         public string Languages { get; set; } = string.Empty;
         public byte[]? Cover { get; set; }
+        public string RomPath { get; set; } = string.Empty;
         public int PlatformId { get; set; }
         public Platform Platform { get; set; } = null!;
     }

@@ -8,6 +8,21 @@ namespace GestorJuegos.Services
 {
     public class GameService
     {
+        private static bool _schemaUpdated = false;
+
+        public GameService()
+        {
+            if (!_schemaUpdated)
+            {
+                using var context = new AppDbContext();
+                context.Database.EnsureCreated();
+                try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN RomPath TEXT NOT NULL DEFAULT ''"); } catch { }
+                try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN EmulatorPath TEXT NOT NULL DEFAULT ''"); } catch { }
+                try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN LaunchArguments TEXT NOT NULL DEFAULT '\"{0}\"'"); } catch { }
+                _schemaUpdated = true;
+            }
+        }
+
         public List<Platform> GetPlatforms()
         {
             using var context = new AppDbContext();

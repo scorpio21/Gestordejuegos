@@ -6,6 +6,8 @@ namespace GestorJuegos.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string EmulatorPath { get; set; } = string.Empty;
+        public string LaunchArguments { get; set; } = "\"{0}\"";
         public List<Game> Games { get; set; } = new();
     }
 }

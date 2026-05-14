@@ -5,6 +5,7 @@ using Avalonia.Platform.Storage;
 using GestorJuegos.Models;
 using GestorJuegos.Services;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -70,6 +71,7 @@ public partial class MainWindow : Window
         BtnSaveEditPlatform.Click += BtnSaveEditPlatform_Click;
         BtnDeletePlatform.Click += BtnDeletePlatform_Click;
         LstManagePlatforms.SelectionChanged += LstManagePlatforms_SelectionChanged;
+        BtnSelectEmulator.Click += BtnSelectEmulator_Click;
 
         BtnStatistics.Click += BtnStatistics_Click;
         BtnCloseStatistics.Click += BtnCloseStatistics_Click;
@@ -84,6 +86,9 @@ public partial class MainWindow : Window
         BtnSearchIgdb.Click += BtnSearchIgdb_Click;
         BtnCancelIgdb.Click += BtnCancelIgdb_Click;
         BtnSelectIgdb.Click += BtnSelectIgdb_Click;
+
+        BtnSelectRom.Click += BtnSelectRom_Click;
+        BtnLaunchGame.Click += BtnLaunchGame_Click;
     }
 
     private void ShowMessage(string message)
@@ -533,6 +538,8 @@ public partial class MainWindow : Window
         if (LstManagePlatforms.SelectedItem is Platform platform)
         {
             TxtEditPlatformName.Text = platform.Name;
+            TxtEmulatorPath.Text = platform.EmulatorPath;
+            TxtLaunchArgs.Text = platform.LaunchArguments;
             PnlEditPlatform.IsVisible = true;
         }
     }
@@ -545,6 +552,8 @@ public partial class MainWindow : Window
             if (!string.IsNullOrEmpty(newName))
             {
                 platform.Name = newName;
+                platform.EmulatorPath = TxtEmulatorPath.Text?.Trim() ?? "";
+                platform.LaunchArguments = TxtLaunchArgs.Text?.Trim() ?? "";
                 _gameService.UpdatePlatform(platform);
                 LoadPlatforms();
                 LstManagePlatforms.ItemsSource = _gameService.GetPlatforms();
@@ -603,6 +612,7 @@ public partial class MainWindow : Window
             NumYear.Value = game.Year;
             TxtGenre.Text = game.Genre;
             TxtLanguages.Text = game.Languages;
+            TxtRomPath.Text = game.RomPath;
             
             // Set the selected region in the ComboBox
             var regionItem = CmbRegion.Items.Cast<ComboBoxItem>().FirstOrDefault(i => i.Content?.ToString() == game.Region);
@@ -636,6 +646,7 @@ public partial class MainWindow : Window
         NumYear.Value = _selectedGame.Year;
         TxtGenre.Text = string.Empty;
         TxtLanguages.Text = string.Empty;
+        TxtRomPath.Text = string.Empty;
         CmbRegion.SelectedIndex = 0;
         _currentCover = null;
         UpdateCoverImage();
@@ -654,6 +665,7 @@ public partial class MainWindow : Window
         _selectedGame.Year = (int)(NumYear.Value ?? DateTime.Now.Year);
         _selectedGame.Genre = TxtGenre.Text ?? string.Empty;
         _selectedGame.Languages = TxtLanguages.Text ?? string.Empty;
+        _selectedGame.RomPath = TxtRomPath.Text ?? string.Empty;
         _selectedGame.Region = (CmbRegion.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "🇺🇸 US";
         _selectedGame.Cover = _currentCover;
 
@@ -725,6 +737,91 @@ public partial class MainWindow : Window
         else
         {
             ImgCover.Source = null;
+        }
+    }
+
+    private async void BtnSelectEmulator_Click(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Seleccionar Emulador o Ejecutable",
+            AllowMultiple = false
+        });
+
+        if (files.Count >= 1)
+        {
+            TxtEmulatorPath.Text = files[0].Path.LocalPath;
+        }
+    }
+
+    private async void BtnSelectRom_Click(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Seleccionar Archivo de Juego / ROM",
+            AllowMultiple = false
+        });
+
+        if (files.Count >= 1)
+        {
+            TxtRomPath.Text = files[0].Path.LocalPath;
+        }
+    }
+
+    private void BtnLaunchGame_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null || string.IsNullOrEmpty(_selectedGame.RomPath))
+        {
+            ShowMessage("Por favor, asegúrate de haber configurado y guardado la ruta del juego/ROM.");
+            return;
+        }
+
+        if (!File.Exists(_selectedGame.RomPath))
+        {
+            ShowMessage("El archivo del juego no existe en la ruta especificada.");
+            return;
+        }
+
+        try
+        {
+            var platform = _selectedPlatform;
+            if (platform == null) return;
+
+            ProcessStartInfo psi = new ProcessStartInfo();
+
+            if (string.IsNullOrEmpty(platform.EmulatorPath))
+            {
+                // Launch directly with default system application or executable
+                psi.FileName = _selectedGame.RomPath;
+                psi.UseShellExecute = true;
+            }
+            else
+            {
+                if (!File.Exists(platform.EmulatorPath))
+                {
+                    ShowMessage("La ruta del emulador especificada en la plataforma no existe.");
+                    return;
+                }
+
+                // Launch using emulator
+                psi.FileName = platform.EmulatorPath;
+                
+                string args = string.IsNullOrEmpty(platform.LaunchArguments) ? "\"{0}\"" : platform.LaunchArguments;
+                psi.Arguments = args.Replace("{0}", _selectedGame.RomPath);
+                psi.UseShellExecute = false;
+            }
+
+            Process.Start(psi);
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Error al lanzar el juego: {ex.Message}");
         }
     }
 }

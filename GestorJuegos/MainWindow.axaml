@@ -157,6 +157,12 @@
                                 <TextBlock Text="Idiomas (Ej. En,Fr,Es)" Foreground="#94a3b8" FontSize="12" Margin="0,0,0,-10"/>
                                 <TextBox Name="TxtLanguages" CornerRadius="4" Background="#0f172a" BorderBrush="#334155"/>
                                 
+                                <TextBlock Text="Ruta de la ROM / Ejecutable" Foreground="#94a3b8" FontSize="12" Margin="0,5,0,-10"/>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBox Grid.Column="0" Name="TxtRomPath" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" Margin="0,0,5,0"/>
+                                    <Button Grid.Column="1" Name="BtnSelectRom" Content="..." Background="#334155" Foreground="White" CornerRadius="4" Padding="10,5"/>
+                                </Grid>
+                                
                                 <TextBlock Text="Carátula" Foreground="#94a3b8" FontSize="12" Margin="0,10,0,0"/>
                                 <Border BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Height="250" Background="#0f172a" ClipToBounds="True">
                                     <Image Name="ImgCover" Stretch="Uniform"/>
@@ -170,6 +176,7 @@
                                     <Button Grid.Column="0" Name="BtnDelete" Content="Eliminar" Margin="0,0,5,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#ef4444" Foreground="White" FontWeight="Bold" CornerRadius="4"/>
                                     <Button Grid.Column="1" Name="BtnSave" Content="Guardar" Margin="5,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="4"/>
                                 </Grid>
+                                <Button Name="BtnLaunchGame" Content="▶ JUGAR" Background="#10b981" Foreground="White" FontWeight="Bold" CornerRadius="4" Padding="10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0"/>
                             </StackPanel>
                         </ScrollViewer>
                     </DockPanel>
@@ -205,7 +212,7 @@
 
         <!-- Manage Platforms Overlay -->
         <Border Name="OverlayManagePlatforms" Background="#AA000000" IsVisible="False" ZIndex="150">
-            <Border Background="{StaticResource PanelBrush}" Width="450" Height="500" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
+            <Border Background="{StaticResource PanelBrush}" Width="450" Height="600" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
                 <DockPanel>
                     <TextBlock Text="Gestionar Plataformas" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,15" DockPanel.Dock="Top"/>
                     
@@ -217,6 +224,16 @@
                     <StackPanel Name="PnlEditPlatform" DockPanel.Dock="Bottom" IsVisible="False" Spacing="10" Margin="0,20,0,0">
                         <TextBlock Text="Editar Nombre:" Foreground="#94a3b8" FontSize="14"/>
                         <TextBox Name="TxtEditPlatformName" CornerRadius="6" Background="#0f172a" BorderBrush="#334155" FontSize="16" Padding="8"/>
+                        
+                        <TextBlock Text="Ruta del Emulador / Ejecutable:" Foreground="#94a3b8" FontSize="14" Margin="0,5,0,-5"/>
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBox Grid.Column="0" Name="TxtEmulatorPath" CornerRadius="6" Background="#0f172a" BorderBrush="#334155" Padding="8" Margin="0,0,5,0"/>
+                            <Button Grid.Column="1" Name="BtnSelectEmulator" Content="..." Background="#334155" Foreground="White" CornerRadius="6" Padding="10,5"/>
+                        </Grid>
+                        
+                        <TextBlock Text="Argumentos (usa {0} para la ROM):" Foreground="#94a3b8" FontSize="14" Margin="0,5,0,-5"/>
+                        <TextBox Name="TxtLaunchArgs" CornerRadius="6" Background="#0f172a" BorderBrush="#334155" FontSize="14" Padding="8"/>
+
                         <Grid ColumnDefinitions="*,*">
                             <Button Grid.Column="0" Name="BtnDeletePlatform" Content="Eliminar" Background="#ef4444" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="10" Margin="0,0,5,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                             <Button Grid.Column="1" Name="BtnSaveEditPlatform" Content="Guardar" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="10" Margin="5,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>

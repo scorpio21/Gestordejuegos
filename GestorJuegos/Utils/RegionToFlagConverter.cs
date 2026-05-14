@@ -16,6 +16,8 @@ namespace GestorJuegos.Utils
                 if (region.Contains("US") || region.Contains("USA")) assetName = "us.png";
                 else if (region.Contains("EU") || region.Contains("Europe")) assetName = "eu.png";
                 else if (region.Contains("JP") || region.Contains("Japan")) assetName = "jp.png";
+                else if (region.Contains("World")) assetName = "world.png";
+                else if (region.Contains("ES") || region.Contains("SP")) assetName = "sp.png";
                 
                 if (!string.IsNullOrEmpty(assetName))
                 {
