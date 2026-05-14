@@ -21,6 +21,13 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        
+        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        if (version != null)
+        {
+            Title = $"Gestor de Juegos v{version.Major}.{version.Minor}.{version.Build}";
+        }
+
         _gameService = new GameService();
         string clientId = "";
         string clientSecret = "";

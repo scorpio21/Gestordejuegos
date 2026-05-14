@@ -1,0 +1,1487 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datafile>
+  <header>
+    <name>Nintendo - Nintendo 64</name>
+    <description>Nintendo - Nintendo 64 - Datfile (5) (2026-05-10 07-04-42)</description>
+    <version>2026-05-10 07-04-42</version>
+    <date>2026-05-10 07-04-42</date>
+    <author>aci68, Arctic Circle System, Aringon, baldjared, BigFred, bikerspade, BitLooter, Blank, buckwheat, C. V. Reynolds, chillerecke, DeriLoko3, EggmanPEI, einstein95, ElBarto, FakeShemp, Gefflon, Hiccup, jimmsu, Just001Kim, kazumi213, LNRC, Madeline, MeguCocoa, MisterSheeple, Money_114, NESBrew12, nnssxx, NovaAurora, omonim2007, Powerpuff, PPLToast, Psychofox11, psykopat, rarenight, relax, Rifu, root, scorp256, sCZther, smesgr, SonGoku, Special T, TeamEurope, togemet2, UnlockerPT, xprism, xuom2</author>
+    <homepage>No-Intro</homepage>
+    <url>https://www.no-intro.org</url>
+  </header>
+  <game name="Aero Fighters Assault•Sonic Wings AssaultJP (JP, NA, PAL)">
+    <description>Aero Fighters Assault•Sonic Wings AssaultJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Aero Fighters Assault•Sonic Wings AssaultJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="AeroGauge (JP, NA, PAL)">
+    <description>AeroGauge (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="AeroGauge (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Aidyn Chronicles: The First Mage (NA, PAL)">
+    <description>Aidyn Chronicles: The First Mage (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Aidyn Chronicles: The First Mage (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Air Boarder 64 (JP, PAL)">
+    <description>Air Boarder 64 (JP, PAL)</description>
+    <category>Games</category>
+    <rom name="Air Boarder 64 (JP, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="All-Star Baseball 99 (NA, PAL)">
+    <description>All-Star Baseball 99 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="All-Star Baseball 99 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="All-Star Baseball 2000 (NA, PAL)">
+    <description>All-Star Baseball 2000 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="All-Star Baseball 2000 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="All-Star Baseball 2001 (NA)">
+    <description>All-Star Baseball 2001 (NA)</description>
+    <category>Games</category>
+    <rom name="All-Star Baseball 2001 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="All Star Tennis '99•Yannick Noah All Star Tennis '99FRA (NA, PAL)">
+    <description>All Star Tennis '99•Yannick Noah All Star Tennis '99FRA (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="All Star Tennis '99•Yannick Noah All Star Tennis '99FRA (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Armorines: Project S.W.A.R.M. (NA, PAL)">
+    <description>Armorines: Project S.W.A.R.M. (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Armorines: Project S.W.A.R.M. (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Army Men: Air Combat (NA)">
+    <description>Army Men: Air Combat (NA)</description>
+    <category>Games</category>
+    <rom name="Army Men: Air Combat (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Army Men: Sarge's Heroes (NA, PAL)">
+    <description>Army Men: Sarge's Heroes (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Army Men: Sarge's Heroes (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Army Men: Sarge's Heroes 2 (NA)">
+    <description>Army Men: Sarge's Heroes 2 (NA)</description>
+    <category>Games</category>
+    <rom name="Army Men: Sarge's Heroes 2 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Asteroids Hyper 64 (NA)">
+    <description>Asteroids Hyper 64 (NA)</description>
+    <category>Games</category>
+    <rom name="Asteroids Hyper 64 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Automobili Lamborghini•Super Speed Race 64JP (JP, NA, PAL)">
+    <description>Automobili Lamborghini•Super Speed Race 64JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Automobili Lamborghini•Super Speed Race 64JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Banjo-Kazooie•Banjo to Kazooie no DaibokenJP (JP, NA, PAL)">
+    <description>Banjo-Kazooie•Banjo to Kazooie no DaibokenJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Banjo-Kazooie•Banjo to Kazooie no DaibokenJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Banjo-Tooie•Banjo to Kazooie no Daiboken 2JP (JP, NA, PAL)">
+    <description>Banjo-Tooie•Banjo to Kazooie no Daiboken 2JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Banjo-Tooie•Banjo to Kazooie no Daiboken 2JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Bass Hunter 64 (NA, PAL)">
+    <description>Bass Hunter 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Bass Hunter 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Bass Masters 2000 (NA)">
+    <description>Bass Masters 2000 (NA)</description>
+    <category>Games</category>
+    <rom name="Bass Masters 2000 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Batman Beyond: Return of the Joker•Batman of the Future: Return of the JokerEUR (NA, PAL)">
+    <description>Batman Beyond: Return of the Joker•Batman of the Future: Return of the JokerEUR (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Batman Beyond: Return of the Joker•Batman of the Future: Return of the JokerEUR (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="BattleTanx (NA)">
+    <description>BattleTanx (NA)</description>
+    <category>Games</category>
+    <rom name="BattleTanx (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="BattleTanx: Global Assault (NA, PAL)">
+    <description>BattleTanx: Global Assault (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="BattleTanx: Global Assault (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Battlezone: Rise of the Black Dogs (NA)">
+    <description>Battlezone: Rise of the Black Dogs (NA)</description>
+    <category>Games</category>
+    <rom name="Battlezone: Rise of the Black Dogs (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Beetle Adventure Racing!•As Aventuras do FuscaBRZ•HSV Adventure RacingAUS (JP, NA, PAL)">
+    <description>Beetle Adventure Racing!•As Aventuras do FuscaBRZ•HSV Adventure RacingAUS (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Beetle Adventure Racing!•As Aventuras do FuscaBRZ•HSV Adventure RacingAUS (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Big Mountain 2000•Snow SpeederJP (JP, NA)">
+    <description>Big Mountain 2000•Snow SpeederJP (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Big Mountain 2000•Snow SpeederJP (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Bio F.R.E.A.K.S. (NA, PAL)">
+    <description>Bio F.R.E.A.K.S. (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Bio F.R.E.A.K.S. (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Blast Corps•Blast DozerJP (JP, NA, PAL)">
+    <description>Blast Corps•Blast DozerJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Blast Corps•Blast DozerJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Blues Brothers 2000 (NA, PAL)">
+    <description>Blues Brothers 2000 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Blues Brothers 2000 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Body Harvest (NA, PAL)">
+    <description>Body Harvest (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Body Harvest (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Bomberman Hero•Bomberman Hero: Millian Ojosama wo SukueJP (JP, NA, PAL)">
+    <description>Bomberman Hero•Bomberman Hero: Millian Ojosama wo SukueJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Bomberman Hero•Bomberman Hero: Millian Ojosama wo SukueJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Brunswick Circuit Pro Bowling (NA)">
+    <description>Brunswick Circuit Pro Bowling (NA)</description>
+    <category>Games</category>
+    <rom name="Brunswick Circuit Pro Bowling (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Buck Bumble (JP, NA, PAL)">
+    <description>Buck Bumble (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Buck Bumble (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="BugA Bug's Life (NA, PAL)">
+    <description>BugA Bug's Life (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="BugA Bug's Life (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Bust-A-Move '99•Bust-A-Move 3 DXEUR•Puzzle Booble 64JP (JP, NA, PAL)">
+    <description>Bust-A-Move '99•Bust-A-Move 3 DXEUR•Puzzle Booble 64JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Bust-A-Move '99•Bust-A-Move 3 DXEUR•Puzzle Booble 64JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Bust-A-Move 2: Arcade Edition (NA, PAL)">
+    <description>Bust-A-Move 2: Arcade Edition (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Bust-A-Move 2: Arcade Edition (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="California Speed (NA)">
+    <description>California Speed (NA)</description>
+    <category>Games</category>
+    <rom name="California Speed (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Carmageddon 64 (NA, PAL)">
+    <description>Carmageddon 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Carmageddon 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Castlevania 64•Akumajo Dracula MokushirokuJP (JP, NA, PAL)">
+    <description>Castlevania 64•Akumajo Dracula MokushirokuJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Castlevania 64•Akumajo Dracula MokushirokuJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Castlevania: Legacy of Darkness•Akumajo Dracula Mokushiroku Gaiden: Legend of CornellJP (JP, NA, PAL)">
+    <description>Castlevania: Legacy of Darkness•Akumajo Dracula Mokushiroku Gaiden: Legend of CornellJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Castlevania: Legacy of Darkness•Akumajo Dracula Mokushiroku Gaiden: Legend of CornellJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Chameleon Twist (JP, NA, PAL)">
+    <description>Chameleon Twist (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Chameleon Twist (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Chameleon Twist 2 (JP, NA, PAL)">
+    <description>Chameleon Twist 2 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Chameleon Twist 2 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Charlie Blast's Territory (NA, PAL)">
+    <description>Charlie Blast's Territory (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Charlie Blast's Territory (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Chopper Attack•Wild ChoppersJP (JP, NA, PAL)">
+    <description>Chopper Attack•Wild ChoppersJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Chopper Attack•Wild ChoppersJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="ClayFighter 63⅓ (NA, PAL)">
+    <description>ClayFighter 63⅓ (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="ClayFighter 63⅓ (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="ClayFighter 63 1/3 Sculptor's Cut (NA)">
+    <description>ClayFighter 63 1/3 Sculptor's Cut (NA)</description>
+    <category>Games</category>
+    <rom name="ClayFighter 63 1/3 Sculptor's Cut (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Command &amp; Conquer (NA, PAL)">
+    <description>Command &amp; Conquer (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Command &amp; Conquer (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Conker's Bad Fur Day (NA, PAL)">
+    <description>Conker's Bad Fur Day (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Conker's Bad Fur Day (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Cruis'n Exotica (NA)">
+    <description>Cruis'n Exotica (NA)</description>
+    <category>Games</category>
+    <rom name="Cruis'n Exotica (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Cruis'n USA (NA, PAL)">
+    <description>Cruis'n USA (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Cruis'n USA (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Cruis'n World (NA, PAL)">
+    <description>Cruis'n World (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Cruis'n World (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="CyberTiger (NA, PAL)">
+    <description>CyberTiger (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="CyberTiger (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Daikatana (JP, NA, PAL)">
+    <description>Daikatana (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Daikatana (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Dark Rift•Space DynamitesJP (JP, NA, PAL)">
+    <description>Dark Rift•Space DynamitesJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Dark Rift•Space DynamitesJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Destruction Derby 64 (NA, PAL)">
+    <description>Destruction Derby 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Destruction Derby 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Doom 64 (JP, NA, PAL)">
+    <description>Doom 64 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Doom 64 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Dr. Mario 64 (NA)">
+    <description>Dr. Mario 64 (NA)</description>
+    <category>Games</category>
+    <rom name="Dr. Mario 64 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Dual Heroes (JP, NA, PAL)">
+    <description>Dual Heroes (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Dual Heroes (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Duck Dodgers Starring Daffy Duck•Daffy Duck starring as Duck DodgersEUR (NA, PAL)">
+    <description>Duck Dodgers Starring Daffy Duck•Daffy Duck starring as Duck DodgersEUR (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Duck Dodgers Starring Daffy Duck•Daffy Duck starring as Duck DodgersEUR (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Duke Nukem 64 (NA, PAL)">
+    <description>Duke Nukem 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Duke Nukem 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Duke Nukem: Zero Hour (NA, PAL)">
+    <description>Duke Nukem: Zero Hour (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Duke Nukem: Zero Hour (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Earthworm Jim 3D (NA, PAL)">
+    <description>Earthworm Jim 3D (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Earthworm Jim 3D (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="ECW Hardcore Revolution (NA, PAL)">
+    <description>ECW Hardcore Revolution (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="ECW Hardcore Revolution (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Elmo's Letter Adventure (NA)">
+    <description>Elmo's Letter Adventure (NA)</description>
+    <category>Games</category>
+    <rom name="Elmo's Letter Adventure (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Elmo's Number Journey (NA)">
+    <description>Elmo's Number Journey (NA)</description>
+    <category>Games</category>
+    <rom name="Elmo's Number Journey (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Excitebike 64 (JP, NA, PAL)">
+    <description>Excitebike 64 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Excitebike 64 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Extreme-G (JP, NA, PAL)">
+    <description>Extreme-G (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Extreme-G (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Extreme-G 2 (JP, NA, PAL)">
+    <description>Extreme-G 2 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Extreme-G 2 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="F-1 World Grand Prix (JP, NA, PAL)">
+    <description>F-1 World Grand Prix (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="F-1 World Grand Prix (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="F-1 World Grand Prix II (PAL)">
+    <description>F-1 World Grand Prix II (PAL)</description>
+    <category>Games</category>
+    <rom name="F-1 World Grand Prix II (PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="F-Zero X (JP, NA, PAL)">
+    <description>F-Zero X (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="F-Zero X (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="F1 Pole Position 64•Human Grand Prix: The New GenerationJP (JP, NA, PAL)">
+    <description>F1 Pole Position 64•Human Grand Prix: The New GenerationJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="F1 Pole Position 64•Human Grand Prix: The New GenerationJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="F1 Racing Championship (PAL)">
+    <description>F1 Racing Championship (PAL)</description>
+    <category>Games</category>
+    <rom name="F1 Racing Championship (PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="FIFA 99 (NA, PAL)">
+    <description>FIFA 99 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="FIFA 99 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="FIFA: Road to World Cup 98 (JP, NA, PAL)">
+    <description>FIFA: Road to World Cup 98 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="FIFA: Road to World Cup 98 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="FIFA Soccer 64 (NA, PAL)">
+    <description>FIFA Soccer 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="FIFA Soccer 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Fighters Destiny•Fighting CupJP (JP, NA, PAL)">
+    <description>Fighters Destiny•Fighting CupJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Fighters Destiny•Fighting CupJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Fighter Destiny 2•Kakuto Densho: F-Cup ManiaxJP (JP, NA)">
+    <description>Fighter Destiny 2•Kakuto Densho: F-Cup ManiaxJP (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Fighter Destiny 2•Kakuto Densho: F-Cup ManiaxJP (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Fighting Force 64 (NA, PAL)">
+    <description>Fighting Force 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Fighting Force 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Flying Dragon•Hiryu Ken TwinJP (JP, NA, PAL)">
+    <description>Flying Dragon•Hiryu Ken TwinJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Flying Dragon•Hiryu Ken TwinJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Forsaken 64 (NA, PAL)">
+    <description>Forsaken 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Forsaken 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Fox Sports College Hoops '99 (NA)">
+    <description>Fox Sports College Hoops '99 (NA)</description>
+    <category>Games</category>
+    <rom name="Fox Sports College Hoops '99 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="G.A.S.P!! Fighters' NEXTream•Deadly ArtsNA (JP, NA, PAL)">
+    <description>G.A.S.P!! Fighters' NEXTream•Deadly ArtsNA (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="G.A.S.P!! Fighters' NEXTream•Deadly ArtsNA (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Gauntlet Legends (JP, NA, PAL)">
+    <description>Gauntlet Legends (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Gauntlet Legends (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Gex 3: Deep Cover Gecko (NA, PAL)">
+    <description>Gex 3: Deep Cover Gecko (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Gex 3: Deep Cover Gecko (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Gex 64 (NA, PAL)">
+    <description>Gex 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Gex 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Glover (NA, PAL)">
+    <description>Glover (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Glover (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Goemon's Great Adventure•Mystical Ninja 2: Starring GoemonEUR•Ganbare Goemon: Dero Dero Dochu Obake Tenko MoriJP (JP, NA, PAL)">
+    <description>Goemon's Great Adventure•Mystical Ninja 2: Starring GoemonEUR•Ganbare Goemon: Dero Dero Dochu Obake Tenko MoriJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Goemon's Great Adventure•Mystical Ninja 2: Starring GoemonEUR•Ganbare Goemon: Dero Dero Dochu Obake Tenko MoriJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Golden Nugget 64 (NA)">
+    <description>Golden Nugget 64 (NA)</description>
+    <category>Games</category>
+    <rom name="Golden Nugget 64 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="GoldenEye 007 (JP, NA, PAL)">
+    <description>GoldenEye 007 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="GoldenEye 007 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="GT 64: Championship Edition•City Tour Grandprix: Zen Nihon GT SenshukenJP (JP, NA, PAL)">
+    <description>GT 64: Championship Edition•City Tour Grandprix: Zen Nihon GT SenshukenJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="GT 64: Championship Edition•City Tour Grandprix: Zen Nihon GT SenshukenJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Harvest Moon 64•Bokujo MonogatariJP (JP, NA)">
+    <description>Harvest Moon 64•Bokujo MonogatariJP (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Harvest Moon 64•Bokujo MonogatariJP (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Hercules: The Legendary Journeys (NA, PAL)">
+    <description>Hercules: The Legendary Journeys (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Hercules: The Legendary Journeys (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="HeXen (JP, NA, PAL)">
+    <description>HeXen (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="HeXen (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Hey You, Pikachu!•Pikachu Genki DechuJP (JP, NA)">
+    <description>Hey You, Pikachu!•Pikachu Genki DechuJP (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Hey You, Pikachu!•Pikachu Genki DechuJP (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Hot Wheels Turbo Racing (NA, PAL)">
+    <description>Hot Wheels Turbo Racing (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Hot Wheels Turbo Racing (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Hybrid Heaven (JP, NA, PAL)">
+    <description>Hybrid Heaven (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Hybrid Heaven (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Hydro Thunder (NA, PAL)">
+    <description>Hydro Thunder (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Hydro Thunder (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Iggy's Reckin' Balls•Iggy Kun no Bura2PoyonJP (JP, NA, PAL)">
+    <description>Iggy's Reckin' Balls•Iggy Kun no Bura2PoyonJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Iggy's Reckin' Balls•Iggy Kun no Bura2PoyonJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Indiana Jones and the Infernal Machine (NA)">
+    <description>Indiana Jones and the Infernal Machine (NA)</description>
+    <category>Games</category>
+    <rom name="Indiana Jones and the Infernal Machine (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Indy Racing 2000 (NA)">
+    <description>Indy Racing 2000 (NA)</description>
+    <category>Games</category>
+    <rom name="Indy Racing 2000 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="International Superstar Soccer 2000•Jikkyo J-League 1999: Perfect Striker 2'JP (JP, NA, PAL)">
+    <description>International Superstar Soccer 2000•Jikkyo J-League 1999: Perfect Striker 2'JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="International Superstar Soccer 2000•Jikkyo J-League 1999: Perfect Striker 2'JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="International Superstar Soccer 98•Jikkyō World Soccer: World Cup France '98JP (JP, NA, PAL)">
+    <description>International Superstar Soccer 98•Jikkyō World Soccer: World Cup France '98JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="International Superstar Soccer 98•Jikkyō World Soccer: World Cup France '98JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="International Superstar Soccer 64•Jikkyō World Soccer 3JP (JP, NA, PAL)">
+    <description>International Superstar Soccer 64•Jikkyō World Soccer 3JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="International Superstar Soccer 64•Jikkyō World Soccer 3JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="International Superstar Soccer 64•Jikkyō World Fútbol 3JP (JP, NA, PAL)">
+    <description>International Superstar Soccer 64•Jikkyō World Fútbol 3JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="International Superstar Soccer 64•Jikkyō World Fútbol 3JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="International Track &amp; Field 2000•International Track &amp; Field: Summer GamesEUR•Ganbare! Nippon! Olympics 2000JP (JP, NA, PAL)">
+    <description>International Track &amp; Field 2000•International Track &amp; Field: Summer GamesEUR•Ganbare! Nippon! Olympics 2000JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="International Track &amp; Field 2000•International Track &amp; Field: Summer GamesEUR•Ganbare! Nippon! Olympics 2000JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Jeopardy! (NA)">
+    <description>Jeopardy! (NA)</description>
+    <category>Games</category>
+    <rom name="Jeopardy! (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Jeremy McGrath Supercross 2000 (NA, PAL)">
+    <description>Jeremy McGrath Supercross 2000 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Jeremy McGrath Supercross 2000 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Jet Force Gemini•Star TwinsJP (JP, NA, PAL)">
+    <description>Jet Force Gemini•Star TwinsJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Jet Force Gemini•Star TwinsJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Ken Griffey, Jr.'s Slugfest (NA)">
+    <description>Ken Griffey, Jr.'s Slugfest (NA)</description>
+    <category>Games</category>
+    <rom name="Ken Griffey, Jr.'s Slugfest (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Killer Instinct Gold (NA, PAL)">
+    <description>Killer Instinct Gold (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Killer Instinct Gold (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Kirby 64: The Crystal Shards•Hoshi no Kirby 64JP (JP, NA, PAL)">
+    <description>Kirby 64: The Crystal Shards•Hoshi no Kirby 64JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Kirby 64: The Crystal Shards•Hoshi no Kirby 64JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Knife Edge: Nose Gunner (JP, NA)">
+    <description>Knife Edge: Nose Gunner (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Knife Edge: Nose Gunner (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Knockout Kings 2000 (NA, PAL)">
+    <description>Knockout Kings 2000 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Knockout Kings 2000 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Kobe Bryant in NBA Courtside (NA, PAL)">
+    <description>Kobe Bryant in NBA Courtside (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Kobe Bryant in NBA Courtside (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Legend MThe Legend of Zelda: Majora's Mask (JP, NA, PAL)">
+    <description>Legend MThe Legend of Zelda: Majora's Mask (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Legend MThe Legend of Zelda: Majora's Mask (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Legend OThe Legend of Zelda: Ocarina of Time (JP, NA, PAL)">
+    <description>Legend OThe Legend of Zelda: Ocarina of Time (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Legend OThe Legend of Zelda: Ocarina of Time (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="LEGO Racers (NA, PAL)">
+    <description>LEGO Racers (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="LEGO Racers (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Lode Runner 3-D (JP, NA, PAL)">
+    <description>Lode Runner 3-D (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Lode Runner 3-D (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mace: The Dark Age (NA, PAL)">
+    <description>Mace: The Dark Age (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mace: The Dark Age (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Madden Football 64 (NA, PAL)">
+    <description>Madden Football 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Madden Football 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Madden NFL 99 (NA, PAL)">
+    <description>Madden NFL 99 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Madden NFL 99 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Madden NFL 2000 (NA)">
+    <description>Madden NFL 2000 (NA)</description>
+    <category>Games</category>
+    <rom name="Madden NFL 2000 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Madden NFL 2001 (NA)">
+    <description>Madden NFL 2001 (NA)</description>
+    <category>Games</category>
+    <rom name="Madden NFL 2001 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Madden NFL 2002 (NA)">
+    <description>Madden NFL 2002 (NA)</description>
+    <category>Games</category>
+    <rom name="Madden NFL 2002 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Magical Tetris Challenge (JP, NA, PAL)">
+    <description>Magical Tetris Challenge (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Magical Tetris Challenge (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Major League Baseball Featuring Ken Griffey, Jr. (NA, PAL)">
+    <description>Major League Baseball Featuring Ken Griffey, Jr. (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Major League Baseball Featuring Ken Griffey, Jr. (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mario Golf (JP, NA, PAL)">
+    <description>Mario Golf (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mario Golf (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mario Kart 64 (JP, NA, PAL)">
+    <description>Mario Kart 64 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mario Kart 64 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mario Party (JP, NA, PAL)">
+    <description>Mario Party (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mario Party (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mario Party 2 (JP, NA, PAL)">
+    <description>Mario Party 2 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mario Party 2 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mario Party 3 (JP, NA, PAL)">
+    <description>Mario Party 3 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mario Party 3 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mario Tennis•Mario Tennis 64JP (JP, NA, PAL)">
+    <description>Mario Tennis•Mario Tennis 64JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mario Tennis•Mario Tennis 64JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mega Man 64•Rockman Dash: Hagane no BokenshinJP (JP, NA)">
+    <description>Mega Man 64•Rockman Dash: Hagane no BokenshinJP (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Mega Man 64•Rockman Dash: Hagane no BokenshinJP (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Michael Owen's WLS 2000•Mia Hamm 64 SoccerNA•RTL World League Soccer 2000GER•Telefoot Soccer 2000FRA (NA, PAL)">
+    <description>Michael Owen's WLS 2000•Mia Hamm 64 SoccerNA•RTL World League Soccer 2000GER•Telefoot Soccer 2000FRA (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Michael Owen's WLS 2000•Mia Hamm 64 SoccerNA•RTL World League Soccer 2000GER•Telefoot Soccer 2000FRA (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mickey's Speedway USA•Mickey no Racing Challenge USAJP (JP, NA, PAL)">
+    <description>Mickey's Speedway USA•Mickey no Racing Challenge USAJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mickey's Speedway USA•Mickey no Racing Challenge USAJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Micro Machines 64 Turbo (NA, PAL)">
+    <description>Micro Machines 64 Turbo (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Micro Machines 64 Turbo (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Midway's Greatest Arcade Hits: Volume 1•Arcade's Greatest Hits 1EUR (NA, PAL)">
+    <description>Midway's Greatest Arcade Hits: Volume 1•Arcade's Greatest Hits 1EUR (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Midway's Greatest Arcade Hits: Volume 1•Arcade's Greatest Hits 1EUR (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mike Piazza's Strike Zone (NA, PAL)">
+    <description>Mike Piazza's Strike Zone (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mike Piazza's Strike Zone (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Milo's Astro Lanes (NA, PAL)">
+    <description>Milo's Astro Lanes (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Milo's Astro Lanes (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mischief Makers•Yuke Yuke!! Trouble MakersJP (JP, NA, PAL)">
+    <description>Mischief Makers•Yuke Yuke!! Trouble MakersJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mischief Makers•Yuke Yuke!! Trouble MakersJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mission: Impossible (NA, PAL)">
+    <description>Mission: Impossible (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mission: Impossible (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Monaco Grand Prix•Racing Simulation: Monaco Grand PrixEUR (NA, PAL)">
+    <description>Monaco Grand Prix•Racing Simulation: Monaco Grand PrixEUR (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Monaco Grand Prix•Racing Simulation: Monaco Grand PrixEUR (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Monopoly (NA)">
+    <description>Monopoly (NA)</description>
+    <category>Games</category>
+    <rom name="Monopoly (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Monster Truck Madness 64 (NA, PAL)">
+    <description>Monster Truck Madness 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Monster Truck Madness 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mortal Kombat 4 (NA, PAL)">
+    <description>Mortal Kombat 4 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mortal Kombat 4 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mortal Kombat Mythologies: Sub-Zero (NA, PAL)">
+    <description>Mortal Kombat Mythologies: Sub-Zero (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mortal Kombat Mythologies: Sub-Zero (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mortal Kombat Trilogy (NA, PAL)">
+    <description>Mortal Kombat Trilogy (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mortal Kombat Trilogy (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Ms. Pac-Man Maze Madness (NA)">
+    <description>Ms. Pac-Man Maze Madness (NA)</description>
+    <category>Games</category>
+    <rom name="Ms. Pac-Man Maze Madness (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Multi-Racing Championship (JP, NA, PAL)">
+    <description>Multi-Racing Championship (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Multi-Racing Championship (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Mystical Ninja Starring Goemon•Ganbare Goemon: Neo Momoyama Bakufu no OdoriJP (JP, NA, PAL)">
+    <description>Mystical Ninja Starring Goemon•Ganbare Goemon: Neo Momoyama Bakufu no OdoriJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Mystical Ninja Starring Goemon•Ganbare Goemon: Neo Momoyama Bakufu no OdoriJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Nagano Winter Olympics '98•Hyper Olympics in NaganoJP (JP, NA, PAL)">
+    <description>Nagano Winter Olympics '98•Hyper Olympics in NaganoJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Nagano Winter Olympics '98•Hyper Olympics in NaganoJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Namco Museum 64 (NA)">
+    <description>Namco Museum 64 (NA)</description>
+    <category>Games</category>
+    <rom name="Namco Museum 64 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NASCAR 99 (NA, PAL)">
+    <description>NASCAR 99 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NASCAR 99 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NASCAR 2000 (NA)">
+    <description>NASCAR 2000 (NA)</description>
+    <category>Games</category>
+    <rom name="NASCAR 2000 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NBA Courtside 2: Featuring Kobe Bryant (NA)">
+    <description>NBA Courtside 2: Featuring Kobe Bryant (NA)</description>
+    <category>Games</category>
+    <rom name="NBA Courtside 2: Featuring Kobe Bryant (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NBA Hangtime (NA, PAL)">
+    <description>NBA Hangtime (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NBA Hangtime (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NBA In The Zone '98•NBA Pro '98EUR (JP, NA, PAL)">
+    <description>NBA In The Zone '98•NBA Pro '98EUR (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NBA In The Zone '98•NBA Pro '98EUR (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NBA In The Zone '99•NBA Pro '99EUR•NBA in the Zone 2JP (JP, NA, PAL)">
+    <description>NBA In The Zone '99•NBA Pro '99EUR•NBA in the Zone 2JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NBA In The Zone '99•NBA Pro '99EUR•NBA in the Zone 2JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NBA In The Zone 2000 (NA, PAL)">
+    <description>NBA In The Zone 2000 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NBA In The Zone 2000 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NBA Jam '99 (NA, PAL)">
+    <description>NBA Jam '99 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NBA Jam '99 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NBA Jam 2000 (NA, PAL)">
+    <description>NBA Jam 2000 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NBA Jam 2000 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NBA Live '99 (NA, PAL)">
+    <description>NBA Live '99 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NBA Live '99 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NBA Live 2000 (NA, PAL)">
+    <description>NBA Live 2000 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NBA Live 2000 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NBA Showtime: NBA on NBC (NA)">
+    <description>NBA Showtime: NBA on NBC (NA)</description>
+    <category>Games</category>
+    <rom name="NBA Showtime: NBA on NBC (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="New TThe New Tetris (NA, PAL)">
+    <description>New TThe New Tetris (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="New TThe New Tetris (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NFL Blitz (NA, PAL)">
+    <description>NFL Blitz (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NFL Blitz (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NFL Blitz 2000 (NA)">
+    <description>NFL Blitz 2000 (NA)</description>
+    <category>Games</category>
+    <rom name="NFL Blitz 2000 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NFL Blitz 2001 (NA)">
+    <description>NFL Blitz 2001 (NA)</description>
+    <category>Games</category>
+    <rom name="NFL Blitz 2001 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NFL Blitz Special Edition (NA)">
+    <description>NFL Blitz Special Edition (NA)</description>
+    <category>Games</category>
+    <rom name="NFL Blitz Special Edition (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NFL Quarterback Club '98 (NA, PAL)">
+    <description>NFL Quarterback Club '98 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NFL Quarterback Club '98 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NFL Quarterback Club '99 (NA, PAL)">
+    <description>NFL Quarterback Club '99 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NFL Quarterback Club '99 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NFL Quarterback Club 2000 (NA, PAL)">
+    <description>NFL Quarterback Club 2000 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NFL Quarterback Club 2000 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NFL Quarterback Club 2001 (NA)">
+    <description>NFL Quarterback Club 2001 (NA)</description>
+    <category>Games</category>
+    <rom name="NFL Quarterback Club 2001 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NHL 99 (NA, PAL)">
+    <description>NHL 99 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NHL 99 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NHL Blades of Steel '99•NHL Pro '99EUR (JP, NA, PAL)">
+    <description>NHL Blades of Steel '99•NHL Pro '99EUR (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NHL Blades of Steel '99•NHL Pro '99EUR (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NHL Breakaway '98 (NA, PAL)">
+    <description>NHL Breakaway '98 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NHL Breakaway '98 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="NHL Breakaway '99 (NA, PAL)">
+    <description>NHL Breakaway '99 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="NHL Breakaway '99 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Nightmare Creatures (NA)">
+    <description>Nightmare Creatures (NA)</description>
+    <category>Games</category>
+    <rom name="Nightmare Creatures (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Nuclear Strike 64 (NA, PAL)">
+    <description>Nuclear Strike 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Nuclear Strike 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Off Road Challenge (NA, PAL)">
+    <description>Off Road Challenge (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Off Road Challenge (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Ogre Battle 64: Person of Lordly Caliber (JP, NA)">
+    <description>Ogre Battle 64: Person of Lordly Caliber (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Ogre Battle 64: Person of Lordly Caliber (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Olympic Hockey Nagano '98 (JP, NA, PAL)">
+    <description>Olympic Hockey Nagano '98 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Olympic Hockey Nagano '98 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Paper Mario•Mario StoryJP (JP, NA, PAL)">
+    <description>Paper Mario•Mario StoryJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Paper Mario•Mario StoryJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Paperboy 64 (NA, PAL)">
+    <description>Paperboy 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Paperboy 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Penny Racers•Choro Q 64JP (JP, NA, PAL)">
+    <description>Penny Racers•Choro Q 64JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Penny Racers•Choro Q 64JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Perfect Dark (JP, NA, PAL)">
+    <description>Perfect Dark (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Perfect Dark (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="PGA European Tour•PGA European Tour Golf EUR (NA, PAL)">
+    <description>PGA European Tour•PGA European Tour Golf EUR (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="PGA European Tour•PGA European Tour Golf EUR (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Pilotwings 64 (JP, NA, PAL)">
+    <description>Pilotwings 64 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Pilotwings 64 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Pokémon Puzzle League (NA, PAL)">
+    <description>Pokémon Puzzle League (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Pokémon Puzzle League (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Pokémon Snap•Pocket Monsters SnapJP (JP, NA, PAL)">
+    <description>Pokémon Snap•Pocket Monsters SnapJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Pokémon Snap•Pocket Monsters SnapJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Pokémon Stadium •Pocket MonstersJP and, •Pocket Monsters Stadium 2JP (JP, NA, PAL)">
+    <description>Pokémon Stadium •Pocket MonstersJP and, •Pocket Monsters Stadium 2JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Pokémon Stadium •Pocket MonstersJP and, •Pocket Monsters Stadium 2JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Pokémon Stadium 2•Pocket Monsters Stadium: Kin GinJP (JP, NA, PAL)">
+    <description>Pokémon Stadium 2•Pocket Monsters Stadium: Kin GinJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Pokémon Stadium 2•Pocket Monsters Stadium: Kin GinJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Polaris SnoCross (NA)">
+    <description>Polaris SnoCross (NA)</description>
+    <category>Games</category>
+    <rom name="Polaris SnoCross (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Power Rangers Lightspeed Rescue (NA, PAL)">
+    <description>Power Rangers Lightspeed Rescue (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Power Rangers Lightspeed Rescue (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="PowerpThe Powerpuff Girls: Chemical X-traction (NA)">
+    <description>PowerpThe Powerpuff Girls: Chemical X-traction (NA)</description>
+    <category>Games</category>
+    <rom name="PowerpThe Powerpuff Girls: Chemical X-traction (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Premier Manager 64 (PAL)">
+    <description>Premier Manager 64 (PAL)</description>
+    <category>Games</category>
+    <rom name="Premier Manager 64 (PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Quake 64 (NA, PAL)">
+    <description>Quake 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Quake 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Quake II (NA, PAL)">
+    <description>Quake II (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Quake II (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Quest 64•Holy Magic CenturyEUR•Eltale MonstersJP (JP, NA, PAL)">
+    <description>Quest 64•Holy Magic CenturyEUR•Eltale MonstersJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Quest 64•Holy Magic CenturyEUR•Eltale MonstersJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rainbow Six (NA, PAL)">
+    <description>Rainbow Six (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Rainbow Six (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rakuga Kids (JP, PAL)">
+    <description>Rakuga Kids (JP, PAL)</description>
+    <category>Games</category>
+    <rom name="Rakuga Kids (JP, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rally Challenge 2000•Rally '99JP (JP, NA)">
+    <description>Rally Challenge 2000•Rally '99JP (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Rally Challenge 2000•Rally '99JP (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rampage 2: Universal Tour (NA, PAL)">
+    <description>Rampage 2: Universal Tour (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Rampage 2: Universal Tour (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rampage World Tour (NA, PAL)">
+    <description>Rampage World Tour (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Rampage World Tour (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rat Attack! (NA, PAL)">
+    <description>Rat Attack! (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Rat Attack! (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rayman 2: The Great Escape (NA, PAL)">
+    <description>Rayman 2: The Great Escape (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Rayman 2: The Great Escape (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Razor Freestyle Scooter (NA)">
+    <description>Razor Freestyle Scooter (NA)</description>
+    <category>Games</category>
+    <rom name="Razor Freestyle Scooter (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Re-Volt (NA, PAL)">
+    <description>Re-Volt (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Re-Volt (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Ready 2 Rumble Boxing (NA, PAL)">
+    <description>Ready 2 Rumble Boxing (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Ready 2 Rumble Boxing (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Ready 2 Rumble Boxing: Round 2 (NA)">
+    <description>Ready 2 Rumble Boxing: Round 2 (NA)</description>
+    <category>Games</category>
+    <rom name="Ready 2 Rumble Boxing: Round 2 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Resident Evil 2•Biohazard 2JP (JP, NA, PAL)">
+    <description>Resident Evil 2•Biohazard 2JP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Resident Evil 2•Biohazard 2JP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Ridge Racer 64 (NA, PAL)">
+    <description>Ridge Racer 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Ridge Racer 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Road Rash 64 (NA, PAL)">
+    <description>Road Rash 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Road Rash 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Roadsters (NA, PAL)">
+    <description>Roadsters (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Roadsters (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Robotron 64 (NA, PAL)">
+    <description>Robotron 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Robotron 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rocket: Robot on Wheels (NA, PAL)">
+    <description>Rocket: Robot on Wheels (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Rocket: Robot on Wheels (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rugrats in Paris: The Movie (NA, PAL)">
+    <description>Rugrats in Paris: The Movie (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Rugrats in Paris: The Movie (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rugrats: Scavenger Hunt•Rugrats: Treasure HuntEUR (NA, PAL)">
+    <description>Rugrats: Scavenger Hunt•Rugrats: Treasure HuntEUR (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Rugrats: Scavenger Hunt•Rugrats: Treasure HuntEUR (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Rush 2: Extreme Racing USA (NA, PAL)">
+    <description>Rush 2: Extreme Racing USA (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Rush 2: Extreme Racing USA (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="S.C.A.R.S. (NA, PAL)">
+    <description>S.C.A.R.S. (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="S.C.A.R.S. (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="San Francisco Rush (NA, PAL)">
+    <description>San Francisco Rush (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="San Francisco Rush (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="San Francisco Rush 2049 (NA, PAL)">
+    <description>San Francisco Rush 2049 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="San Francisco Rush 2049 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Scooby Doo! Classic Creep Capers (NA, PAL)">
+    <description>Scooby Doo! Classic Creep Capers (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Scooby Doo! Classic Creep Capers (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Shadow Man (NA, PAL, BRZ)">
+    <description>Shadow Man (NA, PAL, BRZ)</description>
+    <category>Games</category>
+    <rom name="Shadow Man (NA, PAL, BRZ).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Shadowgate 64: Trials of the Four Towers (JP, NA, PAL)">
+    <description>Shadowgate 64: Trials of the Four Towers (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Shadowgate 64: Trials of the Four Towers (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Snowboard Kids (JP, NA, PAL)">
+    <description>Snowboard Kids (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Snowboard Kids (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Snowboard Kids 2•Chō Snowboard KidsJP (JP, NA, PAL)">
+    <description>Snowboard Kids 2•Chō Snowboard KidsJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Snowboard Kids 2•Chō Snowboard KidsJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="South Park (NA, PAL, BRZ)">
+    <description>South Park (NA, PAL, BRZ)</description>
+    <category>Games</category>
+    <rom name="South Park (NA, PAL, BRZ).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="South Park Rally (NA, PAL)">
+    <description>South Park Rally (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="South Park Rally (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="South Park: Chef's Luv Shack (NA, PAL)">
+    <description>South Park: Chef's Luv Shack (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="South Park: Chef's Luv Shack (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Space Invaders (NA)">
+    <description>Space Invaders (NA)</description>
+    <category>Games</category>
+    <rom name="Space Invaders (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Space Station Silicon Valley (NA, PAL)">
+    <description>Space Station Silicon Valley (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Space Station Silicon Valley (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Spider-Man (NA)">
+    <description>Spider-Man (NA)</description>
+    <category>Games</category>
+    <rom name="Spider-Man (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Star Fox 64•Lylat Wars EUR (JP, NA, PAL)">
+    <description>Star Fox 64•Lylat Wars EUR (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Star Fox 64•Lylat Wars EUR (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Star Soldier: Vanishing Earth (JP, NA)">
+    <description>Star Soldier: Vanishing Earth (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Star Soldier: Vanishing Earth (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Star Wars: Episode I: Battle for Naboo (NA, PAL)">
+    <description>Star Wars: Episode I: Battle for Naboo (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Star Wars: Episode I: Battle for Naboo (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Star Wars Episode I: Racer (JP, NA, PAL)">
+    <description>Star Wars Episode I: Racer (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Star Wars Episode I: Racer (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Star Wars: Rogue Squadron•Star Wars: Shutsugeki! Rogue ChutaiJP (JP, NA, PAL)">
+    <description>Star Wars: Rogue Squadron•Star Wars: Shutsugeki! Rogue ChutaiJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Star Wars: Rogue Squadron•Star Wars: Shutsugeki! Rogue ChutaiJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Star Wars: Shadows of the Empire (JP, NA, PAL)">
+    <description>Star Wars: Shadows of the Empire (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Star Wars: Shadows of the Empire (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="StarCraft 64 (NA, PAL)">
+    <description>StarCraft 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="StarCraft 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Starshot: Space Circus Fever (NA, PAL)">
+    <description>Starshot: Space Circus Fever (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Starshot: Space Circus Fever (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Stunt Racer 64 (NA)">
+    <description>Stunt Racer 64 (NA)</description>
+    <category>Games</category>
+    <rom name="Stunt Racer 64 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Super Bowling (JP, NA)">
+    <description>Super Bowling (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Super Bowling (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Super Mario 64 (JP, NA, PAL)">
+    <description>Super Mario 64 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Super Mario 64 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Super Smash Bros.•Dairantō Smash BrothersJP (JP, NA, PAL)">
+    <description>Super Smash Bros.•Dairantō Smash BrothersJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Super Smash Bros.•Dairantō Smash BrothersJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Supercross 2000 (NA, PAL)">
+    <description>Supercross 2000 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Supercross 2000 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Superman 64 (NA, PAL)">
+    <description>Superman 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Superman 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Taz Express (PAL)">
+    <description>Taz Express (PAL)</description>
+    <category>Games</category>
+    <rom name="Taz Express (PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Tetrisphere (NA, PAL)">
+    <description>Tetrisphere (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Tetrisphere (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Tigger's Honey Hunt (NA, PAL)">
+    <description>Tigger's Honey Hunt (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Tigger's Honey Hunt (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Tom &amp; Jerry in Fists of Furry (NA, PAL)">
+    <description>Tom &amp; Jerry in Fists of Furry (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Tom &amp; Jerry in Fists of Furry (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Tonic Trouble (NA, PAL)">
+    <description>Tonic Trouble (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Tonic Trouble (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Tony Hawk's Pro Skater•Tony Hawk's SkateboardingEUR (NA, PAL)">
+    <description>Tony Hawk's Pro Skater•Tony Hawk's SkateboardingEUR (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Tony Hawk's Pro Skater•Tony Hawk's SkateboardingEUR (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Tony Hawk's Pro Skater 2 (NA, PAL)">
+    <description>Tony Hawk's Pro Skater 2 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Tony Hawk's Pro Skater 2 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Tony Hawk's Pro Skater 3 (NA)">
+    <description>Tony Hawk's Pro Skater 3 (NA)</description>
+    <category>Games</category>
+    <rom name="Tony Hawk's Pro Skater 3 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Top Gear Hyper Bike (JP, NA, PAL)">
+    <description>Top Gear Hyper Bike (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Top Gear Hyper Bike (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Top Gear Overdrive (JP, NA, PAL)">
+    <description>Top Gear Overdrive (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Top Gear Overdrive (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Top Gear Rally (JP, NA, PAL)">
+    <description>Top Gear Rally (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Top Gear Rally (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Top Gear Rally 2 (JP, NA, PAL)">
+    <description>Top Gear Rally 2 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Top Gear Rally 2 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Toy Story 2: Buzz Lightyear to the Rescue (NA, PAL)">
+    <description>Toy Story 2: Buzz Lightyear to the Rescue (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Toy Story 2: Buzz Lightyear to the Rescue (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Transformers: Beast Wars Transmetals•Transformers: Beast Wars Metals 64JP (JP, NA)">
+    <description>Transformers: Beast Wars Transmetals•Transformers: Beast Wars Metals 64JP (JP, NA)</description>
+    <category>Games</category>
+    <rom name="Transformers: Beast Wars Transmetals•Transformers: Beast Wars Metals 64JP (JP, NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Triple Play 2000 (NA)">
+    <description>Triple Play 2000 (NA)</description>
+    <category>Games</category>
+    <rom name="Triple Play 2000 (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Turok: Dinosaur Hunter•Turok: Jiku SenshiJP (JP, NA, PAL)">
+    <description>Turok: Dinosaur Hunter•Turok: Jiku SenshiJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Turok: Dinosaur Hunter•Turok: Jiku SenshiJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Turok 2: Seeds of Evil•Violence Killer: Turok New GenerationJP (JP, NA, PAL)">
+    <description>Turok 2: Seeds of Evil•Violence Killer: Turok New GenerationJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Turok 2: Seeds of Evil•Violence Killer: Turok New GenerationJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Turok 3: Shadow of Oblivion (NA, PAL)">
+    <description>Turok 3: Shadow of Oblivion (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Turok 3: Shadow of Oblivion (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Turok: Rage Wars (NA, PAL)">
+    <description>Turok: Rage Wars (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Turok: Rage Wars (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Twisted Edge Extreme Snowboarding•King Hill 64: Extreme SnowboardingJP (JP, NA, PAL)">
+    <description>Twisted Edge Extreme Snowboarding•King Hill 64: Extreme SnowboardingJP (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Twisted Edge Extreme Snowboarding•King Hill 64: Extreme SnowboardingJP (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="V-Rally Edition '99 (JP, NA, PAL)">
+    <description>V-Rally Edition '99 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="V-Rally Edition '99 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Vigilante 8 (NA, PAL)">
+    <description>Vigilante 8 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Vigilante 8 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Vigilante 8: 2nd Offense (NA, PAL)">
+    <description>Vigilante 8: 2nd Offense (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Vigilante 8: 2nd Offense (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Virtual Chess 64 (NA, PAL)">
+    <description>Virtual Chess 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Virtual Chess 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Virtual Pool 64 (NA, PAL)">
+    <description>Virtual Pool 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Virtual Pool 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Waialae Country Club: True Golf Classics (JP, NA, PAL)">
+    <description>Waialae Country Club: True Golf Classics (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Waialae Country Club: True Golf Classics (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="War Gods (NA, PAL)">
+    <description>War Gods (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="War Gods (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Wave Race 64 (JP, NA, PAL)">
+    <description>Wave Race 64 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Wave Race 64 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Wayne Gretzky's 3D Hockey (JP, NA, PAL)">
+    <description>Wayne Gretzky's 3D Hockey (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Wayne Gretzky's 3D Hockey (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Wayne Gretzky's 3D Hockey '98 (NA, PAL)">
+    <description>Wayne Gretzky's 3D Hockey '98 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Wayne Gretzky's 3D Hockey '98 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="WCW Backstage Assault (NA)">
+    <description>WCW Backstage Assault (NA)</description>
+    <category>Games</category>
+    <rom name="WCW Backstage Assault (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="WCW Mayhem (NA, PAL)">
+    <description>WCW Mayhem (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="WCW Mayhem (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="WCW Nitro (NA)">
+    <description>WCW Nitro (NA)</description>
+    <category>Games</category>
+    <rom name="WCW Nitro (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="WCW vs. nWo: World Tour (NA, PAL)">
+    <description>WCW vs. nWo: World Tour (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="WCW vs. nWo: World Tour (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="WCW/nWo Revenge (NA, PAL)">
+    <description>WCW/nWo Revenge (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="WCW/nWo Revenge (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Wetrix (JP, NA, PAL)">
+    <description>Wetrix (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Wetrix (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Wheel of Fortune (NA)">
+    <description>Wheel of Fortune (NA)</description>
+    <category>Games</category>
+    <rom name="Wheel of Fortune (NA).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="WinBack•Operation: WinbackEUR (JP, NA, PAL)">
+    <description>WinBack•Operation: WinbackEUR (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="WinBack•Operation: WinbackEUR (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Wipeout 64 (NA, PAL)">
+    <description>Wipeout 64 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Wipeout 64 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="World Cup 98 (NA, PAL)">
+    <description>World Cup 98 (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="World Cup 98 (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="World Driver Championship (NA, PAL)">
+    <description>World Driver Championship (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="World Driver Championship (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="World IsThe World Is Not Enough (NA, PAL)">
+    <description>World IsThe World Is Not Enough (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="World IsThe World Is Not Enough (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Worms Armageddon (NA, PAL)">
+    <description>Worms Armageddon (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Worms Armageddon (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="WWF Attitude (NA, PAL)">
+    <description>WWF Attitude (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="WWF Attitude (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="WWF No Mercy (NA, PAL)">
+    <description>WWF No Mercy (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="WWF No Mercy (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="WWF War Zone (NA, PAL)">
+    <description>WWF War Zone (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="WWF War Zone (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="WWF WrestleMania 2000 (JP, NA, PAL)">
+    <description>WWF WrestleMania 2000 (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="WWF WrestleMania 2000 (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Xena: Warrior Princess: The Talisman of Fate (NA, PAL)">
+    <description>Xena: Warrior Princess: The Talisman of Fate (NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Xena: Warrior Princess: The Talisman of Fate (NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+  <game name="Yoshi's Story (JP, NA, PAL)">
+    <description>Yoshi's Story (JP, NA, PAL)</description>
+    <category>Games</category>
+    <rom name="Yoshi's Story (JP, NA, PAL).z64" size="" crc="" md5="" sha1="" />
+  </game>
+</datafile>
