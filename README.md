@@ -16,6 +16,7 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 - Añadidos iconos de aplicación y ventana.
 - Añadida lectura automática de la versión para la barra de título de la ventana.
 - **Nuevo:** Importar Formato (.XML , .DAT) - Importar catálogos completos en formato XML (No-Intro / DAT) (mira Issue #1).
+- **Nuevo:** Auto-descarga masiva de carátulas (Scraping en lote) y actualización de metadatos (mira Issue #2).
 
 ---
 

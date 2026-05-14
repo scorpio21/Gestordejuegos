@@ -77,6 +77,7 @@ public partial class MainWindow : Window
         MenuExportDB.Click += MenuExportDB_Click;
         MenuImportDB.Click += MenuImportDB_Click;
         MenuImportDat.Click += MenuImportDat_Click;
+        MenuBatchScrape.Click += MenuBatchScrape_Click;
 
         BtnCloseMessage.Click += BtnCloseMessage_Click;
         
@@ -272,6 +273,100 @@ public partial class MainWindow : Window
                 ShowMessage($"Error al importar: {ex.Message}. Asegúrese de no tener otras aplicaciones bloqueando el archivo.");
             }
         }
+    }
+
+    private async void MenuBatchScrape_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedPlatform == null)
+        {
+            ShowMessage("Por favor, selecciona primero la plataforma a la que quieres descargar carátulas.");
+            return;
+        }
+
+        var gamesWithoutCover = _gameService.GetGamesByPlatform(_selectedPlatform.Id)
+                                            .Where(g => g.Cover == null || g.Cover.Length == 0)
+                                            .ToList();
+
+        if (gamesWithoutCover.Count == 0)
+        {
+            ShowMessage("Todos los juegos de esta plataforma ya tienen carátula.");
+            return;
+        }
+
+        ShowMessage($"Iniciando descarga para {gamesWithoutCover.Count} juegos...");
+        BtnCloseMessage.IsEnabled = false; // Deshabilitar para no cerrar mientras carga
+        
+        await System.Threading.Tasks.Task.Run(async () =>
+        {
+            int successCount = 0;
+            for (int i = 0; i < gamesWithoutCover.Count; i++)
+            {
+                var game = gamesWithoutCover[i];
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    TxtMessageContent.Text = $"Buscando carátula para '{game.Name}' ({i + 1}/{gamesWithoutCover.Count})...";
+                });
+
+                try
+                {
+                    var results = await _igdbService.SearchGamesAsync(game.Name);
+                    var match = results.FirstOrDefault(r => !string.IsNullOrEmpty(r.CoverUrl));
+                    
+                    if (match != null)
+                    {
+                        var coverData = await _igdbService.DownloadCoverAsync(match.CoverUrl);
+                        if (coverData != null && coverData.Length > 0)
+                        {
+                            game.Cover = coverData;
+                            
+                            // Comprobar y actualizar metadatos si faltan o tienen valores por defecto
+                            if (match.Year.HasValue && (game.Year == DateTime.Now.Year || game.Year == 0))
+                            {
+                                game.Year = match.Year.Value;
+                            }
+                            
+                            if (!string.IsNullOrEmpty(match.Genre) && string.IsNullOrEmpty(game.Genre))
+                            {
+                                game.Genre = match.Genre;
+                            }
+                            
+                            // Guardar en la DB usando un nuevo contexto por ser asíncrono
+                            using (var context = new GestorJuegos.Data.AppDbContext())
+                            {
+                                context.Games.Update(game);
+                                context.SaveChanges();
+                            }
+                            
+                            successCount++;
+                        }
+                    }
+                    
+                    // Pequeña pausa para no saturar la API (Rate limit es 4 peticiones por segundo en Twitch/IGDB)
+                    await System.Threading.Tasks.Task.Delay(300); 
+                }
+                catch
+                {
+                    // Ignorar errores individuales para no detener el lote
+                }
+            }
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                BtnCloseMessage.IsEnabled = true;
+                LoadGames(); // Actualizar la vista
+                if (_selectedGame != null && _selectedGame.Id != 0)
+                {
+                    // Refrescar carátula si el juego estaba seleccionado
+                    var updatedGame = gamesWithoutCover.FirstOrDefault(g => g.Id == _selectedGame.Id);
+                    if (updatedGame != null)
+                    {
+                        _currentCover = updatedGame.Cover;
+                        UpdateCoverImage();
+                    }
+                }
+                ShowMessage($"¡Proceso completado! Se descargaron {successCount} carátulas de {gamesWithoutCover.Count} juegos faltantes.");
+            });
+        });
     }
 
     private async void MenuImportDat_Click(object? sender, RoutedEventArgs e)

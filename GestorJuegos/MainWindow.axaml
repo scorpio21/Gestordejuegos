@@ -28,6 +28,11 @@
                             <MenuItem Header="Plataformas ⏷" Name="MenuPlataformas" FontSize="14" Foreground="#cbd5e1"/>
                         </Menu>
                         <Menu Background="Transparent">
+                            <MenuItem Name="MenuHerramientas" Header="🛠️ Herramientas" FontSize="14" Foreground="#cbd5e1">
+                                <MenuItem Name="MenuBatchScrape" Header="Auto-descargar carátulas faltantes"/>
+                            </MenuItem>
+                        </Menu>
+                        <Menu Background="Transparent">
                             <MenuItem Name="MenuRespaldos" Header="💾 Respaldos" FontSize="14" Foreground="#cbd5e1">
                                 <MenuItem Name="MenuExportDB" Header="Exportar Base de Datos"/>
                                 <MenuItem Name="MenuImportDB" Header="Importar Base de Datos"/>
