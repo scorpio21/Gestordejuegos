@@ -32,6 +32,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="img\**\*" />
+    <AvaloniaResource Include="img\Banderas\eu.png" />
+    <AvaloniaResource Include="img\Banderas\us.png" />
+    <AvaloniaResource Include="img\Banderas\jp.png" />
+    <AvaloniaResource Include="img\Banderas\sp.png" />
+    <AvaloniaResource Include="img\Banderas\world.png" />
+    <AvaloniaResource Include="img\icono.ico" />
+    <AvaloniaResource Include="img\icono.png" />
+    <AvaloniaResource Include="img\iconoventana.png" />
   </ItemGroup>
 </Project>
