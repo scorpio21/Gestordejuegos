@@ -855,6 +855,7 @@ public partial class MainWindow : Window
 
                 logLines.Add("EmulatorPath OK.");
                 psi.FileName = platform.EmulatorPath;
+                psi.WorkingDirectory = System.IO.Path.GetDirectoryName(platform.EmulatorPath) ?? string.Empty;
                 
                 string args = string.IsNullOrEmpty(platform.LaunchArguments) ? "\"{0}\"" : platform.LaunchArguments;
                 logLines.Add($"Args base: {args}");
