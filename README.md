@@ -9,6 +9,16 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ---
 
+## 🚀 Registro de Cambios (Changelog)
+
+**Version 1.0.0 (14-05-2026)**
+- Integración con API de IGDB para descarga automática de metadatos y carátulas.
+- Añadidos iconos de aplicación y ventana.
+- Añadida lectura automática de la versión para la barra de título de la ventana.
+- **Nuevo:** Importar Formato (.XML , .DAT) - Importar catálogos completos en formato XML (No-Intro / DAT) (mira Issue #1).
+
+---
+
 ## ✨ Características Principales
 
 - **Gestión por Plataformas Dinámica:** Crea, edita y elimina tus propias plataformas (PlayStation, Super Nintendo, etc.) desde un menú de gestión interactivo.

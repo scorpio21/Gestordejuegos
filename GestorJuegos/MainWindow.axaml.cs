@@ -7,6 +7,7 @@ using GestorJuegos.Services;
 using System;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace GestorJuegos;
 
@@ -75,6 +76,7 @@ public partial class MainWindow : Window
 
         MenuExportDB.Click += MenuExportDB_Click;
         MenuImportDB.Click += MenuImportDB_Click;
+        MenuImportDat.Click += MenuImportDat_Click;
 
         BtnCloseMessage.Click += BtnCloseMessage_Click;
         
@@ -268,6 +270,98 @@ public partial class MainWindow : Window
             catch (Exception ex)
             {
                 ShowMessage($"Error al importar: {ex.Message}. Asegúrese de no tener otras aplicaciones bloqueando el archivo.");
+            }
+        }
+    }
+
+    private async void MenuImportDat_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedPlatform == null)
+        {
+            ShowMessage("Por favor, selecciona primero la plataforma a la que quieres importar los juegos en el menú superior.");
+            return;
+        }
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Importar archivo DAT/XML de No-Intro",
+            AllowMultiple = false,
+            FileTypeFilter = new[] { 
+                new FilePickerFileType("Archivos XML/DAT") { Patterns = new[] { "*.xml", "*.dat" } }
+            }
+        });
+
+        if (files.Count > 0)
+        {
+            try
+            {
+                var file = files[0];
+                ShowMessage("Importando juegos, por favor espera...");
+                
+                await System.Threading.Tasks.Task.Run(async () =>
+                {
+                    using var stream = await file.OpenReadAsync();
+                    var doc = XDocument.Load(stream);
+                    
+                    int count = 0;
+                    var games = doc.Descendants("game");
+                    var newGames = new System.Collections.Generic.List<Game>();
+                    
+                    foreach (var gameNode in games)
+                    {
+                        string name = gameNode.Attribute("name")?.Value ?? "";
+                        if (string.IsNullOrEmpty(name)) continue;
+
+                        string region = "🌎 World";
+                        if (name.Contains("(JP") || name.Contains("(Japan")) region = "🇯🇵 JP";
+                        else if (name.Contains("(US") || name.Contains("(USA")) region = "🇺🇸 US";
+                        else if (name.Contains("(EU") || name.Contains("(Europe")) region = "🇪🇺 EU";
+
+                        string cleanName = name;
+                        int bracketIndex = name.IndexOf('(');
+                        if (bracketIndex > 0)
+                        {
+                            cleanName = name.Substring(0, bracketIndex).Trim();
+                        }
+                        
+                        if (cleanName.Contains("•"))
+                        {
+                            cleanName = cleanName.Split('•')[0].Trim();
+                        }
+
+                        newGames.Add(new Game
+                        {
+                            PlatformId = _selectedPlatform.Id,
+                            Name = cleanName,
+                            Region = region,
+                            Year = DateTime.Now.Year
+                        });
+                    }
+
+                    using (var context = new GestorJuegos.Data.AppDbContext())
+                    {
+                        context.Games.AddRange(newGames);
+                        context.SaveChanges();
+                    }
+                    
+                    count = newGames.Count;
+
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        LoadGames();
+                        ShowMessage($"¡Importación completada! Se añadieron {count} juegos.");
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    ShowMessage($"Error al importar el archivo: {ex.Message}");
+                });
             }
         }
     }

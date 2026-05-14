@@ -31,6 +31,8 @@
                             <MenuItem Name="MenuRespaldos" Header="💾 Respaldos" FontSize="14" Foreground="#cbd5e1">
                                 <MenuItem Name="MenuExportDB" Header="Exportar Base de Datos"/>
                                 <MenuItem Name="MenuImportDB" Header="Importar Base de Datos"/>
+                                <Separator />
+                                <MenuItem Name="MenuImportDat" Header="Importar Formato (.XML, .DAT)"/>
                             </MenuItem>
                         </Menu>
                         <Button Name="BtnStatistics" Content="📊 Estadísticas" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
