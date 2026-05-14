@@ -776,52 +776,105 @@ public partial class MainWindow : Window
 
     private void BtnLaunchGame_Click(object? sender, RoutedEventArgs e)
     {
-        if (_selectedGame == null || string.IsNullOrEmpty(_selectedGame.RomPath))
-        {
-            ShowMessage("Por favor, asegúrate de haber configurado y guardado la ruta del juego/ROM.");
-            return;
-        }
-
-        if (!File.Exists(_selectedGame.RomPath))
-        {
-            ShowMessage("El archivo del juego no existe en la ruta especificada.");
-            return;
-        }
-
+        var logLines = new System.Collections.Generic.List<string>();
+        logLines.Add($"--- INICIANDO LANZAMIENTO: {DateTime.Now} ---");
+        
         try
         {
+            if (_selectedGame == null)
+            {
+                logLines.Add("Error: _selectedGame es null");
+                ShowMessage("Por favor, selecciona un juego primero.");
+                File.WriteAllLines("launcher_log.txt", logLines);
+                return;
+            }
+
+            logLines.Add($"Juego: {_selectedGame.Name} (ID: {_selectedGame.Id})");
+            logLines.Add($"RomPath: '{_selectedGame.RomPath}'");
+
+            if (string.IsNullOrEmpty(_selectedGame.RomPath))
+            {
+                logLines.Add("Error: RomPath vacio.");
+                ShowMessage("Por favor, asegúrate de haber configurado y guardado la ruta del juego/ROM.");
+                File.WriteAllLines("launcher_log.txt", logLines);
+                return;
+            }
+
+            if (!File.Exists(_selectedGame.RomPath))
+            {
+                logLines.Add("Error: RomPath no existe en disco.");
+                ShowMessage("El archivo del juego no existe en la ruta especificada.");
+                File.WriteAllLines("launcher_log.txt", logLines);
+                return;
+            }
+
             var platform = _selectedPlatform;
-            if (platform == null) return;
+            if (platform == null)
+            {
+                logLines.Add("Error: _selectedPlatform es null.");
+                File.WriteAllLines("launcher_log.txt", logLines);
+                return;
+            }
+
+            logLines.Add($"Plataforma: {platform.Name} (ID: {platform.Id})");
+            
+            // Refetch platform directly from DB to ensure we have the absolute latest data
+            using (var context = new GestorJuegos.Data.AppDbContext())
+            {
+                var dbPlatform = context.Platforms.FirstOrDefault(p => p.Id == platform.Id);
+                if (dbPlatform != null)
+                {
+                    logLines.Add($"EmulatorPath DB: '{dbPlatform.EmulatorPath}'");
+                    logLines.Add($"LaunchArgs DB: '{dbPlatform.LaunchArguments}'");
+                    platform = dbPlatform; // Use fresh data
+                }
+                else
+                {
+                    logLines.Add("Error: No se encontró la plataforma en la base de datos.");
+                }
+            }
 
             ProcessStartInfo psi = new ProcessStartInfo();
 
             if (string.IsNullOrEmpty(platform.EmulatorPath))
             {
-                // Launch directly with default system application or executable
+                logLines.Add("Aviso: EmulatorPath vacío. Usando UseShellExecute = true con RomPath.");
                 psi.FileName = _selectedGame.RomPath;
                 psi.UseShellExecute = true;
             }
             else
             {
+                logLines.Add("EmulatorPath configurado. Verificando...");
                 if (!File.Exists(platform.EmulatorPath))
                 {
+                    logLines.Add("Error: EmulatorPath no existe en disco.");
                     ShowMessage("La ruta del emulador especificada en la plataforma no existe.");
+                    File.WriteAllLines("launcher_log.txt", logLines);
                     return;
                 }
 
-                // Launch using emulator
+                logLines.Add("EmulatorPath OK.");
                 psi.FileName = platform.EmulatorPath;
                 
                 string args = string.IsNullOrEmpty(platform.LaunchArguments) ? "\"{0}\"" : platform.LaunchArguments;
+                logLines.Add($"Args base: {args}");
                 psi.Arguments = args.Replace("{0}", _selectedGame.RomPath);
+                logLines.Add($"Args reemplazados: {psi.Arguments}");
                 psi.UseShellExecute = false;
             }
 
+            logLines.Add($"-> Iniciando: FileName='{psi.FileName}', Arguments='{psi.Arguments}'");
             Process.Start(psi);
+            logLines.Add("Proceso iniciado con éxito.");
+            
+            File.WriteAllLines("launcher_log.txt", logLines);
         }
         catch (Exception ex)
         {
+            logLines.Add($"EXCEPCIÓN: {ex.Message}");
+            logLines.Add(ex.StackTrace ?? "");
             ShowMessage($"Error al lanzar el juego: {ex.Message}");
+            File.WriteAllLines("launcher_log.txt", logLines);
         }
     }
 }
