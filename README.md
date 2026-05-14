@@ -73,7 +73,22 @@ GestorJuegos/
 - [x] Gestión interactiva de plataformas desde la UI.
 - [x] Incorporar estadísticas de la colección (Total de juegos, Total por consola).
 - [x] Añadir una funcionalidad de exportación / importación de la base de datos.
-- [ ] Extracción automática de información de juegos desde una API pública.
+- [x] Extracción automática de información de juegos desde una API pública (IGDB).
+
+---
+
+## 🔑 Configuración de la API (IGDB)
+Para que el buscador automático de juegos funcione, necesitas configurar tus credenciales de IGDB.
+Crea un archivo llamado `appsettings.json` en la misma carpeta que el ejecutable o en la raíz del proyecto (este archivo se ignora en Git por seguridad) con el siguiente formato:
+```json
+{
+  "IGDB": {
+    "ClientId": "TU_CLIENT_ID",
+    "ClientSecret": "TU_CLIENT_SECRET"
+  }
+}
+```
+Obtén tus credenciales registrando una aplicación en la [Consola de Desarrolladores de Twitch](https://dev.twitch.tv/console).
 
 ---
 **Desarrollado con ❤️ para los amantes del coleccionismo de videojuegos.**
