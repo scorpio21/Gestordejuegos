@@ -68,14 +68,6 @@ GestorJuegos/
 
 ---
 
-## 📝 Próximos pasos y Mejoras (Roadmap)
-- [x] Implementar un modo de visualización en forma de cuadrícula de imágenes.
-- [x] Gestión interactiva de plataformas desde la UI.
-- [x] Incorporar estadísticas de la colección (Total de juegos, Total por consola).
-- [x] Añadir una funcionalidad de exportación / importación de la base de datos.
-- [x] Extracción automática de información de juegos desde una API pública (IGDB).
-
----
 
 ## 🔑 Configuración de la API (IGDB)
 Para que el buscador automático de juegos funcione, necesitas configurar tus credenciales de IGDB.
