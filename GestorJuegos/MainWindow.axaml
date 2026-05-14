@@ -56,6 +56,7 @@
                         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,20">
                             <TextBlock Name="TxtSelectedPlatform" Text="Seleccione una plataforma" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                                <TextBox Name="TxtSearchGame" Watermark="🔍 Buscar juego o género..." Width="220" CornerRadius="6" VerticalAlignment="Center" Margin="0,0,10,0" Background="#1e293b" BorderBrush="#334155" TextChanged="TxtSearchGame_TextChanged" />
                                 <Button Name="BtnViewList" Content="≡ Lista" Padding="10,6" Background="#334155" Foreground="White" CornerRadius="6"/>
                                 <Button Name="BtnViewGrid" Content="▤ Galería" Padding="10,6" Background="Transparent" Foreground="#94a3b8" CornerRadius="6" BorderBrush="#334155" BorderThickness="1"/>
                             </StackPanel>

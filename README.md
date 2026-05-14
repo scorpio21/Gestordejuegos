@@ -16,12 +16,15 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 - Añadidos iconos de aplicación y ventana.
 - Añadida lectura automática de la versión para la barra de título de la ventana.
 - **Nuevo:** Funcionalidad de Launcher (Ejecutar juegos / emuladores desde la app) (mira Issue #3).
+- **Nuevo:** Buscador en tiempo real por título y género (mira Issue #4).
 - **Nuevo:** Importar Formato (.XML , .DAT) - Importar catálogos completos en formato XML (No-Intro / DAT) (mira Issue #1).
 - **Nuevo:** Auto-descarga masiva de carátulas (Scraping en lote) y actualización de metadatos (mira Issue #2).
 
 ---
 
 ## ✨ Características Principales
+
+- **Buscador Dinámico:** Filtra instantáneamente tu colección de juegos por título o género a medida que escribes.
 
 - **Gestión por Plataformas Dinámica:** Crea, edita y elimina tus propias plataformas (PlayStation, Super Nintendo, etc.) desde un menú de gestión interactivo.
 - **Vistas Personalizables:** Alterna entre una **vista de Lista** detallada o una **vista de Galería (Cuadrícula)** enfocada en las carátulas.

@@ -19,6 +19,7 @@ public partial class MainWindow : Window
     private Game? _selectedGame;
     private byte[]? _currentCover;
     private readonly IgdbService _igdbService;
+    private System.Collections.Generic.List<Game> _currentPlatformGames = new System.Collections.Generic.List<Game>();
 
     public MainWindow()
     {
@@ -590,10 +591,39 @@ public partial class MainWindow : Window
 
     private void LoadGames()
     {
-        if (_selectedPlatform == null) return;
-        var games = _gameService.GetGamesByPlatform(_selectedPlatform.Id);
-        LstGames.ItemsSource = games;
-        LstGamesGrid.ItemsSource = games;
+        if (_selectedPlatform == null)
+        {
+            _currentPlatformGames.Clear();
+            LstGames.ItemsSource = null;
+            LstGamesGrid.ItemsSource = null;
+            return;
+        }
+
+        _currentPlatformGames = _gameService.GetGamesByPlatform(_selectedPlatform.Id);
+        ApplySearchFilter();
+    }
+
+    private void ApplySearchFilter()
+    {
+        if (_currentPlatformGames == null) return;
+        
+        var query = TxtSearchGame?.Text?.Trim().ToLower() ?? "";
+        var filtered = string.IsNullOrEmpty(query) 
+            ? _currentPlatformGames 
+            : _currentPlatformGames.Where(g => g.Name.ToLower().Contains(query) || (g.Genre != null && g.Genre.ToLower().Contains(query))).ToList();
+
+        LstGames.ItemsSource = filtered;
+        LstGamesGrid.ItemsSource = filtered;
+        
+        if (_selectedPlatform != null)
+        {
+            TxtSelectedPlatform.Text = $"{_selectedPlatform.Name} ({filtered.Count} juegos)";
+        }
+    }
+
+    private void TxtSearchGame_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        ApplySearchFilter();
     }
 
     private void LstGames_SelectionChanged(object? sender, SelectionChangedEventArgs e)
