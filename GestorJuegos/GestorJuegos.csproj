@@ -32,6 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="img\**" />
+    <AvaloniaResource Include="img\**\*" />
   </ItemGroup>
 </Project>
