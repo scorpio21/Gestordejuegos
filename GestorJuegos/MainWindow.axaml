@@ -62,6 +62,13 @@
                             </StackPanel>
                         </DockPanel>
                         
+                        <!-- Pagination Controls (Docked to Bottom) -->
+                        <StackPanel Name="PnlPagination" DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20" Margin="0,15,0,0">
+                            <Button Name="BtnPrevPage" Content="⬅ Anterior" Padding="15,8" Background="#1e293b" Foreground="#cbd5e1" CornerRadius="6" BorderThickness="1" BorderBrush="#334155" />
+                            <TextBlock Name="TxtPageInfo" Text="Página 1 de 1" FontSize="16" VerticalAlignment="Center" Foreground="#94a3b8" />
+                            <Button Name="BtnNextPage" Content="Siguiente ➡" Padding="15,8" Background="#1e293b" Foreground="#cbd5e1" CornerRadius="6" BorderThickness="1" BorderBrush="#334155" />
+                        </StackPanel>
+                        
                         <!-- Main Views -->
                         <Panel>
                             <!-- List View -->
@@ -111,13 +118,6 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            
-                            <!-- Pagination Controls -->
-                            <StackPanel Name="PnlPagination" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20" Margin="0,15,0,0">
-                                <Button Name="BtnPrevPage" Content="⬅ Anterior" Padding="15,8" Background="#1e293b" Foreground="#cbd5e1" CornerRadius="6" BorderThickness="1" BorderBrush="#334155" />
-                                <TextBlock Name="TxtPageInfo" Text="Página 1 de 1" FontSize="16" VerticalAlignment="Center" Foreground="#94a3b8" />
-                                <Button Name="BtnNextPage" Content="Siguiente ➡" Padding="15,8" Background="#1e293b" Foreground="#cbd5e1" CornerRadius="6" BorderThickness="1" BorderBrush="#334155" />
-                            </StackPanel>
                         </Panel>
                     </DockPanel>
                 </Border>

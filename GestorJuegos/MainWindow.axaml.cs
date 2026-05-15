@@ -651,8 +651,11 @@ public partial class MainWindow : Window
             ApplySearchFilter();
             
             // Scroll to top
-            if (LstGames.IsVisible) LstGames.ScrollIntoView(LstGames.Items.Cast<object>().FirstOrDefault());
-            if (LstGamesGrid.IsVisible) LstGamesGrid.ScrollIntoView(LstGamesGrid.Items.Cast<object>().FirstOrDefault());
+            var firstList = LstGames.Items.Cast<object>().FirstOrDefault();
+            if (LstGames.IsVisible && firstList != null) LstGames.ScrollIntoView(firstList);
+            
+            var firstGrid = LstGamesGrid.Items.Cast<object>().FirstOrDefault();
+            if (LstGamesGrid.IsVisible && firstGrid != null) LstGamesGrid.ScrollIntoView(firstGrid);
         }
     }
 
@@ -662,8 +665,11 @@ public partial class MainWindow : Window
         ApplySearchFilter();
         
         // Scroll to top
-        if (LstGames.IsVisible) LstGames.ScrollIntoView(LstGames.Items.Cast<object>().FirstOrDefault());
-        if (LstGamesGrid.IsVisible) LstGamesGrid.ScrollIntoView(LstGamesGrid.Items.Cast<object>().FirstOrDefault());
+        var firstList = LstGames.Items.Cast<object>().FirstOrDefault();
+        if (LstGames.IsVisible && firstList != null) LstGames.ScrollIntoView(firstList);
+        
+        var firstGrid = LstGamesGrid.Items.Cast<object>().FirstOrDefault();
+        if (LstGamesGrid.IsVisible && firstGrid != null) LstGamesGrid.ScrollIntoView(firstGrid);
     }
 
     private void LstGames_SelectionChanged(object? sender, SelectionChangedEventArgs e)
