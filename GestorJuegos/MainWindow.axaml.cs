@@ -21,6 +21,9 @@ public partial class MainWindow : Window
     private Game? _selectedGame;
     private byte[]? _currentCover;
     private readonly IgdbService _igdbService;
+    private readonly TheGamesDbService _theGamesDbService;
+    private readonly GameTdbService _gameTdbService;
+    private string _currentScraperSource = "IGDB";
     private System.Collections.Generic.List<Game> _currentPlatformGames = new System.Collections.Generic.List<Game>();
     private int _currentPage = 1;
     private const int PageSize = 100;
@@ -38,6 +41,7 @@ public partial class MainWindow : Window
         _gameService = new GameService();
         string clientId = "";
         string clientSecret = "";
+        string theGamesDbKey = "";
         try
         {
             string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
@@ -45,14 +49,31 @@ public partial class MainWindow : Window
             {
                 var json = File.ReadAllText(configPath);
                 using var doc = System.Text.Json.JsonDocument.Parse(json);
-                var igdbConfig = doc.RootElement.GetProperty("IGDB");
-                clientId = igdbConfig.GetProperty("ClientId").GetString() ?? "";
-                clientSecret = igdbConfig.GetProperty("ClientSecret").GetString() ?? "";
+                if (doc.RootElement.TryGetProperty("IGDB", out var igdbConfig))
+                {
+                    clientId = igdbConfig.GetProperty("ClientId").GetString() ?? "";
+                    clientSecret = igdbConfig.GetProperty("ClientSecret").GetString() ?? "";
+                }
+                if (doc.RootElement.TryGetProperty("TheGamesDB", out var tgdbConfig))
+                {
+                    theGamesDbKey = tgdbConfig.GetProperty("ApiKey").GetString() ?? "";
+                }
+            }
+            else
+            {
+                var defaultConfig = new
+                {
+                    IGDB = new { ClientId = "", ClientSecret = "" },
+                    TheGamesDB = new { ApiKey = "" }
+                };
+                File.WriteAllText(configPath, System.Text.Json.JsonSerializer.Serialize(defaultConfig, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
             }
         }
         catch { }
 
         _igdbService = new IgdbService(clientId, clientSecret);
+        _theGamesDbService = new TheGamesDbService(theGamesDbKey);
+        _gameTdbService = new GameTdbService();
         LoadPlatforms();
 
         AddHandler(DragDrop.DropEvent, Window_Drop);
@@ -88,7 +109,9 @@ public partial class MainWindow : Window
         MenuExportDB.Click += MenuExportDB_Click;
         MenuImportDB.Click += MenuImportDB_Click;
         MenuImportDat.Click += MenuImportDat_Click;
-        MenuBatchScrape.Click += MenuBatchScrape_Click;
+        MenuBatchScrapeIgdb.Click += (s, e) => RunBatchScrape("IGDB");
+        MenuBatchScrapeTgdb.Click += (s, e) => RunBatchScrape("TheGamesDB");
+        MenuBatchScrapeGameTdb.Click += (s, e) => RunBatchScrape("GameTDB");
 
         BtnCloseMessage.Click += BtnCloseMessage_Click;
         
@@ -131,9 +154,9 @@ public partial class MainWindow : Window
                 var existingNames = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 using (var context = new GestorJuegos.Data.AppDbContext())
                 {
-                    var platformGames = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id).Select(g => g.Name).ToList();
-                    foreach(var name in platformGames) 
-                        if(name != null) existingNames.Add(name);
+                    var platformGames = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id).Select(g => new { g.Name, g.Region }).ToList();
+                    foreach(var g in platformGames) 
+                        if(g.Name != null) existingNames.Add($"{g.Name}|{g.Region}");
                 }
                 
                 int skippedCount = 0;
@@ -149,6 +172,7 @@ public partial class MainWindow : Window
                     if (baseName.Contains("(Europe") || baseName.Contains("(EU")) region = "🇪🇺 EU";
                     else if (baseName.Contains("(USA") || baseName.Contains("(US")) region = "🇺🇸 US";
                     else if (baseName.Contains("(Japan") || baseName.Contains("(JP")) region = "🇯🇵 JP";
+                    else if (baseName.Contains("(Spain", StringComparison.OrdinalIgnoreCase) || baseName.Contains("(España", StringComparison.OrdinalIgnoreCase) || baseName.Contains("(Es)", StringComparison.OrdinalIgnoreCase) || baseName.Contains("(Es-Es)", StringComparison.OrdinalIgnoreCase) || baseName.Contains("(Es - Es)", StringComparison.OrdinalIgnoreCase)) region = "🇪🇸 ES";
 
                     // Extract languages e.g. (En,Fr,De)
                     string langs = "";
@@ -164,13 +188,14 @@ public partial class MainWindow : Window
 
                     if (!string.IsNullOrEmpty(cleanName))
                     {
-                        if (existingNames.Contains(cleanName))
+                        string uniqueKey = $"{cleanName}|{region}";
+                        if (existingNames.Contains(uniqueKey))
                         {
                             skippedCount++;
                         }
                         else
                         {
-                            existingNames.Add(cleanName); // Evitar duplicados dentro del mismo txt
+                            existingNames.Add(uniqueKey); // Evitar duplicados dentro del mismo txt
                             newGames.Add(new Game
                             {
                                 PlatformId = _selectedPlatform.Id,
@@ -400,7 +425,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void MenuBatchScrape_Click(object? sender, RoutedEventArgs e)
+    private async void RunBatchScrape(string source)
     {
         if (_selectedPlatform == null)
         {
@@ -434,8 +459,12 @@ public partial class MainWindow : Window
 
                 try
                 {
-                    var results = await _igdbService.SearchGamesAsync(game.Name);
-                    IgdbSearchResult? match = null;
+                    var results = new System.Collections.Generic.List<GestorJuegos.Services.IgdbSearchResult>();
+                    if (source == "IGDB") results = await _igdbService.SearchGamesAsync(game.Name);
+                    else if (source == "TheGamesDB") results = await _theGamesDbService.SearchGamesAsync(game.Name);
+                    else if (source == "GameTDB" && _selectedPlatform != null) results = await _gameTdbService.SearchGamesAsync(game.Name, _selectedPlatform.Name);
+
+                    GestorJuegos.Services.IgdbSearchResult? match = null;
                     if (results.Count > 0)
                     {
                         if (_selectedPlatform != null)
@@ -447,7 +476,11 @@ public partial class MainWindow : Window
                     
                     if (match != null)
                     {
-                        var coverData = await _igdbService.DownloadCoverAsync(match.CoverUrl);
+                        byte[]? coverData = null;
+                        if (source == "IGDB") coverData = await _igdbService.DownloadCoverAsync(match.CoverUrl);
+                        else if (source == "TheGamesDB") coverData = await _theGamesDbService.DownloadCoverAsync(match.CoverUrl);
+                        else if (source == "GameTDB") coverData = await _gameTdbService.DownloadCoverAsync(match.CoverUrl);
+                        
                         if (coverData != null && coverData.Length > 0)
                         {
                             game.Cover = coverData;
@@ -538,6 +571,16 @@ public partial class MainWindow : Window
                     var games = doc.Descendants("game");
                     var newGames = new System.Collections.Generic.List<Game>();
                     
+                    var existingNames = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    using (var context = new GestorJuegos.Data.AppDbContext())
+                    {
+                        var platformGames = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id).Select(g => new { g.Name, g.Region }).ToList();
+                        foreach(var g in platformGames) 
+                            if(g.Name != null) existingNames.Add($"{g.Name}|{g.Region}");
+                    }
+                    
+                    int skippedCount = 0;
+
                     foreach (var gameNode in games)
                     {
                         string name = gameNode.Attribute("name")?.Value ?? "";
@@ -547,6 +590,7 @@ public partial class MainWindow : Window
                         if (name.Contains("(JP") || name.Contains("(Japan")) region = "🇯🇵 JP";
                         else if (name.Contains("(US") || name.Contains("(USA")) region = "🇺🇸 US";
                         else if (name.Contains("(EU") || name.Contains("(Europe")) region = "🇪🇺 EU";
+                        else if (name.Contains("(Spain", StringComparison.OrdinalIgnoreCase) || name.Contains("(España", StringComparison.OrdinalIgnoreCase) || name.Contains("(Es)", StringComparison.OrdinalIgnoreCase) || name.Contains("(Es-Es)", StringComparison.OrdinalIgnoreCase) || name.Contains("(Es - Es)", StringComparison.OrdinalIgnoreCase)) region = "🇪🇸 ES";
 
                         string cleanName = name;
                         int bracketIndex = name.IndexOf('(');
@@ -560,13 +604,22 @@ public partial class MainWindow : Window
                             cleanName = cleanName.Split('•')[0].Trim();
                         }
 
-                        newGames.Add(new Game
+                        string uniqueKey = $"{cleanName}|{region}";
+                        if (existingNames.Contains(uniqueKey))
                         {
-                            PlatformId = _selectedPlatform.Id,
-                            Name = cleanName,
-                            Region = region,
-                            Year = DateTime.Now.Year
-                        });
+                            skippedCount++;
+                        }
+                        else
+                        {
+                            existingNames.Add(uniqueKey);
+                            newGames.Add(new Game
+                            {
+                                PlatformId = _selectedPlatform.Id,
+                                Name = cleanName,
+                                Region = region,
+                                Year = DateTime.Now.Year
+                            });
+                        }
                     }
 
                     using (var context = new GestorJuegos.Data.AppDbContext())
@@ -580,7 +633,9 @@ public partial class MainWindow : Window
                     Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
                         LoadGames();
-                        ShowMessage($"¡Importación completada! Se añadieron {count} juegos.");
+                        string msg = $"¡Importación completada! Se añadieron {count} juegos.";
+                        if (skippedCount > 0) msg += $" Se omitieron {skippedCount} que ya existían.";
+                        ShowMessage(msg);
                     });
                 });
             }
@@ -603,14 +658,34 @@ public partial class MainWindow : Window
             return;
         }
 
+        string selectedSource = "IGDB";
+        if (CmbScraperSource.SelectedItem is ComboBoxItem item && item.Content != null)
+        {
+            selectedSource = item.Content.ToString() ?? "IGDB";
+        }
+        _currentScraperSource = selectedSource;
+
         OverlayIgdbSearch.IsVisible = true;
-        TxtIgdbStatus.Text = $"Buscando '{query}'...";
+        TxtIgdbStatus.Text = $"Buscando '{query}' en {selectedSource}...";
         LstIgdbResults.ItemsSource = null;
 
         try
         {
-            var results = await _igdbService.SearchGamesAsync(query);
-            if (_selectedPlatform != null)
+            var results = new System.Collections.Generic.List<GestorJuegos.Services.IgdbSearchResult>();
+            
+            if (selectedSource == "IGDB") results = await _igdbService.SearchGamesAsync(query);
+            else if (selectedSource == "TheGamesDB") results = await _theGamesDbService.SearchGamesAsync(query);
+            else if (selectedSource == "GameTDB") 
+            {
+                if (_selectedPlatform == null)
+                {
+                    TxtIgdbStatus.Text = "GameTDB requiere seleccionar plataforma principal (Menú).";
+                    return;
+                }
+                results = await _gameTdbService.SearchGamesAsync(query, _selectedPlatform.Name);
+            }
+
+            if (_selectedPlatform != null && selectedSource == "IGDB")
             {
                 results = results.OrderByDescending(r => r.Platforms.Any(p => p.Contains(_selectedPlatform.Name, StringComparison.OrdinalIgnoreCase) || _selectedPlatform.Name.Contains(p, StringComparison.OrdinalIgnoreCase))).ToList();
             }
@@ -621,12 +696,12 @@ public partial class MainWindow : Window
             }
             else
             {
-                TxtIgdbStatus.Text = "Resultados de Búsqueda (IGDB)";
+                TxtIgdbStatus.Text = $"Resultados de Búsqueda ({selectedSource})";
             }
         }
         catch (Exception ex)
         {
-            TxtIgdbStatus.Text = "Error al buscar en IGDB.";
+            TxtIgdbStatus.Text = $"Error al buscar en {selectedSource}.";
             ShowMessage($"Error de API: {ex.Message}");
         }
     }
@@ -653,7 +728,9 @@ public partial class MainWindow : Window
                 try
                 {
                     ShowMessage("Descargando carátula...");
-                    _currentCover = await _igdbService.DownloadCoverAsync(result.CoverUrl);
+                    if (_currentScraperSource == "IGDB") _currentCover = await _igdbService.DownloadCoverAsync(result.CoverUrl);
+                    else if (_currentScraperSource == "TheGamesDB") _currentCover = await _theGamesDbService.DownloadCoverAsync(result.CoverUrl);
+                    else if (_currentScraperSource == "GameTDB") _currentCover = await _gameTdbService.DownloadCoverAsync(result.CoverUrl);
                     UpdateCoverImage();
                     OverlayMessage.IsVisible = false; // Ocultar mensaje al terminar
                 }

@@ -32,7 +32,11 @@
                         </Menu>
                         <Menu Background="Transparent">
                             <MenuItem Name="MenuHerramientas" Header="🛠️ Herramientas" FontSize="14" Foreground="#cbd5e1">
-                                <MenuItem Name="MenuBatchScrape" Header="Auto-descargar carátulas faltantes"/>
+                                <MenuItem Header="Auto-descargar carátulas faltantes">
+                                    <MenuItem Name="MenuBatchScrapeIgdb" Header="Usar IGDB" />
+                                    <MenuItem Name="MenuBatchScrapeTgdb" Header="Usar TheGamesDB" />
+                                    <MenuItem Name="MenuBatchScrapeGameTdb" Header="Usar GameTDB" />
+                                </MenuItem>
                             </MenuItem>
                         </Menu>
                         <Menu Background="Transparent">
@@ -134,9 +138,14 @@
                                 <TextBlock Text="Detalles del Juego" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" Foreground="#e2e8f0"/>
                                 
                                 <TextBlock Text="Nombre" Foreground="#94a3b8" FontSize="12" Margin="0,0,0,-10"/>
-                                <Grid ColumnDefinitions="*, Auto">
+                                <Grid ColumnDefinitions="*, Auto, Auto">
                                     <TextBox Grid.Column="0" Name="TxtName" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" Margin="0,0,5,0"/>
-                                    <Button Grid.Column="1" Name="BtnSearchIgdb" Content="🔍 IGDB" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="4" Padding="10,5"/>
+                                    <ComboBox Grid.Column="1" Name="CmbScraperSource" SelectedIndex="0" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" Margin="0,0,5,0">
+                                        <ComboBoxItem Content="IGDB" />
+                                        <ComboBoxItem Content="TheGamesDB" />
+                                        <ComboBoxItem Content="GameTDB" />
+                                    </ComboBox>
+                                    <Button Grid.Column="2" Name="BtnSearchIgdb" Content="🔍 Buscar" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="4" Padding="10,5"/>
                                 </Grid>
                                 
                                 <Grid ColumnDefinitions="*,*">
@@ -149,6 +158,7 @@
                                         <ComboBox Name="CmbRegion" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" HorizontalAlignment="Stretch" SelectedIndex="0">
                                             <ComboBoxItem Content="🇺🇸 US" />
                                             <ComboBoxItem Content="🇪🇺 EU" />
+                                            <ComboBoxItem Content="🇪🇸 ES" />
                                             <ComboBoxItem Content="🇯🇵 JP" />
                                             <ComboBoxItem Content="🌎 World" />
                                         </ComboBox>
@@ -291,11 +301,11 @@
                 </Grid>
             </Border>
         </Border>
-        <!-- IGDB Search Overlay -->
+        <!-- IGDB / Scraper Search Overlay -->
         <Border Name="OverlayIgdbSearch" Background="#AA000000" IsVisible="False" ZIndex="170">
             <Border Background="{StaticResource PanelBrush}" Width="500" Height="600" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
                 <Grid RowDefinitions="Auto, *, Auto">
-                    <TextBlock Grid.Row="0" Name="TxtIgdbStatus" Text="Buscando en IGDB..." FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,15" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Name="TxtIgdbStatus" Text="Buscando resultados..." FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,15" HorizontalAlignment="Center"/>
                     
                     <ListBox Grid.Row="1" Name="LstIgdbResults" Background="#0f172a" CornerRadius="6" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,15">
                         <ListBox.ItemTemplate>

@@ -10,6 +10,7 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 ---
 
 ## 📸 Capturas de Pantalla
+
 <div align="center">
   <img src="GestorJuegos/img/captura.png" alt="Captura de la aplicación Gestor de Juegos" width="800"/>
 </div>
@@ -18,7 +19,8 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.0 (14-05-2026)**
+*Version 1.0.0 (14-05-2026)**
+
 - Integración con API de IGDB para descarga automática de metadatos y carátulas.
 - Añadidos iconos de aplicación y ventana.
 - Añadida lectura automática de la versión para la barra de título de la ventana.
@@ -28,6 +30,8 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 - **Nuevo:** Importar Formato (.XML , .DAT) - Importar catálogos completos en formato XML (No-Intro / DAT) (mira Issue #1).
 - **Nuevo:** Auto-descarga masiva de carátulas (Scraping en lote) y actualización de metadatos (mira Issue #2).
 - **Nuevo:** Importar listas desde archivo de texto (.txt) mediante Drag & Drop inteligente, omitiendo duplicados.
+- **Nuevo:** Soporte multi-scraper en búsquedas manuales y masivas, permitiendo usar **IGDB**, **TheGamesDB** o **GameTDB** (optimizado para Wii, 3DS, Switch, etc.).
+- **Mejora:** La detección de duplicados en la importación ahora diferencia regiones (Ej. `Spain` vs `Europe`) permitiendo mantener múltiples versiones del mismo juego.
 - **Mejora:** Filtrado y priorización inteligente de carátulas en IGDB dependiendo de la plataforma seleccionada.
 
 ---
@@ -35,8 +39,8 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 ## ✨ Características Principales
 
 - **Buscador Dinámico:** Filtra instantáneamente tu colección de juegos por título o género a medida que escribes.
-- **Importación por Drag & Drop:** Arrastra y suelta archivos `.txt` sobre la aplicación para poblar plataformas enteras en segundos, reconociendo región e idiomas automáticamente.
-- **Auto-Scraping Inteligente:** Integración completa con IGDB para buscar carátulas y metadatos priorizando la consola o plataforma donde se esté buscando.
+- **Importación por Drag & Drop:** Arrastra y suelta archivos `.txt` sobre la aplicación para poblar plataformas enteras en segundos, reconociendo región e idiomas automáticamente y permitiendo versiones por región (e.g. Español, Europeo, USA).
+- **Auto-Scraping Multifuente:** Busca metadatos y carátulas de forma manual o masiva usando **IGDB**, **TheGamesDB** o **GameTDB**, priorizando la consola donde se esté buscando.
 
 - **Gestión por Plataformas Dinámica:** Crea, edita y elimina tus propias plataformas (PlayStation, Super Nintendo, etc.) desde un menú de gestión interactivo.
 - **Vistas Personalizables:** Alterna entre una **vista de Lista** detallada o una **vista de Galería (Cuadrícula)** enfocada en las carátulas.
@@ -74,6 +78,7 @@ GestorJuegos/
 ## 🚀 Instalación y Uso
 
 ### Prerrequisitos
+
 - [SDK de .NET 9.0](https://dotnet.microsoft.com/download) instalado en tu equipo.
 - **Visual Studio 2022** (Recomendado).
 - Extensión **[Avalonia para Visual Studio 2022](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS)** (para previsualizar la interfaz de usuario en el diseñador).
@@ -89,18 +94,25 @@ GestorJuegos/
 
 ---
 
-## 🔑 Configuración de la API (IGDB)
-Para que el buscador automático de juegos funcione, necesitas configurar tus credenciales de IGDB.
-Crea un archivo llamado `appsettings.json` en la misma carpeta que el ejecutable o en la raíz del proyecto (este archivo se ignora en Git por seguridad) con el siguiente formato:
+## 🔑 Configuración de las APIs (IGDB / TheGamesDB)
+
+Para que el buscador automático de juegos funcione, necesitas configurar tus credenciales de las APIs.
+Crea (o deja que el programa cree por primera vez) un archivo llamado `appsettings.json` en la misma carpeta que el ejecutable (este archivo se ignora en Git por seguridad) con el siguiente formato:
+
 ```json
 {
   "IGDB": {
     "ClientId": "TU_CLIENT_ID",
     "ClientSecret": "TU_CLIENT_SECRET"
+  },
+  "TheGamesDB": {
+    "ApiKey": "TU_API_KEY_DE_THEGAMESDB"
   }
 }
 ```
-Obtén tus credenciales registrando una aplicación en la [Consola de Desarrolladores de Twitch](https://dev.twitch.tv/console).
+
+- **IGDB:** Obtén tus credenciales registrando una aplicación en la [Consola de Desarrolladores de Twitch](https://dev.twitch.tv/console).
+- **TheGamesDB:** Obtén tu clave en la web oficial o usa una proporcionada. El campo puede dejarse en blanco si no se usa esta fuente. GameTDB funciona de manera pública.
 
 ---
 
