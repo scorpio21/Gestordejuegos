@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace GestorJuegos;
 
@@ -77,6 +78,7 @@ public partial class MainWindow : Window
         _gameTdbService = new GameTdbService();
         _palSnesCoversService = new PalSnesCoversService();
         LoadPlatforms();
+        LoadDashboard();
 
         AddHandler(DragDrop.DropEvent, Window_Drop);
 
@@ -105,8 +107,7 @@ public partial class MainWindow : Window
         LstManagePlatforms.SelectionChanged += LstManagePlatforms_SelectionChanged;
         BtnSelectEmulator.Click += BtnSelectEmulator_Click;
 
-        BtnStatistics.Click += BtnStatistics_Click;
-        BtnCloseStatistics.Click += BtnCloseStatistics_Click;
+        BtnGoDashboard.Click += BtnGoDashboard_Click;
 
         MenuExportDB.Click += MenuExportDB_Click;
         MenuImportDB.Click += MenuImportDB_Click;
@@ -297,7 +298,6 @@ public partial class MainWindow : Window
         
         // Disable requested UI elements when there are no platforms
         MenuPlataformas.IsEnabled = hasPlatforms;
-        BtnStatistics.IsEnabled = hasPlatforms;
         BtnManagePlatforms.IsEnabled = hasPlatforms;
         BtnAddGame.IsEnabled = hasPlatforms;
         BtnViewList.IsEnabled = hasPlatforms;
@@ -319,6 +319,22 @@ public partial class MainWindow : Window
         {
             _selectedPlatform = platform;
             TxtSelectedPlatform.Text = $"Plataforma: {platform.Name}";
+            PnlDashboard.IsVisible = false;
+            PnlHeaderToggles.IsVisible = true;
+            PnlPagination.IsVisible = true;
+            
+            // Restore proper view based on selection
+            if (BtnViewList.Background != null && BtnViewList.Background.ToString() == "#ff444444")
+            {
+                LstGames.IsVisible = true;
+                LstGamesGrid.IsVisible = false;
+            }
+            else
+            {
+                LstGames.IsVisible = false;
+                LstGamesGrid.IsVisible = true;
+            }
+
             LoadGames();
             PnlGameDetails.IsVisible = false;
         }
@@ -336,20 +352,54 @@ public partial class MainWindow : Window
         OverlayManagePlatforms.IsVisible = false;
     }
 
-    private void BtnStatistics_Click(object? sender, RoutedEventArgs e)
+    private void BtnGoDashboard_Click(object? sender, RoutedEventArgs e)
     {
-        var totalGames = _gameService.GetTotalGamesCount();
-        TxtTotalGames.Text = totalGames.ToString();
-
-        var stats = _gameService.GetGamesCountByPlatform();
-        LstPlatformStats.ItemsSource = stats;
-
-        OverlayStatistics.IsVisible = true;
+        _selectedPlatform = null;
+        LoadDashboard();
     }
 
-    private void BtnCloseStatistics_Click(object? sender, RoutedEventArgs e)
+    private void LoadDashboard()
     {
-        OverlayStatistics.IsVisible = false;
+        PnlDashboard.IsVisible = true;
+        PnlHeaderToggles.IsVisible = false;
+        PnlPagination.IsVisible = false;
+        LstGames.IsVisible = false;
+        LstGamesGrid.IsVisible = false;
+        PnlGameDetails.IsVisible = false;
+
+        using var context = new GestorJuegos.Data.AppDbContext();
+        context.Database.EnsureCreated();
+
+        int totalGames = context.Games.Count();
+        int totalPlatforms = context.Platforms.Count();
+        
+        DashTotalGames.Text = totalGames.ToString();
+        DashTotalPlatforms.Text = totalPlatforms.ToString();
+
+        // Género favorito
+        var topGenre = context.Games
+            .Where(g => !string.IsNullOrEmpty(g.Genre))
+            .GroupBy(g => g.Genre)
+            .OrderByDescending(g => g.Count())
+            .Select(g => g.Key)
+            .FirstOrDefault() ?? "Ninguno";
+        
+        DashTopGenre.Text = topGenre;
+
+        // Distribución
+        var platformStats = context.Platforms
+            .Select(p => new { Key = p.Name, Value = p.Games.Count })
+            .OrderByDescending(p => p.Value)
+            .ToList();
+        DashPlatformStats.ItemsSource = platformStats;
+
+        // Recientes (últimos 10 agregados)
+        var recentGames = context.Games
+            .Include(g => g.Platform)
+            .OrderByDescending(g => g.Id)
+            .Take(10)
+            .ToList();
+        DashRecentGames.ItemsSource = recentGames;
     }
 
     private async void MenuExportDB_Click(object? sender, RoutedEventArgs e)

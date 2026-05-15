@@ -27,6 +27,7 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 - **Nuevo:** Funcionalidad de Launcher (Ejecutar juegos / emuladores desde la app) (mira Issue #3).
 - **Nuevo:** Buscador en tiempo real por título y género (mira Issue #4).
 - **Nuevo:** Paginación (Lazy Loading) para optimizar colecciones de miles de juegos sin usar memoria (mira Issue #5).
+- **Nuevo:** Vista de Dashboard y estadísticas globales como pantalla principal (mira Issue #6).
 - **Nuevo:** Importar Formato (.XML , .DAT) - Importar catálogos completos en formato XML (No-Intro / DAT) (mira Issue #1).
 - **Nuevo:** Auto-descarga masiva de carátulas (Scraping en lote) y actualización de metadatos (mira Issue #2).
 - **Nuevo:** Importar listas desde archivo de texto (.txt) mediante Drag & Drop inteligente, omitiendo duplicados.

@@ -48,7 +48,7 @@
                                 <MenuItem Name="MenuImportDat" Header="Importar Formato (.XML, .DAT)"/>
                             </MenuItem>
                         </Menu>
-                        <Button Name="BtnStatistics" Content="📊 Estadísticas" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
+                        <Button Name="BtnGoDashboard" Content="🏠 Inicio" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
                         <Button Name="BtnManagePlatforms" Content="⚙️ Gestionar" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
                         <Button Name="BtnAddPlatform" Content="+ Añadir Plataforma" Background="{StaticResource AccentBrush}" Foreground="White" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="0"/>
                     </StackPanel>
@@ -60,7 +60,7 @@
                 <Border Grid.Column="0" Padding="20">
                     <DockPanel>
                         <!-- Header with View Toggles -->
-                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+                        <DockPanel Name="PnlHeaderToggles" DockPanel.Dock="Top" Margin="0,0,0,20" IsVisible="False">
                             <TextBlock Name="TxtSelectedPlatform" Text="Seleccione una plataforma" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                                 <TextBox Name="TxtSearchGame" PlaceholderText="🔍 Buscar juego o género..." Width="220" CornerRadius="6" VerticalAlignment="Center" Margin="0,0,10,0" Background="#1e293b" BorderBrush="#334155" TextChanged="TxtSearchGame_TextChanged" />
@@ -70,7 +70,7 @@
                         </DockPanel>
                         
                         <!-- Pagination Controls (Docked to Bottom) -->
-                        <StackPanel Name="PnlPagination" DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20" Margin="0,15,0,0">
+                        <StackPanel Name="PnlPagination" DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20" Margin="0,15,0,0" IsVisible="False">
                             <Button Name="BtnPrevPage" Content="⬅ Anterior" Padding="15,8" Background="#1e293b" Foreground="#cbd5e1" CornerRadius="6" BorderThickness="1" BorderBrush="#334155" />
                             <TextBlock Name="TxtPageInfo" Text="Página 1 de 1" FontSize="16" VerticalAlignment="Center" Foreground="#94a3b8" />
                             <Button Name="BtnNextPage" Content="Siguiente ➡" Padding="15,8" Background="#1e293b" Foreground="#cbd5e1" CornerRadius="6" BorderThickness="1" BorderBrush="#334155" />
@@ -78,8 +78,87 @@
                         
                         <!-- Main Views -->
                         <Panel>
+                            <!-- Dashboard View -->
+                            <ScrollViewer Name="PnlDashboard" IsVisible="True" Margin="0,10,0,0" Padding="0,0,15,0">
+                                <StackPanel Spacing="20">
+                                    <TextBlock Text="¡Bienvenido a tu Ludoteca!" FontSize="28" FontWeight="Bold" Foreground="White" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                                    
+                                    <!-- Stats Cards -->
+                                    <Grid ColumnDefinitions="*, *, *" Margin="0,0,0,10">
+                                        <!-- Card 1: Total Games -->
+                                        <Border Grid.Column="0" Background="#0f172a" CornerRadius="8" Padding="20" BorderBrush="#334155" BorderThickness="1" Margin="0,0,10,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Total de Juegos" Foreground="#94a3b8" FontSize="14" HorizontalAlignment="Center"/>
+                                                <TextBlock Name="DashTotalGames" Text="0" Foreground="#10b981" FontSize="36" FontWeight="Bold" Margin="0,5,0,0" HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        
+                                        <!-- Card 2: Total Platforms -->
+                                        <Border Grid.Column="1" Background="#0f172a" CornerRadius="8" Padding="20" BorderBrush="#334155" BorderThickness="1" Margin="5,0,5,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Plataformas" Foreground="#94a3b8" FontSize="14" HorizontalAlignment="Center"/>
+                                                <TextBlock Name="DashTotalPlatforms" Text="0" Foreground="#3b82f6" FontSize="36" FontWeight="Bold" Margin="0,5,0,0" HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        
+                                        <!-- Card 3: Top Genre -->
+                                        <Border Grid.Column="2" Background="#0f172a" CornerRadius="8" Padding="20" BorderBrush="#334155" BorderThickness="1" Margin="10,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Género Favorito" Foreground="#94a3b8" FontSize="14" HorizontalAlignment="Center"/>
+                                                <TextBlock Name="DashTopGenre" Text="Ninguno" Foreground="#f59e0b" FontSize="20" FontWeight="Bold" Margin="0,10,0,0" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" TextAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Charts / Lists Section -->
+                                    <Grid ColumnDefinitions="*, *">
+                                        <!-- Games by Platform -->
+                                        <Border Grid.Column="0" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="20" BorderBrush="#334155" BorderThickness="1" Margin="0,0,10,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Distribución por Plataforma" FontSize="18" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,15"/>
+                                                <ItemsControl Name="DashPlatformStats">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:CompileBindings="False">
+                                                            <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                                                                <TextBlock Grid.Column="0" Text="{Binding Key}" Foreground="#cbd5e1" FontSize="14" VerticalAlignment="Center"/>
+                                                                <Border Grid.Column="1" Background="#334155" CornerRadius="12" Padding="10,2">
+                                                                    <TextBlock Text="{Binding Value}" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                                                </Border>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Recent Additions -->
+                                        <Border Grid.Column="1" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="20" BorderBrush="#334155" BorderThickness="1" Margin="10,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Últimas Adquisiciones" FontSize="18" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,15"/>
+                                                <ItemsControl Name="DashRecentGames">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:CompileBindings="False">
+                                                            <Grid ColumnDefinitions="Auto, *, Auto" Margin="0,0,0,10">
+                                                                <Border Grid.Column="0" CornerRadius="4" ClipToBounds="True" Margin="0,0,10,0">
+                                                                    <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="30" Height="40" Stretch="UniformToFill"/>
+                                                                </Border>
+                                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" TextTrimming="CharacterEllipsis"/>
+                                                                    <TextBlock Text="{Binding Platform.Name}" Foreground="#94a3b8" FontSize="12"/>
+                                                                </StackPanel>
+                                                                <Image Grid.Column="2" Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="24" Height="18" Stretch="Uniform" VerticalAlignment="Center" Margin="10,0,0,0" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+
                             <!-- List View -->
-                            <ListBox Name="LstGames" Background="Transparent" BorderThickness="0">
+                            <ListBox Name="LstGames" Background="Transparent" BorderThickness="0" IsVisible="False">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="models:Game">
                                         <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Margin="0,0,0,8" Padding="10">
@@ -267,42 +346,7 @@
             </Border>
         </Border>
 
-        <!-- Statistics Overlay -->
-        <Border Name="OverlayStatistics" Background="#AA000000" IsVisible="False" ZIndex="160">
-            <Border Background="{StaticResource PanelBrush}" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
-                <Grid RowDefinitions="Auto, *, Auto">
-                    <TextBlock Grid.Row="0" Text="Estadísticas de la Colección" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,15" HorizontalAlignment="Center"/>
-                    
-                    <StackPanel Grid.Row="1" Spacing="15">
-                        <Border Background="#0f172a" CornerRadius="8" Padding="15" BorderBrush="#334155" BorderThickness="1">
-                            <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="Total de Juegos" Foreground="#94a3b8" FontSize="14" HorizontalAlignment="Center"/>
-                                <TextBlock Name="TxtTotalGames" Text="0" Foreground="#10b981" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
 
-                        <TextBlock Text="Juegos por Plataforma:" Foreground="#e2e8f0" FontWeight="SemiBold" Margin="0,10,0,0"/>
-                        
-                        <ScrollViewer Height="180">
-                            <ListBox Name="LstPlatformStats" Background="Transparent" BorderThickness="0">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate x:CompileBindings="False">
-                                        <Grid ColumnDefinitions="*, Auto" Margin="0,5">
-                                            <TextBlock Grid.Column="0" Text="{Binding Key}" Foreground="#cbd5e1" FontSize="15" VerticalAlignment="Center"/>
-                                            <Border Grid.Column="1" Background="#334155" CornerRadius="12" Padding="10,2">
-                                                <TextBlock Text="{Binding Value}" Foreground="White" FontWeight="Bold"/>
-                                            </Border>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                        </ScrollViewer>
-                    </StackPanel>
-                    
-                    <Button Grid.Row="2" Name="BtnCloseStatistics" Content="Cerrar" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="20,8" HorizontalAlignment="Center" Margin="0,20,0,0"/>
-                </Grid>
-            </Border>
-        </Border>
         <!-- IGDB / Scraper Search Overlay -->
         <Border Name="OverlayIgdbSearch" Background="#AA000000" IsVisible="False" ZIndex="170">
             <Border Background="{StaticResource PanelBrush}" Width="500" Height="600" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
