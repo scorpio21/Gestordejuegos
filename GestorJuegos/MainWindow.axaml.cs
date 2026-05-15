@@ -20,6 +20,8 @@ public partial class MainWindow : Window
     private byte[]? _currentCover;
     private readonly IgdbService _igdbService;
     private System.Collections.Generic.List<Game> _currentPlatformGames = new System.Collections.Generic.List<Game>();
+    private int _currentPage = 1;
+    private const int PageSize = 100;
 
     public MainWindow()
     {
@@ -62,6 +64,8 @@ public partial class MainWindow : Window
         
         BtnViewList.Click += BtnViewList_Click;
         BtnViewGrid.Click += BtnViewGrid_Click;
+        BtnPrevPage.Click += BtnPrevPage_Click;
+        BtnNextPage.Click += BtnNextPage_Click;
 
         BtnAddPlatform.Click += BtnAddPlatform_Click;
         BtnCancelPlatform.Click += BtnCancelPlatform_Click;
@@ -599,6 +603,7 @@ public partial class MainWindow : Window
             return;
         }
 
+        _currentPage = 1;
         _currentPlatformGames = _gameService.GetGamesByPlatform(_selectedPlatform.Id);
         ApplySearchFilter();
     }
@@ -612,18 +617,53 @@ public partial class MainWindow : Window
             ? _currentPlatformGames 
             : _currentPlatformGames.Where(g => g.Name.ToLower().Contains(query) || (g.Genre != null && g.Genre.ToLower().Contains(query))).ToList();
 
-        LstGames.ItemsSource = filtered;
-        LstGamesGrid.ItemsSource = filtered;
+        int totalItems = filtered.Count;
+        int totalPages = (int)Math.Ceiling(totalItems / (double)PageSize);
+        if (totalPages == 0) totalPages = 1;
+        if (_currentPage > totalPages) _currentPage = totalPages;
+
+        var paginated = filtered.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
+
+        LstGames.ItemsSource = paginated;
+        LstGamesGrid.ItemsSource = paginated;
         
         if (_selectedPlatform != null)
         {
-            TxtSelectedPlatform.Text = $"{_selectedPlatform.Name} ({filtered.Count} juegos)";
+            TxtSelectedPlatform.Text = $"{_selectedPlatform.Name} ({totalItems} juegos)";
         }
+        
+        TxtPageInfo.Text = $"Página {_currentPage} de {totalPages}";
+        BtnPrevPage.IsEnabled = _currentPage > 1;
+        BtnNextPage.IsEnabled = _currentPage < totalPages;
     }
 
     private void TxtSearchGame_TextChanged(object? sender, TextChangedEventArgs e)
     {
+        _currentPage = 1;
         ApplySearchFilter();
+    }
+
+    private void BtnPrevPage_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_currentPage > 1)
+        {
+            _currentPage--;
+            ApplySearchFilter();
+            
+            // Scroll to top
+            if (LstGames.IsVisible) LstGames.ScrollIntoView(LstGames.Items.Cast<object>().FirstOrDefault());
+            if (LstGamesGrid.IsVisible) LstGamesGrid.ScrollIntoView(LstGamesGrid.Items.Cast<object>().FirstOrDefault());
+        }
+    }
+
+    private void BtnNextPage_Click(object? sender, RoutedEventArgs e)
+    {
+        _currentPage++;
+        ApplySearchFilter();
+        
+        // Scroll to top
+        if (LstGames.IsVisible) LstGames.ScrollIntoView(LstGames.Items.Cast<object>().FirstOrDefault());
+        if (LstGamesGrid.IsVisible) LstGamesGrid.ScrollIntoView(LstGamesGrid.Items.Cast<object>().FirstOrDefault());
     }
 
     private void LstGames_SelectionChanged(object? sender, SelectionChangedEventArgs e)
