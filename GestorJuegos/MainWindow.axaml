@@ -8,6 +8,7 @@
         x:Class="GestorJuegos.MainWindow"
         Title="Gestor de Juegos"
         Icon="avares://GestorJuegos/img/iconoventana.png"
+        Width="1200" Height="750" MinWidth="1000" MinHeight="600"
         Background="#0f172a" Foreground="#f8fafc"
         WindowStartupLocation="CenterScreen">
         
