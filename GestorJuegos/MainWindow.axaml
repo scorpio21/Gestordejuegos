@@ -48,6 +48,11 @@
                                 <MenuItem Name="MenuImportDat" Header="Importar Formato (.XML, .DAT)"/>
                             </MenuItem>
                         </Menu>
+                        <Menu Background="Transparent">
+                            <MenuItem Name="MenuAyuda" Header="❓ Ayuda" FontSize="14" Foreground="#cbd5e1">
+                                <MenuItem Name="MenuHelpEmulator" Header="Configurar Emuladores..."/>
+                            </MenuItem>
+                        </Menu>
                         <Button Name="BtnGoDashboard" Content="🏠 Inicio" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
                         <Button Name="BtnManagePlatforms" Content="⚙️ Gestionar" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
                         <Button Name="BtnAddPlatform" Content="+ Añadir Plataforma" Background="{StaticResource AccentBrush}" Foreground="White" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="0"/>
@@ -257,6 +262,19 @@
                                     <TextBox Grid.Column="0" Name="TxtRomPath" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" Margin="0,0,5,0"/>
                                     <Button Grid.Column="1" Name="BtnSelectRom" Content="..." Background="#334155" Foreground="White" CornerRadius="4" Padding="10,5"/>
                                 </Grid>
+                                
+                                <Border Background="#1e293b" CornerRadius="6" Padding="10" BorderBrush="#334155" BorderThickness="1" Margin="0,5,0,5">
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="⚙️ Perfil de Emulador (Opcional)" FontWeight="SemiBold" Foreground="#e2e8f0" Margin="0,0,0,5"/>
+                                        <TextBlock Text="Sobrescribir Emulador (Deja vacío para heredar)" Foreground="#94a3b8" FontSize="11"/>
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <TextBox Grid.Column="0" Name="TxtOverrideEmulator" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" Margin="0,0,5,0"/>
+                                            <Button Grid.Column="1" Name="BtnSelectOverrideEmulator" Content="..." Background="#334155" Foreground="White" CornerRadius="4" Padding="10,5"/>
+                                        </Grid>
+                                        <TextBlock Text="Sobrescribir Argumentos" Foreground="#94a3b8" FontSize="11" Margin="0,5,0,0"/>
+                                        <TextBox Name="TxtOverrideArgs" CornerRadius="4" Background="#0f172a" BorderBrush="#334155"/>
+                                    </StackPanel>
+                                </Border>
                                 
                                 <TextBlock Text="Carátula" Foreground="#94a3b8" FontSize="12" Margin="0,10,0,0"/>
                                 <Border BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Height="250" Background="#0f172a" ClipToBounds="True">

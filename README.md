@@ -19,7 +19,12 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-*Version 1.0.0 (14-05-2026)**
+**Version 1.0.1 (Actual)**
+
+- **Nuevo:** Perfiles Avanzados de Emuladores. Permite sobrescribir la configuración del emulador a nivel de juego para usar diferentes emuladores dentro de una misma plataforma (mira Issue #7).
+- **Nuevo:** Menú de Ayuda interactivo para enseñar a configurar emuladores y argumentos de lanzamiento.
+
+**Version 1.0.0 (14-05-2026)**
 
 - Integración con API de IGDB para descarga automática de metadatos y carátulas.
 - Añadidos iconos de aplicación y ventana.

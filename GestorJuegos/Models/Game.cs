@@ -10,6 +10,8 @@ namespace GestorJuegos.Models
         public string Languages { get; set; } = string.Empty;
         public byte[]? Cover { get; set; }
         public string RomPath { get; set; } = string.Empty;
+        public string OverrideEmulatorPath { get; set; } = string.Empty;
+        public string OverrideLaunchArguments { get; set; } = string.Empty;
         public int PlatformId { get; set; }
         public Platform Platform { get; set; } = null!;
     }

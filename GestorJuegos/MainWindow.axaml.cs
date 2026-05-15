@@ -124,6 +124,8 @@ public partial class MainWindow : Window
         BtnSelectIgdb.Click += BtnSelectIgdb_Click;
 
         BtnSelectRom.Click += BtnSelectRom_Click;
+        BtnSelectOverrideEmulator.Click += BtnSelectOverrideEmulator_Click;
+        MenuHelpEmulator.Click += MenuHelpEmulator_Click;
         BtnLaunchGame.Click += BtnLaunchGame_Click;
     }
 
@@ -950,6 +952,8 @@ public partial class MainWindow : Window
             TxtGenre.Text = game.Genre;
             TxtLanguages.Text = game.Languages;
             TxtRomPath.Text = game.RomPath;
+            TxtOverrideEmulator.Text = game.OverrideEmulatorPath;
+            TxtOverrideArgs.Text = game.OverrideLaunchArguments;
             
             // Set the selected region in the ComboBox
             var regionItem = CmbRegion.Items.Cast<ComboBoxItem>().FirstOrDefault(i => i.Content?.ToString() == game.Region);
@@ -984,6 +988,8 @@ public partial class MainWindow : Window
         TxtGenre.Text = string.Empty;
         TxtLanguages.Text = string.Empty;
         TxtRomPath.Text = string.Empty;
+        TxtOverrideEmulator.Text = string.Empty;
+        TxtOverrideArgs.Text = string.Empty;
         CmbRegion.SelectedIndex = 0;
         _currentCover = null;
         UpdateCoverImage();
@@ -1003,6 +1009,8 @@ public partial class MainWindow : Window
         _selectedGame.Genre = TxtGenre.Text ?? string.Empty;
         _selectedGame.Languages = TxtLanguages.Text ?? string.Empty;
         _selectedGame.RomPath = TxtRomPath.Text ?? string.Empty;
+        _selectedGame.OverrideEmulatorPath = TxtOverrideEmulator.Text ?? string.Empty;
+        _selectedGame.OverrideLaunchArguments = TxtOverrideArgs.Text ?? string.Empty;
         _selectedGame.Region = (CmbRegion.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "🇺🇸 US";
         _selectedGame.Cover = _currentCover;
 
@@ -1111,6 +1119,45 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void BtnSelectOverrideEmulator_Click(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Seleccionar Ejecutable del Emulador (Override)",
+            AllowMultiple = false,
+            FileTypeFilter = new[] { new FilePickerFileType("Ejecutables") { Patterns = new[] { "*.exe", "*.bat", "*.cmd" } } }
+        });
+
+        if (files.Count > 0)
+        {
+            TxtOverrideEmulator.Text = files[0].TryGetLocalPath() ?? files[0].Name;
+            // Si los argumentos estaban vacíos, ponemos el default
+            if (string.IsNullOrWhiteSpace(TxtOverrideArgs.Text))
+            {
+                TxtOverrideArgs.Text = "\"{0}\"";
+            }
+        }
+    }
+
+    private void MenuHelpEmulator_Click(object? sender, RoutedEventArgs e)
+    {
+        string helpText = "CONFIGURACIÓN DE EMULADORES:\n\n" +
+            "1. Por Plataforma (Recomendado):\n" +
+            "   Ve a '⚙️ Gestionar' (arriba a la derecha), selecciona una plataforma e indica su Emulador y Argumentos. " +
+            "Todos los juegos de esa plataforma lo usarán por defecto.\n\n" +
+            "2. Por Juego (Perfil Avanzado):\n" +
+            "   Si un juego requiere un emulador distinto (ej. Snes9x en vez de RetroArch), edita el juego " +
+            "y rellena la sección '⚙️ Perfil de Emulador' para sobrescribir la configuración global.\n\n" +
+            "Argumentos: Usa {0} para indicar dónde va la ruta del juego.\n" +
+            "Ejemplo RetroArch: -L cores/snes9x_libretro.dll \"{0}\"\n" +
+            "Ejemplo Normal: \"{0}\"";
+            
+        ShowMessage(helpText);
+    }
+
     private void BtnLaunchGame_Click(object? sender, RoutedEventArgs e)
     {
         var logLines = new System.Collections.Generic.List<string>();
@@ -1173,7 +1220,17 @@ public partial class MainWindow : Window
 
             ProcessStartInfo psi = new ProcessStartInfo();
 
-            if (string.IsNullOrEmpty(platform.EmulatorPath))
+            string finalEmulatorPath = platform.EmulatorPath;
+            string finalLaunchArgs = platform.LaunchArguments;
+
+            if (!string.IsNullOrEmpty(_selectedGame.OverrideEmulatorPath))
+            {
+                finalEmulatorPath = _selectedGame.OverrideEmulatorPath;
+                finalLaunchArgs = _selectedGame.OverrideLaunchArguments;
+                logLines.Add($"Usando OVERRIDE de juego. EmulatorPath: '{finalEmulatorPath}'");
+            }
+
+            if (string.IsNullOrEmpty(finalEmulatorPath))
             {
                 logLines.Add("Aviso: EmulatorPath vacío. Usando UseShellExecute = true con RomPath.");
                 psi.FileName = _selectedGame.RomPath;
@@ -1182,19 +1239,19 @@ public partial class MainWindow : Window
             else
             {
                 logLines.Add("EmulatorPath configurado. Verificando...");
-                if (!File.Exists(platform.EmulatorPath))
+                if (!File.Exists(finalEmulatorPath))
                 {
-                    logLines.Add("Error: EmulatorPath no existe en disco.");
-                    ShowMessage("La ruta del emulador especificada en la plataforma no existe.");
+                    logLines.Add("Error: finalEmulatorPath no existe en disco.");
+                    ShowMessage("La ruta del emulador especificada no existe.");
                     File.WriteAllLines("launcher_log.txt", logLines);
                     return;
                 }
 
                 logLines.Add("EmulatorPath OK.");
-                psi.FileName = platform.EmulatorPath;
-                psi.WorkingDirectory = System.IO.Path.GetDirectoryName(platform.EmulatorPath) ?? string.Empty;
+                psi.FileName = finalEmulatorPath;
+                psi.WorkingDirectory = System.IO.Path.GetDirectoryName(finalEmulatorPath) ?? string.Empty;
                 
-                string args = string.IsNullOrEmpty(platform.LaunchArguments) ? "\"{0}\"" : platform.LaunchArguments;
+                string args = string.IsNullOrEmpty(finalLaunchArgs) ? "\"{0}\"" : finalLaunchArgs;
                 logLines.Add($"Args base: {args}");
                 psi.Arguments = args.Replace("{0}", _selectedGame.RomPath);
                 logLines.Add($"Args reemplazados: {psi.Arguments}");
