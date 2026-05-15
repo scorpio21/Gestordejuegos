@@ -20,12 +20,16 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 - **Nuevo:** Paginación (Lazy Loading) para optimizar colecciones de miles de juegos sin usar memoria (mira Issue #5).
 - **Nuevo:** Importar Formato (.XML , .DAT) - Importar catálogos completos en formato XML (No-Intro / DAT) (mira Issue #1).
 - **Nuevo:** Auto-descarga masiva de carátulas (Scraping en lote) y actualización de metadatos (mira Issue #2).
+- **Nuevo:** Importar listas desde archivo de texto (.txt) mediante Drag & Drop inteligente, omitiendo duplicados.
+- **Mejora:** Filtrado y priorización inteligente de carátulas en IGDB dependiendo de la plataforma seleccionada.
 
 ---
 
 ## ✨ Características Principales
 
 - **Buscador Dinámico:** Filtra instantáneamente tu colección de juegos por título o género a medida que escribes.
+- **Importación por Drag & Drop:** Arrastra y suelta archivos `.txt` sobre la aplicación para poblar plataformas enteras en segundos, reconociendo región e idiomas automáticamente.
+- **Auto-Scraping Inteligente:** Integración completa con IGDB para buscar carátulas y metadatos priorizando la consola o plataforma donde se esté buscando.
 
 - **Gestión por Plataformas Dinámica:** Crea, edita y elimina tus propias plataformas (PlayStation, Super Nintendo, etc.) desde un menú de gestión interactivo.
 - **Vistas Personalizables:** Alterna entre una **vista de Lista** detallada o una **vista de Galería (Cuadrícula)** enfocada en las carátulas.
