@@ -10,7 +10,8 @@
         Icon="avares://GestorJuegos/img/iconoventana.png"
         Width="1200" Height="750" MinWidth="1000" MinHeight="600"
         Background="#0f172a" Foreground="#f8fafc"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        DragDrop.AllowDrop="True">
         
     <Window.Resources>
         <utils:ByteArrayToBitmapConverter x:Key="ByteToBitmap" />

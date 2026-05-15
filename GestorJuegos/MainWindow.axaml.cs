@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
@@ -8,6 +9,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace GestorJuegos;
@@ -53,6 +55,8 @@ public partial class MainWindow : Window
         _igdbService = new IgdbService(clientId, clientSecret);
         LoadPlatforms();
 
+        AddHandler(DragDrop.DropEvent, Window_Drop);
+
         BtnAddGame.Click += BtnAddGame_Click;
         BtnSave.Click += BtnSave_Click;
         BtnDelete.Click += BtnDelete_Click;
@@ -94,6 +98,93 @@ public partial class MainWindow : Window
 
         BtnSelectRom.Click += BtnSelectRom_Click;
         BtnLaunchGame.Click += BtnLaunchGame_Click;
+    }
+
+    private async void Window_Drop(object? sender, DragEventArgs e)
+    {
+        if (_selectedPlatform == null)
+        {
+            ShowMessage("Por favor, selecciona una plataforma antes de soltar un archivo de lista.");
+            return;
+        }
+
+        var filesData = e.DataTransfer.TryGetFiles();
+        if (filesData == null) return;
+        
+        var files = filesData.Select(f => f.TryGetLocalPath() ?? f.Name).ToList();
+
+        if (files == null || files.Count == 0) return;
+
+        var txtFile = files.FirstOrDefault(f => f != null && f.EndsWith(".txt", StringComparison.OrdinalIgnoreCase));
+        if (txtFile != null)
+        {
+            try
+            {
+                ShowMessage("Procesando archivo...");
+                using var stream = File.OpenRead(txtFile);
+                using var reader = new StreamReader(stream);
+                string content = await reader.ReadToEndAsync();
+                
+                var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                var newGames = new System.Collections.Generic.List<Game>();
+                
+                foreach(var line in lines)
+                {
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+                    if (line.StartsWith("Plataforma:", StringComparison.OrdinalIgnoreCase)) continue;
+                    
+                    string baseName = Path.GetFileNameWithoutExtension(line);
+                    
+                    string region = "🌎 World";
+                    if (baseName.Contains("(Europe") || baseName.Contains("(EU")) region = "🇪🇺 EU";
+                    else if (baseName.Contains("(USA") || baseName.Contains("(US")) region = "🇺🇸 US";
+                    else if (baseName.Contains("(Japan") || baseName.Contains("(JP")) region = "🇯🇵 JP";
+
+                    // Extract languages e.g. (En,Fr,De)
+                    string langs = "";
+                    var langMatch = Regex.Match(baseName, @"\(([A-Za-z]{2}(?:,[A-Za-z]{2})*)\)");
+                    if (langMatch.Success)
+                    {
+                        langs = langMatch.Groups[1].Value;
+                    }
+
+                    // Clean name
+                    string cleanName = Regex.Replace(baseName, @"\([^)]*\)|\[[^\]]*\]", "").Trim();
+                    if (cleanName.Contains("•")) cleanName = cleanName.Split('•')[0].Trim();
+
+                    if (!string.IsNullOrEmpty(cleanName))
+                    {
+                        newGames.Add(new Game
+                        {
+                            PlatformId = _selectedPlatform.Id,
+                            Name = cleanName,
+                            Region = region,
+                            Languages = langs,
+                            Year = DateTime.Now.Year
+                        });
+                    }
+                }
+
+                if (newGames.Count > 0)
+                {
+                    using (var context = new GestorJuegos.Data.AppDbContext())
+                    {
+                        context.Games.AddRange(newGames);
+                        context.SaveChanges();
+                    }
+                    LoadGames();
+                    ShowMessage($"¡Importación completada! Se añadieron {newGames.Count} juegos desde la lista.");
+                }
+                else
+                {
+                    ShowMessage("No se encontraron juegos válidos en la lista.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error al leer el archivo: {ex.Message}");
+            }
+        }
     }
 
     private void ShowMessage(string message)
