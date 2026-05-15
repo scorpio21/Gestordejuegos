@@ -7,6 +7,10 @@
 
 Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9**, diseñada para catalogar y gestionar colecciones de videojuegos retro. Permite organizar los juegos por plataformas, almacenar detalles como el año de lanzamiento, género y mantener un registro visual con la carátula de cada juego.
 
+<div align="center">
+  <img src="GestorJuegos/img/captura.png" alt="Captura de la aplicación Gestor de Juegos" width="800"/>
+</div>
+
 ---
 
 ## 🚀 Registro de Cambios (Changelog)
