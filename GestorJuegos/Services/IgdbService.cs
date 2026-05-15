@@ -13,6 +13,7 @@ namespace GestorJuegos.Services
         public int? Year { get; set; }
         public string Genre { get; set; } = string.Empty;
         public string CoverUrl { get; set; } = string.Empty;
+        public List<string> Platforms { get; set; } = new();
     }
 
     public class IgdbService
@@ -60,7 +61,7 @@ namespace GestorJuegos.Services
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_accessToken}");
 
             // IGDB query syntax
-            string body = $"search \"{query}\"; fields name, first_release_date, cover.image_id, genres.name; limit 20;";
+            string body = $"search \"{query}\"; fields name, first_release_date, cover.image_id, genres.name, platforms.name; limit 30;";
             var content = new StringContent(body, Encoding.UTF8, "text/plain");
 
             var response = await client.PostAsync("https://api.igdb.com/v4/games", content);
@@ -84,7 +85,7 @@ namespace GestorJuegos.Services
                     result.Year = DateTimeOffset.FromUnixTimeSeconds(unixDate).Year;
                 }
 
-                if (element.TryGetProperty("genres", out var genresProp) && genresProp.GetArrayLength() > 0)
+                if (element.TryGetProperty("genres", out var genresProp) && genresProp.ValueKind == JsonValueKind.Array)
                 {
                     var genresList = new List<string>();
                     foreach (var genre in genresProp.EnumerateArray())
@@ -95,6 +96,17 @@ namespace GestorJuegos.Services
                         }
                     }
                     result.Genre = string.Join(", ", genresList);
+                }
+
+                if (element.TryGetProperty("platforms", out var platformsProp) && platformsProp.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var p in platformsProp.EnumerateArray())
+                    {
+                        if (p.TryGetProperty("name", out var pName))
+                        {
+                            result.Platforms.Add(pName.GetString() ?? "");
+                        }
+                    }
                 }
 
                 if (element.TryGetProperty("cover", out var coverProp) && coverProp.TryGetProperty("image_id", out var imageIdProp))

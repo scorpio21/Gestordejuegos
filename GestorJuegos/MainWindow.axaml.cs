@@ -435,7 +435,15 @@ public partial class MainWindow : Window
                 try
                 {
                     var results = await _igdbService.SearchGamesAsync(game.Name);
-                    var match = results.FirstOrDefault(r => !string.IsNullOrEmpty(r.CoverUrl));
+                    IgdbSearchResult? match = null;
+                    if (results.Count > 0)
+                    {
+                        if (_selectedPlatform != null)
+                        {
+                            match = results.FirstOrDefault(r => !string.IsNullOrEmpty(r.CoverUrl) && r.Platforms.Any(p => p.Contains(_selectedPlatform.Name, StringComparison.OrdinalIgnoreCase) || _selectedPlatform.Name.Contains(p, StringComparison.OrdinalIgnoreCase)));
+                        }
+                        if (match == null) match = results.FirstOrDefault(r => !string.IsNullOrEmpty(r.CoverUrl));
+                    }
                     
                     if (match != null)
                     {
@@ -602,6 +610,10 @@ public partial class MainWindow : Window
         try
         {
             var results = await _igdbService.SearchGamesAsync(query);
+            if (_selectedPlatform != null)
+            {
+                results = results.OrderByDescending(r => r.Platforms.Any(p => p.Contains(_selectedPlatform.Name, StringComparison.OrdinalIgnoreCase) || _selectedPlatform.Name.Contains(p, StringComparison.OrdinalIgnoreCase))).ToList();
+            }
             LstIgdbResults.ItemsSource = results;
             if (results.Count == 0)
             {
