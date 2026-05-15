@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private readonly IgdbService _igdbService;
     private readonly TheGamesDbService _theGamesDbService;
     private readonly GameTdbService _gameTdbService;
+    private readonly PalSnesCoversService _palSnesCoversService;
     private string _currentScraperSource = "IGDB";
     private System.Collections.Generic.List<Game> _currentPlatformGames = new System.Collections.Generic.List<Game>();
     private int _currentPage = 1;
@@ -74,6 +75,7 @@ public partial class MainWindow : Window
         _igdbService = new IgdbService(clientId, clientSecret);
         _theGamesDbService = new TheGamesDbService(theGamesDbKey);
         _gameTdbService = new GameTdbService();
+        _palSnesCoversService = new PalSnesCoversService();
         LoadPlatforms();
 
         AddHandler(DragDrop.DropEvent, Window_Drop);
@@ -112,6 +114,7 @@ public partial class MainWindow : Window
         MenuBatchScrapeIgdb.Click += (s, e) => RunBatchScrape("IGDB");
         MenuBatchScrapeTgdb.Click += (s, e) => RunBatchScrape("TheGamesDB");
         MenuBatchScrapeGameTdb.Click += (s, e) => RunBatchScrape("GameTDB");
+        MenuBatchScrapePalSnes.Click += (s, e) => RunBatchScrape("PalSnesCovers");
 
         BtnCloseMessage.Click += BtnCloseMessage_Click;
         
@@ -463,6 +466,7 @@ public partial class MainWindow : Window
                     if (source == "IGDB") results = await _igdbService.SearchGamesAsync(game.Name);
                     else if (source == "TheGamesDB") results = await _theGamesDbService.SearchGamesAsync(game.Name);
                     else if (source == "GameTDB" && _selectedPlatform != null) results = await _gameTdbService.SearchGamesAsync(game.Name, _selectedPlatform.Name);
+                    else if (source == "PalSnesCovers") results = await _palSnesCoversService.SearchGamesAsync(game.Name);
 
                     GestorJuegos.Services.IgdbSearchResult? match = null;
                     if (results.Count > 0)
@@ -480,6 +484,7 @@ public partial class MainWindow : Window
                         if (source == "IGDB") coverData = await _igdbService.DownloadCoverAsync(match.CoverUrl);
                         else if (source == "TheGamesDB") coverData = await _theGamesDbService.DownloadCoverAsync(match.CoverUrl);
                         else if (source == "GameTDB") coverData = await _gameTdbService.DownloadCoverAsync(match.CoverUrl);
+                        else if (source == "PalSnesCovers") coverData = await _palSnesCoversService.DownloadCoverAsync(match.CoverUrl);
                         
                         if (coverData != null && coverData.Length > 0)
                         {
@@ -684,6 +689,7 @@ public partial class MainWindow : Window
                 }
                 results = await _gameTdbService.SearchGamesAsync(query, _selectedPlatform.Name);
             }
+            else if (selectedSource == "PalSnesCovers") results = await _palSnesCoversService.SearchGamesAsync(query);
 
             if (_selectedPlatform != null && selectedSource == "IGDB")
             {
@@ -731,6 +737,7 @@ public partial class MainWindow : Window
                     if (_currentScraperSource == "IGDB") _currentCover = await _igdbService.DownloadCoverAsync(result.CoverUrl);
                     else if (_currentScraperSource == "TheGamesDB") _currentCover = await _theGamesDbService.DownloadCoverAsync(result.CoverUrl);
                     else if (_currentScraperSource == "GameTDB") _currentCover = await _gameTdbService.DownloadCoverAsync(result.CoverUrl);
+                    else if (_currentScraperSource == "PalSnesCovers") _currentCover = await _palSnesCoversService.DownloadCoverAsync(result.CoverUrl);
                     UpdateCoverImage();
                     OverlayMessage.IsVisible = false; // Ocultar mensaje al terminar
                 }
