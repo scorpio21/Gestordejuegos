@@ -7,6 +7,9 @@
 
 Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9**, diseñada para catalogar y gestionar colecciones de videojuegos retro. Permite organizar los juegos por plataformas, almacenar detalles como el año de lanzamiento, género y mantener un registro visual con la carátula de cada juego.
 
+---
+
+## 📸 Capturas de Pantalla
 <div align="center">
   <img src="GestorJuegos/img/captura.png" alt="Captura de la aplicación Gestor de Juegos" width="800"/>
 </div>
@@ -85,13 +88,6 @@ GestorJuegos/
 > **Nota:** En su primer arranque, la aplicación generará de forma automática el archivo `GestorJuegos.db` en el directorio de ejecución, listo para que comiences a añadir tus plataformas y juegos.
 
 ---
-
-## 📸 Capturas de Pantalla
-
-*(Aquí puedes añadir capturas de la interfaz una vez que personalices los estilos y comiences a añadir juegos).*
-
----
-
 
 ## 🔑 Configuración de la API (IGDB)
 Para que el buscador automático de juegos funcione, necesitas configurar tus credenciales de IGDB.
