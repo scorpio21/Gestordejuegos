@@ -128,6 +128,16 @@ public partial class MainWindow : Window
                 var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 var newGames = new System.Collections.Generic.List<Game>();
                 
+                var existingNames = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                using (var context = new GestorJuegos.Data.AppDbContext())
+                {
+                    var platformGames = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id).Select(g => g.Name).ToList();
+                    foreach(var name in platformGames) 
+                        if(name != null) existingNames.Add(name);
+                }
+                
+                int skippedCount = 0;
+                
                 foreach(var line in lines)
                 {
                     if (string.IsNullOrWhiteSpace(line)) continue;
@@ -154,14 +164,22 @@ public partial class MainWindow : Window
 
                     if (!string.IsNullOrEmpty(cleanName))
                     {
-                        newGames.Add(new Game
+                        if (existingNames.Contains(cleanName))
                         {
-                            PlatformId = _selectedPlatform.Id,
-                            Name = cleanName,
-                            Region = region,
-                            Languages = langs,
-                            Year = DateTime.Now.Year
-                        });
+                            skippedCount++;
+                        }
+                        else
+                        {
+                            existingNames.Add(cleanName); // Evitar duplicados dentro del mismo txt
+                            newGames.Add(new Game
+                            {
+                                PlatformId = _selectedPlatform.Id,
+                                Name = cleanName,
+                                Region = region,
+                                Languages = langs,
+                                Year = DateTime.Now.Year
+                            });
+                        }
                     }
                 }
 
@@ -173,7 +191,13 @@ public partial class MainWindow : Window
                         context.SaveChanges();
                     }
                     LoadGames();
-                    ShowMessage($"¡Importación completada! Se añadieron {newGames.Count} juegos desde la lista.");
+                    string msg = $"¡Importación completada! Se añadieron {newGames.Count} juegos.";
+                    if (skippedCount > 0) msg += $" Se omitieron {skippedCount} que ya existían.";
+                    ShowMessage(msg);
+                }
+                else if (skippedCount > 0)
+                {
+                    ShowMessage($"No se añadieron juegos. Se omitieron {skippedCount} que ya existían en la plataforma.");
                 }
                 else
                 {
