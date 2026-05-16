@@ -66,16 +66,20 @@
                 <Border Grid.Column="0" Padding="20">
                     <DockPanel>
                         <!-- Header with View Toggles -->
-                        <DockPanel Name="PnlHeaderToggles" DockPanel.Dock="Top" Margin="0,0,0,20" IsVisible="False">
-                            <TextBlock Name="TxtSelectedPlatform" Text="Seleccione una plataforma" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                <TextBox Name="TxtSearchGame" PlaceholderText="🔍 Buscar juego o género..." Width="220" CornerRadius="6" VerticalAlignment="Center" Margin="0,0,10,0" Background="#1e293b" BorderBrush="#334155" TextChanged="TxtSearchGame_TextChanged" />
-                                <ToggleButton Name="BtnQuickFavorite" Content="⭐ Favoritos" Padding="10,6" Background="Transparent" Foreground="#fbbf24" CornerRadius="6" BorderBrush="#334155" BorderThickness="1" />
-                                <Button Name="BtnToggleFilters" Content="▼ Filtros" Padding="10,6" Background="#334155" Foreground="White" CornerRadius="6"/>
-                                <Button Name="BtnViewList" Content="≡ Lista" Padding="10,6" Background="#334155" Foreground="White" CornerRadius="6"/>
-                                <Button Name="BtnViewGrid" Content="▤ Galería" Padding="10,6" Background="Transparent" Foreground="#94a3b8" CornerRadius="6" BorderBrush="#334155" BorderThickness="1"/>
-                            </StackPanel>
-                        </DockPanel>
+                        <StackPanel Name="PnlHeaderToggles" DockPanel.Dock="Top" Margin="0,0,0,20" IsVisible="False">
+                            <DockPanel Margin="0,0,0,15">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                    <Button Name="BtnViewList" Content="≡ Lista" Padding="10,6" Background="#334155" Foreground="White" CornerRadius="6"/>
+                                    <Button Name="BtnViewGrid" Content="▤ Galería" Padding="10,6" Background="Transparent" Foreground="#94a3b8" CornerRadius="6" BorderBrush="#334155" BorderThickness="1"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBox Name="TxtSearchGame" PlaceholderText="🔍 Buscar juego o género..." Width="220" CornerRadius="6" VerticalAlignment="Center" Background="#1e293b" BorderBrush="#334155" TextChanged="TxtSearchGame_TextChanged" />
+                                    <ToggleButton Name="BtnQuickFavorite" Content="⭐ Favoritos" Padding="10,6" Background="Transparent" Foreground="#fbbf24" CornerRadius="6" BorderBrush="#334155" BorderThickness="1" />
+                                    <Button Name="BtnToggleFilters" Content="▼ Filtros" Padding="10,6" Background="#334155" Foreground="White" CornerRadius="6"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <TextBlock Name="TxtSelectedPlatform" Text="Seleccione una plataforma" FontSize="26" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
+                        </StackPanel>
 
                         <!-- Filtros Avanzados -->
                         <Border Name="PnlFilters" IsVisible="False" DockPanel.Dock="Top" Background="#0f172a" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="#334155" BorderThickness="1">
