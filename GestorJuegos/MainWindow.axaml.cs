@@ -228,31 +228,6 @@ public partial class MainWindow : Window
     private Avalonia.Threading.DispatcherTimer? _gamepadTimer;
     private Vortice.XInput.GamepadButtons _previousGamepadButtons;
 
-    private void SimulateKey(Avalonia.Input.Key key, Avalonia.Input.KeyModifiers modifiers = Avalonia.Input.KeyModifiers.None)
-    {
-        var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
-        var focusedElement = topLevel?.FocusManager?.GetFocusedElement() as Avalonia.Controls.Control;
-        if (focusedElement == null) focusedElement = this;
-
-        var e = new Avalonia.Input.KeyEventArgs
-        {
-            RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent,
-            Key = key,
-            KeyModifiers = modifiers,
-            Source = focusedElement
-        };
-        focusedElement.RaiseEvent(e);
-        
-        var eUp = new Avalonia.Input.KeyEventArgs
-        {
-            RoutedEvent = Avalonia.Input.InputElement.KeyUpEvent,
-            Key = key,
-            KeyModifiers = modifiers,
-            Source = focusedElement
-        };
-        focusedElement.RaiseEvent(eUp);
-    }
-
     private void GamepadTimer_Tick(object? sender, EventArgs e)
     {
         if (Vortice.XInput.XInput.GetState(0, out var state))
@@ -366,10 +341,20 @@ public partial class MainWindow : Window
                     UpdateKeyboardHighlight();
                     OverlayKeyboard.IsVisible = true;
                 }
-                else
+                else if (focusedElement is Avalonia.Controls.Primitives.ToggleButton tBtn)
                 {
-                    SimulateKey(Avalonia.Input.Key.Enter);
-                    SimulateKey(Avalonia.Input.Key.Space);
+                    tBtn.IsChecked = (tBtn.IsChecked != true);
+                    tBtn.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));
+                }
+                else if (focusedElement is Avalonia.Controls.Button btn)
+                {
+                    btn.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));
+                }
+                else if (focusedElement is Avalonia.Controls.MenuItem mi)
+                {
+                    // To interact with MenuItems we still need a way to open them. 
+                    // Let's use TryMoveFocus into the menu.
+                    topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Down);
                 }
                 return;
             }
@@ -446,7 +431,7 @@ public partial class MainWindow : Window
             {
                 if (focusedElement is Avalonia.Controls.MenuItem)
                 {
-                    SimulateKey(Avalonia.Input.Key.Down);
+                    topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Down);
                 }
                 else
                 {
@@ -463,17 +448,17 @@ public partial class MainWindow : Window
             }
             else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadRight))
             {
-                if (focusedElement is Avalonia.Controls.MenuItem) SimulateKey(Avalonia.Input.Key.Right);
-                else SimulateKey(Avalonia.Input.Key.Tab);
+                if (focusedElement is Avalonia.Controls.MenuItem) topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Right);
+                else topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Next);
             }
             else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadLeft))
             {
-                if (focusedElement is Avalonia.Controls.MenuItem) SimulateKey(Avalonia.Input.Key.Left);
-                else SimulateKey(Avalonia.Input.Key.Tab, Avalonia.Input.KeyModifiers.Shift);
+                if (focusedElement is Avalonia.Controls.MenuItem) topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Left);
+                else topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Previous);
             }
             else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadUp))
             {
-                SimulateKey(Avalonia.Input.Key.Up);
+                topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Up);
             }
 
             focusedElement = topLevel?.FocusManager?.GetFocusedElement() as Avalonia.Controls.Control;
