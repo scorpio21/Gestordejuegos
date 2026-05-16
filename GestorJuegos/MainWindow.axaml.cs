@@ -164,7 +164,7 @@ public partial class MainWindow : Window
 
             if (pressedButtons != Vortice.XInput.GamepadButtons.None)
             {
-                _gamepadRepeatDelay = 20;
+                _gamepadRepeatDelay = 25; // Initial delay before repeating
                 HandleGamepadInput(pressedButtons);
             }
             else if (buttons != Vortice.XInput.GamepadButtons.None)
@@ -176,7 +176,7 @@ public partial class MainWindow : Window
                         _gamepadRepeatDelay--;
                     else
                     {
-                        _gamepadRepeatDelay = 4;
+                        _gamepadRepeatDelay = 6; // slightly slower repeat speed (100ms)
                         HandleGamepadInput(dirButtons);
                     }
                 }
@@ -190,6 +190,17 @@ public partial class MainWindow : Window
     {
         if (buttons.HasFlag(Vortice.XInput.GamepadButtons.A))
         {
+            if (OverlayMessage.IsVisible)
+            {
+                OverlayMessage.IsVisible = false;
+                return;
+            }
+            if (OverlayIgdbSearch.IsVisible)
+            {
+                BtnSelectIgdb_Click(null, null);
+                return;
+            }
+
             if (PnlGameDetails.IsVisible && _selectedGame != null && BtnLaunchGame.IsVisible)
             {
                 BtnLaunchGame_Click(null, null);
@@ -199,6 +210,27 @@ public partial class MainWindow : Window
 
         if (buttons.HasFlag(Vortice.XInput.GamepadButtons.B))
         {
+            if (OverlayMessage.IsVisible)
+            {
+                OverlayMessage.IsVisible = false;
+                return;
+            }
+            if (OverlayIgdbSearch.IsVisible)
+            {
+                OverlayIgdbSearch.IsVisible = false;
+                return;
+            }
+            if (OverlayAddPlatform.IsVisible)
+            {
+                OverlayAddPlatform.IsVisible = false;
+                return;
+            }
+            if (OverlayManagePlatforms.IsVisible)
+            {
+                OverlayManagePlatforms.IsVisible = false;
+                return;
+            }
+
             if (PnlGameDetails.IsVisible)
             {
                 PnlGameDetails.IsVisible = false;
@@ -220,7 +252,7 @@ public partial class MainWindow : Window
 
         Avalonia.Controls.ListBox? activeList = LstGames.IsVisible ? LstGames : (LstGamesGrid.IsVisible ? LstGamesGrid : null);
         
-        if (activeList != null && activeList.ItemCount > 0 && !PnlGameDetails.IsVisible)
+        if (activeList != null && activeList.ItemCount > 0)
         {
             int maxIndex = activeList.ItemCount - 1;
             int currentIndex = activeList.SelectedIndex;
