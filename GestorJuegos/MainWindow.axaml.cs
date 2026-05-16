@@ -228,6 +228,31 @@ public partial class MainWindow : Window
     private Avalonia.Threading.DispatcherTimer? _gamepadTimer;
     private Vortice.XInput.GamepadButtons _previousGamepadButtons;
 
+    private void SimulateKey(Avalonia.Input.Key key, Avalonia.Input.KeyModifiers modifiers = Avalonia.Input.KeyModifiers.None)
+    {
+        var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
+        var focusedElement = topLevel?.FocusManager?.GetFocusedElement() as Avalonia.Controls.Control;
+        if (focusedElement == null) focusedElement = this;
+
+        var e = new Avalonia.Input.KeyEventArgs
+        {
+            RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent,
+            Key = key,
+            KeyModifiers = modifiers,
+            Source = focusedElement
+        };
+        focusedElement.RaiseEvent(e);
+        
+        var eUp = new Avalonia.Input.KeyEventArgs
+        {
+            RoutedEvent = Avalonia.Input.InputElement.KeyUpEvent,
+            Key = key,
+            KeyModifiers = modifiers,
+            Source = focusedElement
+        };
+        focusedElement.RaiseEvent(eUp);
+    }
+
     private void GamepadTimer_Tick(object? sender, EventArgs e)
     {
         if (Vortice.XInput.XInput.GetState(0, out var state))
@@ -331,10 +356,21 @@ public partial class MainWindow : Window
             }
             if (_gamepadInHeader)
             {
-                _kbdX = 0; _kbdY = 0;
-                TxtKeyboardInput.Text = TxtSearchGame.Text;
-                UpdateKeyboardHighlight();
-                OverlayKeyboard.IsVisible = true;
+                var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
+                var focusedElement = topLevel?.FocusManager?.GetFocusedElement() as Avalonia.Controls.Control;
+
+                if (focusedElement == TxtSearchGame)
+                {
+                    _kbdX = 0; _kbdY = 0;
+                    TxtKeyboardInput.Text = TxtSearchGame.Text;
+                    UpdateKeyboardHighlight();
+                    OverlayKeyboard.IsVisible = true;
+                }
+                else
+                {
+                    SimulateKey(Avalonia.Input.Key.Enter);
+                    SimulateKey(Avalonia.Input.Key.Space);
+                }
                 return;
             }
 
@@ -368,6 +404,18 @@ public partial class MainWindow : Window
                 return;
             }
 
+            if (_gamepadInHeader)
+            {
+                _gamepadInHeader = false;
+                TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#1e293b"); // Normal
+                Avalonia.Controls.ListBox? aList = LstGames.IsVisible ? LstGames : (LstGamesGrid.IsVisible ? LstGamesGrid : null);
+                if (aList != null && aList.ItemCount > 0)
+                {
+                    aList.Focus();
+                }
+                return;
+            }
+
             if (PnlGameDetails.IsVisible)
             {
                 PnlGameDetails.IsVisible = false;
@@ -391,17 +439,47 @@ public partial class MainWindow : Window
         
         if (_gamepadInHeader)
         {
+            var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
+            var focusedElement = topLevel?.FocusManager?.GetFocusedElement() as Avalonia.Controls.Control;
+
             if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadDown))
             {
-                _gamepadInHeader = false;
-                TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#1e293b"); // Normal
-                if (activeList != null && activeList.ItemCount > 0)
+                if (focusedElement is Avalonia.Controls.MenuItem)
                 {
-                    activeList.SelectedIndex = 0;
-                    var item = activeList.Items.Cast<object>().ElementAtOrDefault(0);
-                    if (item != null) activeList.ScrollIntoView(item);
+                    SimulateKey(Avalonia.Input.Key.Down);
+                }
+                else
+                {
+                    _gamepadInHeader = false;
+                    TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#1e293b"); // Normal
+                    if (activeList != null && activeList.ItemCount > 0)
+                    {
+                        activeList.Focus();
+                        activeList.SelectedIndex = 0;
+                        var item = activeList.Items.Cast<object>().ElementAtOrDefault(0);
+                        if (item != null) activeList.ScrollIntoView(item);
+                    }
                 }
             }
+            else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadRight))
+            {
+                if (focusedElement is Avalonia.Controls.MenuItem) SimulateKey(Avalonia.Input.Key.Right);
+                else SimulateKey(Avalonia.Input.Key.Tab);
+            }
+            else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadLeft))
+            {
+                if (focusedElement is Avalonia.Controls.MenuItem) SimulateKey(Avalonia.Input.Key.Left);
+                else SimulateKey(Avalonia.Input.Key.Tab, Avalonia.Input.KeyModifiers.Shift);
+            }
+            else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadUp))
+            {
+                SimulateKey(Avalonia.Input.Key.Up);
+            }
+
+            focusedElement = topLevel?.FocusManager?.GetFocusedElement() as Avalonia.Controls.Control;
+            if (focusedElement != TxtSearchGame) TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#1e293b");
+            else TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#475569");
+
             return;
         }
 
@@ -431,6 +509,7 @@ public partial class MainWindow : Window
             {
                 // Move focus to Header (Search)
                 _gamepadInHeader = true;
+                TxtSearchGame.Focus(); // Set native focus
                 TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#475569"); // Highlight
                 activeList.SelectedIndex = -1;
                 return;
