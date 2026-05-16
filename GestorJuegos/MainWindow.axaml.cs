@@ -134,6 +134,8 @@ public partial class MainWindow : Window
         BtnToggleFilters.Click += BtnToggleFilters_Click;
         BtnApplyFilters.Click += BtnApplyFilters_Click;
         BtnClearFilters.Click += BtnClearFilters_Click;
+        
+        BtnQuickFavorite.Click += BtnQuickFavorite_Click;
     }
 
     private async void Window_Drop(object? sender, DragEventArgs e)
@@ -890,7 +892,7 @@ public partial class MainWindow : Window
             filtered = filtered.Where(g => g.Name.ToLower().Contains(queryStr) || (g.Genre != null && g.Genre.ToLower().Contains(queryStr)));
         }
 
-        if (ChkFilterFavorites?.IsChecked == true)
+        if (BtnQuickFavorite?.IsChecked == true)
         {
             filtered = filtered.Where(g => g.IsFavorite);
         }
@@ -948,10 +950,16 @@ public partial class MainWindow : Window
 
     private void BtnClearFilters_Click(object? sender, RoutedEventArgs e)
     {
-        if (ChkFilterFavorites != null) ChkFilterFavorites.IsChecked = false;
+        if (BtnQuickFavorite != null) BtnQuickFavorite.IsChecked = false;
         if (CmbFilterRegion != null) CmbFilterRegion.SelectedIndex = 0;
         if (NumFilterYear != null) NumFilterYear.Value = 0;
         
+        _currentPage = 1;
+        ApplySearchFilter();
+    }
+
+    private void BtnQuickFavorite_Click(object? sender, RoutedEventArgs e)
+    {
         _currentPage = 1;
         ApplySearchFilter();
     }
