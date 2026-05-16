@@ -35,6 +35,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         
+        _gamepadTimer = new Avalonia.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(16)
+        };
+        _gamepadTimer.Tick += GamepadTimer_Tick;
+        _gamepadTimer.Start();
+        
         var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         if (version != null)
         {
@@ -136,6 +143,115 @@ public partial class MainWindow : Window
         BtnClearFilters.Click += BtnClearFilters_Click;
         
         BtnQuickFavorite.Click += BtnQuickFavorite_Click;
+    }
+
+    private int _gamepadRepeatDelay = 0;
+    private Avalonia.Threading.DispatcherTimer? _gamepadTimer;
+    private Vortice.XInput.GamepadButtons _previousGamepadButtons;
+
+    private void GamepadTimer_Tick(object? sender, EventArgs e)
+    {
+        if (Vortice.XInput.XInput.GetState(0, out var state))
+        {
+            var buttons = state.Gamepad.Buttons;
+            
+            if (state.Gamepad.LeftThumbY > 16000) buttons |= Vortice.XInput.GamepadButtons.DPadUp;
+            if (state.Gamepad.LeftThumbY < -16000) buttons |= Vortice.XInput.GamepadButtons.DPadDown;
+            if (state.Gamepad.LeftThumbX > 16000) buttons |= Vortice.XInput.GamepadButtons.DPadRight;
+            if (state.Gamepad.LeftThumbX < -16000) buttons |= Vortice.XInput.GamepadButtons.DPadLeft;
+
+            var pressedButtons = buttons & ~_previousGamepadButtons;
+
+            if (pressedButtons != Vortice.XInput.GamepadButtons.None)
+            {
+                _gamepadRepeatDelay = 20;
+                HandleGamepadInput(pressedButtons);
+            }
+            else if (buttons != Vortice.XInput.GamepadButtons.None)
+            {
+                var dirButtons = buttons & (Vortice.XInput.GamepadButtons.DPadUp | Vortice.XInput.GamepadButtons.DPadDown | Vortice.XInput.GamepadButtons.DPadLeft | Vortice.XInput.GamepadButtons.DPadRight);
+                if (dirButtons != Vortice.XInput.GamepadButtons.None)
+                {
+                    if (_gamepadRepeatDelay > 0)
+                        _gamepadRepeatDelay--;
+                    else
+                    {
+                        _gamepadRepeatDelay = 4;
+                        HandleGamepadInput(dirButtons);
+                    }
+                }
+            }
+            
+            _previousGamepadButtons = buttons;
+        }
+    }
+
+    private void HandleGamepadInput(Vortice.XInput.GamepadButtons buttons)
+    {
+        if (buttons.HasFlag(Vortice.XInput.GamepadButtons.A))
+        {
+            if (PnlGameDetails.IsVisible && _selectedGame != null && BtnLaunchGame.IsVisible)
+            {
+                BtnLaunchGame_Click(null, null);
+            }
+            return;
+        }
+
+        if (buttons.HasFlag(Vortice.XInput.GamepadButtons.B))
+        {
+            if (PnlGameDetails.IsVisible)
+            {
+                PnlGameDetails.IsVisible = false;
+                LstGames.SelectedItem = null;
+                LstGamesGrid.SelectedItem = null;
+                _selectedGame = null;
+            }
+            return;
+        }
+
+        if (buttons.HasFlag(Vortice.XInput.GamepadButtons.LeftShoulder))
+        {
+            if (BtnPrevPage.IsVisible) BtnPrevPage_Click(null, null);
+        }
+        else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.RightShoulder))
+        {
+            if (BtnNextPage.IsVisible) BtnNextPage_Click(null, null);
+        }
+
+        Avalonia.Controls.ListBox? activeList = LstGames.IsVisible ? LstGames : (LstGamesGrid.IsVisible ? LstGamesGrid : null);
+        
+        if (activeList != null && activeList.ItemCount > 0 && !PnlGameDetails.IsVisible)
+        {
+            int maxIndex = activeList.ItemCount - 1;
+            int currentIndex = activeList.SelectedIndex;
+            if (currentIndex < 0) currentIndex = 0;
+
+            int newIndex = currentIndex;
+
+            if (activeList == LstGames)
+            {
+                if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadDown)) newIndex++;
+                else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadUp)) newIndex--;
+            }
+            else
+            {
+                int cols = Math.Max(1, (int)(LstGamesGrid.Bounds.Width / 160));
+                if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadRight)) newIndex++;
+                else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadLeft)) newIndex--;
+                else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadDown)) newIndex += cols;
+                else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadUp)) newIndex -= cols;
+            }
+
+            if (newIndex < 0) newIndex = 0;
+            if (newIndex > maxIndex) newIndex = maxIndex;
+
+            if (newIndex != activeList.SelectedIndex)
+            {
+                activeList.SelectedIndex = newIndex;
+                var item = activeList.Items.Cast<object>().ElementAtOrDefault(newIndex);
+                if (item != null) activeList.ScrollIntoView(item);
+            }
+        }
     }
 
     private async void Window_Drop(object? sender, DragEventArgs e)

@@ -19,7 +19,11 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.3 (Actual)**
+**Version 1.0.4 (Actual)**
+
+- **Nuevo:** Soporte para Mando (Gamepad Support). Navegación completa por la cuadrícula y lista de juegos mediante mandos tipo Xbox/PlayStation utilizando el D-Pad o el stick analógico izquierdo. Lanzamiento rápido de juegos con el botón `A` y cancelación de menús con `B` (mira Issue #9).
+
+**Version 1.0.3 (16-05-2026)**
 
 - **Nuevo:** Sistema de Filtros Avanzados. Añadido un menú desplegable para filtrar la vista actual por Región, Año de lanzamiento o Favoritos.
 - **Nuevo:** Juegos Favoritos. Ahora puedes marcar tus juegos preferidos con una estrella (⭐) para destacarlos visualmente y filtrarlos rápidamente (mira Issue #10).
