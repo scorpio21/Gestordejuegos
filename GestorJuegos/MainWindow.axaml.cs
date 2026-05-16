@@ -128,6 +128,7 @@ public partial class MainWindow : Window
         BtnRemoveRom.Click += BtnRemoveRom_Click;
         BtnSelectOverrideEmulator.Click += BtnSelectOverrideEmulator_Click;
         MenuHelpEmulator.Click += MenuHelpEmulator_Click;
+        MenuHelpMultiDisk.Click += MenuHelpMultiDisk_Click;
         BtnLaunchGame.Click += BtnLaunchGame_Click;
     }
 
@@ -1188,6 +1189,22 @@ public partial class MainWindow : Window
             "Argumentos: Usa {0} para indicar dónde va la ruta del juego.\n" +
             "Ejemplo RetroArch: -L cores/snes9x_libretro.dll \"{0}\"\n" +
             "Ejemplo Normal: \"{0}\"";
+            
+        ShowMessage(helpText);
+    }
+
+    private void MenuHelpMultiDisk_Click(object? sender, RoutedEventArgs e)
+    {
+        string helpText = "CÓMO FUNCIONA LA OPCIÓN MULTI-DISCO:\n\n" +
+            "Si tienes un juego que viene en varios archivos (ej. Final Fantasy VII - Disco 1, Disco 2, etc.), " +
+            "ahora puedes tenerlos agrupados en una sola entrada de tu colección.\n\n" +
+            "1. En los detalles del juego, busca la lista 'Rutas de ROM (Multi-Disco)'.\n" +
+            "2. Pulsa '+ Añadir Disco' para insertar todos los archivos que componen el juego.\n" +
+            "3. Pulsa Guardar.\n\n" +
+            "¿Cómo elegir el disco a jugar?\n" +
+            "- Al momento de jugar, simplemente HAZ CLIC en el disco que desees dentro de esa lista " +
+            "para seleccionarlo, y luego pulsa el gran botón verde '▶ JUGAR'.\n" +
+            "- Si no seleccionas ninguno explícitamente, por defecto se cargará el primero de la lista.";
             
         ShowMessage(helpText);
     }

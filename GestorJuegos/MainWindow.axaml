@@ -51,6 +51,7 @@
                         <Menu Background="Transparent">
                             <MenuItem Name="MenuAyuda" Header="❓ Ayuda" FontSize="14" Foreground="#cbd5e1">
                                 <MenuItem Name="MenuHelpEmulator" Header="Configurar Emuladores..."/>
+                                <MenuItem Name="MenuHelpMultiDisk" Header="Usar soporte Multi-Disco..."/>
                             </MenuItem>
                         </Menu>
                         <Button Name="BtnGoDashboard" Content="🏠 Inicio" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
