@@ -130,6 +130,10 @@ public partial class MainWindow : Window
         MenuHelpEmulator.Click += MenuHelpEmulator_Click;
         MenuHelpMultiDisk.Click += MenuHelpMultiDisk_Click;
         BtnLaunchGame.Click += BtnLaunchGame_Click;
+
+        BtnToggleFilters.Click += BtnToggleFilters_Click;
+        BtnApplyFilters.Click += BtnApplyFilters_Click;
+        BtnClearFilters.Click += BtnClearFilters_Click;
     }
 
     private async void Window_Drop(object? sender, DragEventArgs e)
@@ -878,17 +882,38 @@ public partial class MainWindow : Window
     {
         if (_currentPlatformGames == null) return;
         
-        var query = TxtSearchGame?.Text?.Trim().ToLower() ?? "";
-        var filtered = string.IsNullOrEmpty(query) 
-            ? _currentPlatformGames 
-            : _currentPlatformGames.Where(g => g.Name.ToLower().Contains(query) || (g.Genre != null && g.Genre.ToLower().Contains(query))).ToList();
+        var queryStr = TxtSearchGame?.Text?.Trim().ToLower() ?? "";
+        var filtered = _currentPlatformGames.AsEnumerable();
 
-        int totalItems = filtered.Count;
+        if (!string.IsNullOrEmpty(queryStr))
+        {
+            filtered = filtered.Where(g => g.Name.ToLower().Contains(queryStr) || (g.Genre != null && g.Genre.ToLower().Contains(queryStr)));
+        }
+
+        if (ChkFilterFavorites?.IsChecked == true)
+        {
+            filtered = filtered.Where(g => g.IsFavorite);
+        }
+
+        if (CmbFilterRegion?.SelectedIndex > 0)
+        {
+            string reg = (CmbFilterRegion.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+            filtered = filtered.Where(g => g.Region != null && g.Region.Contains(reg));
+        }
+
+        if (NumFilterYear?.Value > 0)
+        {
+            filtered = filtered.Where(g => g.Year == (int)NumFilterYear.Value);
+        }
+
+        var filteredList = filtered.ToList();
+
+        int totalItems = filteredList.Count;
         int totalPages = (int)Math.Ceiling(totalItems / (double)PageSize);
         if (totalPages == 0) totalPages = 1;
         if (_currentPage > totalPages) _currentPage = totalPages;
 
-        var paginated = filtered.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
+        var paginated = filteredList.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
 
         LstGames.ItemsSource = paginated;
         LstGamesGrid.ItemsSource = paginated;
@@ -905,6 +930,28 @@ public partial class MainWindow : Window
 
     private void TxtSearchGame_TextChanged(object? sender, TextChangedEventArgs e)
     {
+        _currentPage = 1;
+        ApplySearchFilter();
+    }
+
+    private void BtnToggleFilters_Click(object? sender, RoutedEventArgs e)
+    {
+        if (PnlFilters != null)
+            PnlFilters.IsVisible = !PnlFilters.IsVisible;
+    }
+
+    private void BtnApplyFilters_Click(object? sender, RoutedEventArgs e)
+    {
+        _currentPage = 1;
+        ApplySearchFilter();
+    }
+
+    private void BtnClearFilters_Click(object? sender, RoutedEventArgs e)
+    {
+        if (ChkFilterFavorites != null) ChkFilterFavorites.IsChecked = false;
+        if (CmbFilterRegion != null) CmbFilterRegion.SelectedIndex = 0;
+        if (NumFilterYear != null) NumFilterYear.Value = 0;
+        
         _currentPage = 1;
         ApplySearchFilter();
     }
@@ -967,6 +1014,7 @@ public partial class MainWindow : Window
             LstRoms.ItemsSource = _currentRoms;
             TxtOverrideEmulator.Text = game.OverrideEmulatorPath;
             TxtOverrideArgs.Text = game.OverrideLaunchArguments;
+            ChkIsFavorite.IsChecked = game.IsFavorite;
             
             // Set the selected region in the ComboBox
             var regionItem = CmbRegion.Items.Cast<ComboBoxItem>().FirstOrDefault(i => i.Content?.ToString() == game.Region);
@@ -1004,6 +1052,7 @@ public partial class MainWindow : Window
         LstRoms.ItemsSource = _currentRoms;
         TxtOverrideEmulator.Text = string.Empty;
         TxtOverrideArgs.Text = string.Empty;
+        ChkIsFavorite.IsChecked = false;
         CmbRegion.SelectedIndex = 0;
         _currentCover = null;
         UpdateCoverImage();
@@ -1038,6 +1087,7 @@ public partial class MainWindow : Window
         }
         _selectedGame.OverrideEmulatorPath = TxtOverrideEmulator.Text ?? string.Empty;
         _selectedGame.OverrideLaunchArguments = TxtOverrideArgs.Text ?? string.Empty;
+        _selectedGame.IsFavorite = ChkIsFavorite.IsChecked ?? false;
         _selectedGame.Region = (CmbRegion.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "🇺🇸 US";
         _selectedGame.Cover = _currentCover;
 

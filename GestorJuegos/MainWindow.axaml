@@ -70,10 +70,35 @@
                             <TextBlock Name="TxtSelectedPlatform" Text="Seleccione una plataforma" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                                 <TextBox Name="TxtSearchGame" PlaceholderText="🔍 Buscar juego o género..." Width="220" CornerRadius="6" VerticalAlignment="Center" Margin="0,0,10,0" Background="#1e293b" BorderBrush="#334155" TextChanged="TxtSearchGame_TextChanged" />
+                                <Button Name="BtnToggleFilters" Content="▼ Filtros" Padding="10,6" Background="#334155" Foreground="White" CornerRadius="6"/>
                                 <Button Name="BtnViewList" Content="≡ Lista" Padding="10,6" Background="#334155" Foreground="White" CornerRadius="6"/>
                                 <Button Name="BtnViewGrid" Content="▤ Galería" Padding="10,6" Background="Transparent" Foreground="#94a3b8" CornerRadius="6" BorderBrush="#334155" BorderThickness="1"/>
                             </StackPanel>
                         </DockPanel>
+
+                        <!-- Filtros Avanzados -->
+                        <Border Name="PnlFilters" IsVisible="False" DockPanel.Dock="Top" Background="#0f172a" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="#334155" BorderThickness="1">
+                            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <CheckBox Name="ChkFilterFavorites" Content="⭐ Solo Favoritos" Foreground="#fbbf24" Margin="0,0,20,0"/>
+
+                                <TextBlock Text="Región:" Foreground="#94a3b8" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <ComboBox Name="CmbFilterRegion" SelectedIndex="0" CornerRadius="4" Background="#1e293b" BorderBrush="#334155" Margin="0,0,20,0">
+                                    <ComboBoxItem Content="Todas" />
+                                    <ComboBoxItem Content="🇺🇸 US" />
+                                    <ComboBoxItem Content="🇪🇺 EU" />
+                                    <ComboBoxItem Content="🇪🇸 ES" />
+                                    <ComboBoxItem Content="🇯🇵 JP" />
+                                    <ComboBoxItem Content="🌎 World" />
+                                </ComboBox>
+
+                                <TextBlock Text="Año:" Foreground="#94a3b8" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <NumericUpDown Name="NumFilterYear" CornerRadius="4" Background="#1e293b" BorderBrush="#334155" Minimum="0" Maximum="2100" ShowButtonSpinner="False" AllowSpin="False" Margin="0,0,20,0" Width="100"/>
+                                <TextBlock Text="(0 = Todos)" Foreground="#64748b" FontSize="11" VerticalAlignment="Center" Margin="-15,0,20,0"/>
+
+                                <Button Name="BtnApplyFilters" Content="Aplicar" Background="#6366f1" Foreground="White" CornerRadius="4" Padding="10,5" Margin="0,0,10,0"/>
+                                <Button Name="BtnClearFilters" Content="Limpiar" Background="#334155" Foreground="White" CornerRadius="4" Padding="10,5"/>
+                            </WrapPanel>
+                        </Border>
                         
                         <!-- Pagination Controls (Docked to Bottom) -->
                         <StackPanel Name="PnlPagination" DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20" Margin="0,15,0,0" IsVisible="False">
@@ -173,7 +198,10 @@
                                                     <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="45" Height="60" Stretch="UniformToFill"/>
                                                 </Border>
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Margin="0,0,0,4"/>
+                                                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,0,0,4">
+                                                        <TextBlock Text="⭐" IsVisible="{Binding IsFavorite}" Foreground="#fbbf24" FontSize="16" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                                                    </StackPanel>
                                                     <StackPanel Orientation="Horizontal" Spacing="10">
                                                         <TextBlock Text="{Binding Genre}" Foreground="#94a3b8" FontSize="13"/>
                                                         <TextBlock Text="•" Foreground="#475569"/>
@@ -203,7 +231,10 @@
                                                 <Border CornerRadius="4" ClipToBounds="True" Height="150">
                                                     <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="Uniform" />
                                                 </Border>
-                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5">
+                                                    <TextBlock Text="⭐" IsVisible="{Binding IsFavorite}" Foreground="#fbbf24" FontSize="14" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
                                                 <Image Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="32" Height="24" Stretch="Uniform" HorizontalAlignment="Center" />
                                             </StackPanel>
                                         </Border>
@@ -221,7 +252,10 @@
                         
                         <ScrollViewer Padding="0,0,15,0">
                             <StackPanel Name="PnlGameDetails" IsVisible="False" Spacing="15" Margin="0,0,5,0">
-                                <TextBlock Text="Detalles del Juego" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" Foreground="#e2e8f0"/>
+                                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+                                    <TextBlock Text="Detalles del Juego" FontSize="20" FontWeight="Bold" Foreground="#e2e8f0" VerticalAlignment="Center"/>
+                                    <CheckBox Name="ChkIsFavorite" Content="⭐" Foreground="#fbbf24" FontSize="18" ToolTip.Tip="Marcar como Favorito" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                </StackPanel>
                                 
                                 <TextBlock Text="Nombre" Foreground="#94a3b8" FontSize="12" Margin="0,0,0,-10"/>
                                 <Grid ColumnDefinitions="*, Auto, Auto">

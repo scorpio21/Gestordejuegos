@@ -22,6 +22,7 @@ namespace GestorJuegos.Services
                 try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN OverrideEmulatorPath TEXT NOT NULL DEFAULT ''"); } catch (System.Exception ex) { System.Console.WriteLine("Migración OverrideEmulatorPath: " + ex.Message); }
                 try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN OverrideLaunchArguments TEXT NOT NULL DEFAULT ''"); } catch (System.Exception ex) { System.Console.WriteLine("Migración OverrideLaunchArgs: " + ex.Message); }
                 try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN AdditionalRoms TEXT NOT NULL DEFAULT ''"); } catch (System.Exception ex) { System.Console.WriteLine("Migración AdditionalRoms: " + ex.Message); }
+                try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN IsFavorite INTEGER NOT NULL DEFAULT 0"); } catch (System.Exception ex) { System.Console.WriteLine("Migración IsFavorite: " + ex.Message); }
                 
                 // Limpiar juegos huérfanos (por si se eliminó una plataforma en el pasado sin borrar sus juegos)
                 try { context.Database.ExecuteSqlRaw("DELETE FROM Games WHERE PlatformId NOT IN (SELECT Id FROM Platforms)"); } catch { }

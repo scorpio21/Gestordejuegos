@@ -19,7 +19,12 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.2 (Actual)**
+**Version 1.0.3 (Actual)**
+
+- **Nuevo:** Sistema de Filtros Avanzados. Añadido un menú desplegable para filtrar la vista actual por Región, Año de lanzamiento o Favoritos.
+- **Nuevo:** Juegos Favoritos. Ahora puedes marcar tus juegos preferidos con una estrella (⭐) para destacarlos visualmente y filtrarlos rápidamente (mira Issue #10).
+
+**Version 1.0.2 (16-05-2026)**
 
 - **Nuevo:** Soporte Multi-Disco. Posibilidad de añadir múltiples archivos de ROM a un mismo juego (ej. Disco 1, Disco 2) y elegir cuál ejecutar desde la interfaz, manteniéndolo organizado bajo una única entrada en tu colección (mira Issue #8).
 
