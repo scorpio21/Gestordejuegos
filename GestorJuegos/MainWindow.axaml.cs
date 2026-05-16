@@ -392,7 +392,6 @@ public partial class MainWindow : Window
             if (_gamepadInHeader)
             {
                 _gamepadInHeader = false;
-                TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#1e293b"); // Normal
                 Avalonia.Controls.ListBox? aList = LstGames.IsVisible ? LstGames : (LstGamesGrid.IsVisible ? LstGamesGrid : null);
                 if (aList != null && aList.ItemCount > 0)
                 {
@@ -436,7 +435,6 @@ public partial class MainWindow : Window
                 else
                 {
                     _gamepadInHeader = false;
-                    TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#1e293b"); // Normal
                     if (activeList != null && activeList.ItemCount > 0)
                     {
                         activeList.Focus();
@@ -460,10 +458,6 @@ public partial class MainWindow : Window
             {
                 topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Up);
             }
-
-            focusedElement = topLevel?.FocusManager?.GetFocusedElement() as Avalonia.Controls.Control;
-            if (focusedElement != TxtSearchGame) TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#1e293b");
-            else TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#475569");
 
             return;
         }
@@ -495,7 +489,6 @@ public partial class MainWindow : Window
                 // Move focus to Header (Search)
                 _gamepadInHeader = true;
                 TxtSearchGame.Focus(); // Set native focus
-                TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#475569"); // Highlight
                 activeList.SelectedIndex = -1;
                 return;
             }

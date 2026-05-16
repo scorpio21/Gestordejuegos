@@ -20,6 +20,26 @@
         <SolidColorBrush x:Key="PanelBrush">#1e293b</SolidColorBrush>
     </Window.Resources>
 
+    <Window.Styles>
+        <Style Selector="Button:focus">
+            <Setter Property="BorderBrush" Value="#10b981" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="ToggleButton:focus">
+            <Setter Property="BorderBrush" Value="#10b981" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="#10b981" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="MenuItem:focus /template/ Border">
+            <Setter Property="Background" Value="#334155" />
+            <Setter Property="BorderBrush" Value="#10b981" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+    </Window.Styles>
+
     <Grid>
         <DockPanel>
             <!-- Top Navigation Bar -->
