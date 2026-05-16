@@ -231,10 +231,10 @@
                                                 <Border CornerRadius="4" ClipToBounds="True" Height="150">
                                                     <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="Uniform" />
                                                 </Border>
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5">
-                                                    <TextBlock Text="⭐" IsVisible="{Binding IsFavorite}" Foreground="#fbbf24" FontSize="14" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
-                                                </StackPanel>
+                                                <Grid ColumnDefinitions="Auto, *" HorizontalAlignment="Center" MaxWidth="104">
+                                                    <TextBlock Grid.Column="0" Text="⭐" IsVisible="{Binding IsFavorite}" Foreground="#fbbf24" FontSize="14" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
                                                 <Image Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="32" Height="24" Stretch="Uniform" HorizontalAlignment="Center" />
                                             </StackPanel>
                                         </Border>
