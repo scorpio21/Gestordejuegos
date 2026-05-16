@@ -144,9 +144,71 @@ public partial class MainWindow : Window
         
         BtnQuickFavorite.Click += BtnQuickFavorite_Click;
         BtnToggleGamepad.Click += BtnToggleGamepad_Click;
+
+        InitVirtualKeyboard();
     }
 
-    private void BtnToggleGamepad_Click(object? sender, RoutedEventArgs e)
+    private string[][] _keyboardLayout = new string[][]
+    {
+        new string[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" },
+        new string[] { "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P" },
+        new string[] { "A", "S", "D", "F", "G", "H", "J", "K", "L", "-" },
+        new string[] { "Z", "X", "C", "V", "B", "N", "M", "ESP", "DEL", "OK" }
+    };
+    
+    private int _kbdX = 0;
+    private int _kbdY = 0;
+    private Avalonia.Controls.Border[,] _keyboardBorders = new Avalonia.Controls.Border[4, 10];
+    private bool _gamepadInHeader = false;
+
+    private void InitVirtualKeyboard()
+    {
+        GridKeyboard.RowDefinitions.Clear();
+        GridKeyboard.ColumnDefinitions.Clear();
+        for (int i = 0; i < 4; i++) GridKeyboard.RowDefinitions.Add(new Avalonia.Controls.RowDefinition(Avalonia.Controls.GridLength.Auto));
+        for (int i = 0; i < 10; i++) GridKeyboard.ColumnDefinitions.Add(new Avalonia.Controls.ColumnDefinition(Avalonia.Controls.GridLength.Auto));
+
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 10; x++)
+            {
+                var border = new Avalonia.Controls.Border
+                {
+                    Background = Avalonia.Media.Brush.Parse("#1e293b"),
+                    CornerRadius = new Avalonia.CornerRadius(4),
+                    Margin = new Avalonia.Thickness(4),
+                    Padding = new Avalonia.Thickness(20, 15),
+                    Child = new Avalonia.Controls.TextBlock 
+                    { 
+                        Text = _keyboardLayout[y][x], 
+                        Foreground = Avalonia.Media.Brushes.White,
+                        FontSize = 20,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                    }
+                };
+                Avalonia.Controls.Grid.SetRow(border, y);
+                Avalonia.Controls.Grid.SetColumn(border, x);
+                GridKeyboard.Children.Add(border);
+                _keyboardBorders[y, x] = border;
+            }
+        }
+    }
+
+    private void UpdateKeyboardHighlight()
+    {
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 10; x++)
+            {
+                _keyboardBorders[y, x].Background = (x == _kbdX && y == _kbdY) 
+                    ? Avalonia.Media.Brush.Parse("#10b981") 
+                    : Avalonia.Media.Brush.Parse("#1e293b");
+            }
+        }
+    }
+
+    private void BtnToggleGamepad_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         if (BtnToggleGamepad.IsChecked == true)
         {
@@ -205,6 +267,56 @@ public partial class MainWindow : Window
 
     private void HandleGamepadInput(Vortice.XInput.GamepadButtons buttons)
     {
+        if (OverlayKeyboard.IsVisible)
+        {
+            if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadUp)) { _kbdY--; if (_kbdY < 0) _kbdY = 3; UpdateKeyboardHighlight(); }
+            if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadDown)) { _kbdY++; if (_kbdY > 3) _kbdY = 0; UpdateKeyboardHighlight(); }
+            if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadLeft)) { _kbdX--; if (_kbdX < 0) _kbdX = 9; UpdateKeyboardHighlight(); }
+            if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadRight)) { _kbdX++; if (_kbdX > 9) _kbdX = 0; UpdateKeyboardHighlight(); }
+            
+            if (buttons.HasFlag(Vortice.XInput.GamepadButtons.A))
+            {
+                string key = _keyboardLayout[_kbdY][_kbdX];
+                if (key == "ESP") TxtKeyboardInput.Text += " ";
+                else if (key == "DEL") 
+                {
+                    if (TxtKeyboardInput.Text?.Length > 0)
+                        TxtKeyboardInput.Text = TxtKeyboardInput.Text.Substring(0, TxtKeyboardInput.Text.Length - 1);
+                }
+                else if (key == "OK")
+                {
+                    TxtSearchGame.Text = TxtKeyboardInput.Text;
+                    OverlayKeyboard.IsVisible = false;
+                }
+                else
+                {
+                    TxtKeyboardInput.Text += key;
+                }
+            }
+            if (buttons.HasFlag(Vortice.XInput.GamepadButtons.B))
+            {
+                OverlayKeyboard.IsVisible = false;
+            }
+            if (buttons.HasFlag(Vortice.XInput.GamepadButtons.Start))
+            {
+                TxtSearchGame.Text = TxtKeyboardInput.Text;
+                OverlayKeyboard.IsVisible = false;
+            }
+            return;
+        }
+
+        if (buttons.HasFlag(Vortice.XInput.GamepadButtons.X))
+        {
+            BtnQuickFavorite.IsChecked = !BtnQuickFavorite.IsChecked;
+            BtnQuickFavorite_Click(null, null);
+            return;
+        }
+        if (buttons.HasFlag(Vortice.XInput.GamepadButtons.Y))
+        {
+            BtnToggleFilters_Click(null, null);
+            return;
+        }
+
         if (buttons.HasFlag(Vortice.XInput.GamepadButtons.A))
         {
             if (OverlayMessage.IsVisible)
@@ -215,6 +327,14 @@ public partial class MainWindow : Window
             if (OverlayIgdbSearch.IsVisible)
             {
                 BtnSelectIgdb_Click(null, null);
+                return;
+            }
+            if (_gamepadInHeader)
+            {
+                _kbdX = 0; _kbdY = 0;
+                TxtKeyboardInput.Text = TxtSearchGame.Text;
+                UpdateKeyboardHighlight();
+                OverlayKeyboard.IsVisible = true;
                 return;
             }
 
@@ -269,6 +389,22 @@ public partial class MainWindow : Window
 
         Avalonia.Controls.ListBox? activeList = LstGames.IsVisible ? LstGames : (LstGamesGrid.IsVisible ? LstGamesGrid : null);
         
+        if (_gamepadInHeader)
+        {
+            if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadDown))
+            {
+                _gamepadInHeader = false;
+                TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#1e293b"); // Normal
+                if (activeList != null && activeList.ItemCount > 0)
+                {
+                    activeList.SelectedIndex = 0;
+                    var item = activeList.Items.Cast<object>().ElementAtOrDefault(0);
+                    if (item != null) activeList.ScrollIntoView(item);
+                }
+            }
+            return;
+        }
+
         if (activeList != null && activeList.ItemCount > 0)
         {
             int maxIndex = activeList.ItemCount - 1;
@@ -289,6 +425,15 @@ public partial class MainWindow : Window
                 else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadLeft)) newIndex--;
                 else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadDown)) newIndex += cols;
                 else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadUp)) newIndex -= cols;
+            }
+
+            if (newIndex < 0 && !_gamepadInHeader)
+            {
+                // Move focus to Header (Search)
+                _gamepadInHeader = true;
+                TxtSearchGame.Background = Avalonia.Media.Brush.Parse("#475569"); // Highlight
+                activeList.SelectedIndex = -1;
+                return;
             }
 
             if (newIndex < 0) newIndex = 0;

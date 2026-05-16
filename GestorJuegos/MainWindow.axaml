@@ -438,5 +438,20 @@
                 </Grid>
             </Border>
         </Border>
+
+        <!-- Virtual Keyboard Overlay -->
+        <Border Name="OverlayKeyboard" Background="#EE0f172a" IsVisible="False" ZIndex="400">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="20">
+                <TextBlock Text="Teclado Virtual (Usa el mando)" FontSize="24" FontWeight="Bold" Foreground="#10b981" HorizontalAlignment="Center"/>
+                <TextBox Name="TxtKeyboardInput" FontSize="28" Width="700" CornerRadius="8" IsReadOnly="True" Background="#1e293b" Foreground="White" BorderBrush="#334155" Padding="15" Margin="0,0,0,20" TextAlignment="Center"/>
+                
+                <Grid Name="GridKeyboard" HorizontalAlignment="Center">
+                    <!-- We will populate this from code-behind to easily manage cell backgrounds -->
+                </Grid>
+                
+                <TextBlock Text="Botón A: Seleccionar  |  Botón B: Cerrar/Cancelar  |  Start: OK" Foreground="#64748b" FontSize="16" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+            </StackPanel>
+        </Border>
+
     </Grid>
 </Window>
