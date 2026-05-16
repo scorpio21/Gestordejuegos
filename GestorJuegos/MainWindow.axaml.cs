@@ -143,6 +143,23 @@ public partial class MainWindow : Window
         BtnClearFilters.Click += BtnClearFilters_Click;
         
         BtnQuickFavorite.Click += BtnQuickFavorite_Click;
+        BtnToggleGamepad.Click += BtnToggleGamepad_Click;
+    }
+
+    private void BtnToggleGamepad_Click(object? sender, RoutedEventArgs e)
+    {
+        if (BtnToggleGamepad.IsChecked == true)
+        {
+            BtnToggleGamepad.Content = "🎮 Mando: ON";
+            BtnToggleGamepad.Foreground = Avalonia.Media.Brush.Parse("#10b981");
+            _gamepadTimer?.Start();
+        }
+        else
+        {
+            BtnToggleGamepad.Content = "🎮 Mando: OFF";
+            BtnToggleGamepad.Foreground = Avalonia.Media.Brush.Parse("#ef4444");
+            _gamepadTimer?.Stop();
+        }
     }
 
     private int _gamepadRepeatDelay = 0;
