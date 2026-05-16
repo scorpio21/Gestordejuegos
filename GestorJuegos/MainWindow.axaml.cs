@@ -29,6 +29,7 @@ public partial class MainWindow : Window
     private System.Collections.Generic.List<Game> _currentPlatformGames = new System.Collections.Generic.List<Game>();
     private int _currentPage = 1;
     private const int PageSize = 100;
+    private System.Collections.ObjectModel.ObservableCollection<string> _currentRoms = new();
 
     public MainWindow()
     {
@@ -123,7 +124,8 @@ public partial class MainWindow : Window
         BtnCancelIgdb.Click += BtnCancelIgdb_Click;
         BtnSelectIgdb.Click += BtnSelectIgdb_Click;
 
-        BtnSelectRom.Click += BtnSelectRom_Click;
+        BtnAddRom.Click += BtnAddRom_Click;
+        BtnRemoveRom.Click += BtnRemoveRom_Click;
         BtnSelectOverrideEmulator.Click += BtnSelectOverrideEmulator_Click;
         MenuHelpEmulator.Click += MenuHelpEmulator_Click;
         BtnLaunchGame.Click += BtnLaunchGame_Click;
@@ -951,7 +953,17 @@ public partial class MainWindow : Window
             NumYear.Value = game.Year;
             TxtGenre.Text = game.Genre;
             TxtLanguages.Text = game.Languages;
-            TxtRomPath.Text = game.RomPath;
+            
+            _currentRoms.Clear();
+            if (!string.IsNullOrEmpty(game.RomPath)) _currentRoms.Add(game.RomPath);
+            if (!string.IsNullOrEmpty(game.AdditionalRoms))
+            {
+                foreach(var r in game.AdditionalRoms.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    _currentRoms.Add(r);
+                }
+            }
+            LstRoms.ItemsSource = _currentRoms;
             TxtOverrideEmulator.Text = game.OverrideEmulatorPath;
             TxtOverrideArgs.Text = game.OverrideLaunchArguments;
             
@@ -987,7 +999,8 @@ public partial class MainWindow : Window
         NumYear.Value = _selectedGame.Year;
         TxtGenre.Text = string.Empty;
         TxtLanguages.Text = string.Empty;
-        TxtRomPath.Text = string.Empty;
+        _currentRoms.Clear();
+        LstRoms.ItemsSource = _currentRoms;
         TxtOverrideEmulator.Text = string.Empty;
         TxtOverrideArgs.Text = string.Empty;
         CmbRegion.SelectedIndex = 0;
@@ -1008,7 +1021,20 @@ public partial class MainWindow : Window
         _selectedGame.Year = (int)(NumYear.Value ?? DateTime.Now.Year);
         _selectedGame.Genre = TxtGenre.Text ?? string.Empty;
         _selectedGame.Languages = TxtLanguages.Text ?? string.Empty;
-        _selectedGame.RomPath = TxtRomPath.Text ?? string.Empty;
+        
+        if (_currentRoms.Count > 0)
+        {
+            _selectedGame.RomPath = _currentRoms[0];
+            if (_currentRoms.Count > 1)
+                _selectedGame.AdditionalRoms = string.Join("|", _currentRoms.Skip(1));
+            else
+                _selectedGame.AdditionalRoms = string.Empty;
+        }
+        else
+        {
+            _selectedGame.RomPath = string.Empty;
+            _selectedGame.AdditionalRoms = string.Empty;
+        }
         _selectedGame.OverrideEmulatorPath = TxtOverrideEmulator.Text ?? string.Empty;
         _selectedGame.OverrideLaunchArguments = TxtOverrideArgs.Text ?? string.Empty;
         _selectedGame.Region = (CmbRegion.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "🇺🇸 US";
@@ -1102,20 +1128,28 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void BtnSelectRom_Click(object? sender, RoutedEventArgs e)
+    private async void BtnAddRom_Click(object? sender, RoutedEventArgs e)
     {
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel == null) return;
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Seleccionar Archivo de Juego / ROM",
-            AllowMultiple = false
+            Title = "Añadir Archivo de Juego / ROM",
+            AllowMultiple = true
         });
 
-        if (files.Count >= 1)
+        foreach (var file in files)
         {
-            TxtRomPath.Text = files[0].Path.LocalPath;
+            _currentRoms.Add(file.Path.LocalPath);
+        }
+    }
+
+    private void BtnRemoveRom_Click(object? sender, RoutedEventArgs e)
+    {
+        if (LstRoms.SelectedItem is string selectedPath)
+        {
+            _currentRoms.Remove(selectedPath);
         }
     }
 
@@ -1233,7 +1267,8 @@ public partial class MainWindow : Window
             if (string.IsNullOrEmpty(finalEmulatorPath))
             {
                 logLines.Add("Aviso: EmulatorPath vacío. Usando UseShellExecute = true con RomPath.");
-                psi.FileName = _selectedGame.RomPath;
+                string targetRom = LstRoms.SelectedItem as string ?? _selectedGame.RomPath;
+                psi.FileName = targetRom;
                 psi.UseShellExecute = true;
             }
             else
@@ -1251,9 +1286,10 @@ public partial class MainWindow : Window
                 psi.FileName = finalEmulatorPath;
                 psi.WorkingDirectory = System.IO.Path.GetDirectoryName(finalEmulatorPath) ?? string.Empty;
                 
+                string targetRom = LstRoms.SelectedItem as string ?? _selectedGame.RomPath;
                 string args = string.IsNullOrEmpty(finalLaunchArgs) ? "\"{0}\"" : finalLaunchArgs;
                 logLines.Add($"Args base: {args}");
-                psi.Arguments = args.Replace("{0}", _selectedGame.RomPath);
+                psi.Arguments = args.Replace("{0}", targetRom);
                 logLines.Add($"Args reemplazados: {psi.Arguments}");
                 psi.UseShellExecute = false;
             }

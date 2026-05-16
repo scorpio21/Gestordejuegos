@@ -19,7 +19,11 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.1 (Actual)**
+**Version 1.0.2 (Actual)**
+
+- **Nuevo:** Soporte Multi-Disco. Posibilidad de añadir múltiples archivos de ROM a un mismo juego (ej. Disco 1, Disco 2) y elegir cuál ejecutar desde la interfaz, manteniéndolo organizado bajo una única entrada en tu colección (mira Issue #8).
+
+**Version 1.0.1 (16-05-2026)**
 
 - **Nuevo:** Perfiles Avanzados de Emuladores. Permite sobrescribir la configuración del emulador a nivel de juego para usar diferentes emuladores dentro de una misma plataforma (mira Issue #7).
 - **Nuevo:** Menú de Ayuda interactivo para enseñar a configurar emuladores y argumentos de lanzamiento.

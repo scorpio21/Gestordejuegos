@@ -257,10 +257,17 @@
                                 <TextBlock Text="Idiomas (Ej. En,Fr,Es)" Foreground="#94a3b8" FontSize="12" Margin="0,0,0,-10"/>
                                 <TextBox Name="TxtLanguages" CornerRadius="4" Background="#0f172a" BorderBrush="#334155"/>
                                 
-                                <TextBlock Text="Ruta de la ROM / Ejecutable" Foreground="#94a3b8" FontSize="12" Margin="0,5,0,-10"/>
-                                <Grid ColumnDefinitions="*, Auto">
-                                    <TextBox Grid.Column="0" Name="TxtRomPath" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" Margin="0,0,5,0"/>
-                                    <Button Grid.Column="1" Name="BtnSelectRom" Content="..." Background="#334155" Foreground="White" CornerRadius="4" Padding="10,5"/>
+                                <TextBlock Text="Rutas de ROM (Multi-Disco)" Foreground="#94a3b8" FontSize="12" Margin="0,5,0,-10"/>
+                                <ListBox Name="LstRoms" Height="70" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,5">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:CompileBindings="False">
+                                            <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="White" VerticalAlignment="Center" Margin="0,2"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                                <Grid ColumnDefinitions="*,*">
+                                    <Button Grid.Column="0" Name="BtnAddRom" Content="+ Añadir Disco" Margin="0,0,5,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#334155" Foreground="White" CornerRadius="4" Padding="5"/>
+                                    <Button Grid.Column="1" Name="BtnRemoveRom" Content="- Quitar Disco" Margin="5,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#334155" Foreground="White" CornerRadius="4" Padding="5"/>
                                 </Grid>
                                 
                                 <Border Background="#1e293b" CornerRadius="6" Padding="10" BorderBrush="#334155" BorderThickness="1" Margin="0,5,0,5">
