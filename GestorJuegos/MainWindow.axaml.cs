@@ -6,6 +6,7 @@ using Avalonia.Platform.Storage;
 using GestorJuegos.Models;
 using GestorJuegos.Services;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -125,6 +126,9 @@ public partial class MainWindow : Window
         MenuBatchScrapeGameTdb.Click += (s, e) => RunBatchScrape("GameTDB");
         MenuBatchScrapePalSnes.Click += (s, e) => RunBatchScrape("PalSnesCovers");
 
+        MenuImportFolders.Click += MenuImportFolders_Click;
+        MenuScanLocalCovers.Click += MenuScanLocalCovers_Click;
+
         BtnCloseMessage.Click += BtnCloseMessage_Click;
         
         BtnSearchIgdb.Click += BtnSearchIgdb_Click;
@@ -227,6 +231,31 @@ public partial class MainWindow : Window
     private int _gamepadRepeatDelay = 0;
     private Avalonia.Threading.DispatcherTimer? _gamepadTimer;
     private Vortice.XInput.GamepadButtons _previousGamepadButtons;
+
+    private void SimulateKey(Avalonia.Input.Key key, Avalonia.Input.KeyModifiers modifiers = Avalonia.Input.KeyModifiers.None)
+    {
+        var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
+        var focusedElement = topLevel?.FocusManager?.GetFocusedElement() as Avalonia.Controls.Control;
+        if (focusedElement == null) focusedElement = this;
+
+        var e = new Avalonia.Input.KeyEventArgs
+        {
+            RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent,
+            Key = key,
+            KeyModifiers = modifiers,
+            Source = focusedElement
+        };
+        focusedElement.RaiseEvent(e);
+        
+        var eUp = new Avalonia.Input.KeyEventArgs
+        {
+            RoutedEvent = Avalonia.Input.InputElement.KeyUpEvent,
+            Key = key,
+            KeyModifiers = modifiers,
+            Source = focusedElement
+        };
+        focusedElement.RaiseEvent(eUp);
+    }
 
     private void GamepadTimer_Tick(object? sender, EventArgs e)
     {
@@ -352,9 +381,11 @@ public partial class MainWindow : Window
                 }
                 else if (focusedElement is Avalonia.Controls.MenuItem mi)
                 {
-                    // To interact with MenuItems we still need a way to open them. 
-                    // Let's use TryMoveFocus into the menu.
                     topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Down);
+                }
+                else if (focusedElement is Avalonia.Controls.ComboBox cb)
+                {
+                    cb.IsDropDownOpen = !cb.IsDropDownOpen;
                 }
                 return;
             }
@@ -391,6 +422,14 @@ public partial class MainWindow : Window
 
             if (_gamepadInHeader)
             {
+                var topLvl = Avalonia.Controls.TopLevel.GetTopLevel(this);
+                var fElement = topLvl?.FocusManager?.GetFocusedElement() as Avalonia.Controls.Control;
+                if (fElement is Avalonia.Controls.ComboBox cb && cb.IsDropDownOpen)
+                {
+                    cb.IsDropDownOpen = false;
+                    return;
+                }
+
                 _gamepadInHeader = false;
                 Avalonia.Controls.ListBox? aList = LstGames.IsVisible ? LstGames : (LstGamesGrid.IsVisible ? LstGamesGrid : null);
                 if (aList != null && aList.ItemCount > 0)
@@ -432,6 +471,15 @@ public partial class MainWindow : Window
                 {
                     topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Down);
                 }
+                else if (focusedElement is Avalonia.Controls.ComboBox cb && cb.IsDropDownOpen)
+                {
+                    // Simulate Down key to move in popup list
+                    SimulateKey(Avalonia.Input.Key.Down);
+                }
+                else if (focusedElement is Avalonia.Controls.NumericUpDown num)
+                {
+                    SimulateKey(Avalonia.Input.Key.Down);
+                }
                 else
                 {
                     _gamepadInHeader = false;
@@ -444,6 +492,21 @@ public partial class MainWindow : Window
                     }
                 }
             }
+            else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadUp))
+            {
+                if (focusedElement is Avalonia.Controls.ComboBox cb && cb.IsDropDownOpen)
+                {
+                    SimulateKey(Avalonia.Input.Key.Up);
+                }
+                else if (focusedElement is Avalonia.Controls.NumericUpDown num)
+                {
+                    SimulateKey(Avalonia.Input.Key.Up);
+                }
+                else
+                {
+                    topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Up);
+                }
+            }
             else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadRight))
             {
                 if (focusedElement is Avalonia.Controls.MenuItem) topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Right);
@@ -453,10 +516,6 @@ public partial class MainWindow : Window
             {
                 if (focusedElement is Avalonia.Controls.MenuItem) topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Left);
                 else topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Previous);
-            }
-            else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.DPadUp))
-            {
-                topLevel?.FocusManager?.TryMoveFocus(Avalonia.Input.NavigationDirection.Up);
             }
 
             return;
@@ -1748,6 +1807,142 @@ public partial class MainWindow : Window
             logLines.Add(ex.StackTrace ?? "");
             ShowMessage($"Error al lanzar el juego: {ex.Message}");
             File.WriteAllLines("launcher_log.txt", logLines);
+        }
+    }
+
+    private async void MenuImportFolders_Click(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Seleccionar Carpeta Raíz de Colección",
+            AllowMultiple = false
+        });
+
+        if (folders.Count > 0)
+        {
+            var rootPath = folders[0].Path.LocalPath;
+            try
+            {
+                ShowMessage("Escaneando carpetas de plataformas...");
+                var platformDirs = Directory.GetDirectories(rootPath);
+                int platformCount = 0;
+                int gameCount = 0;
+
+                using (var context = new GestorJuegos.Data.AppDbContext())
+                {
+                    foreach (var pDir in platformDirs)
+                    {
+                        string pName = Path.GetFileName(pDir);
+                        var platform = context.Platforms.FirstOrDefault(p => p.Name == pName);
+                        if (platform == null)
+                        {
+                            platform = new Platform { Name = pName };
+                            context.Platforms.Add(platform);
+                            context.SaveChanges();
+                            platformCount++;
+                        }
+
+                        // Buscar archivo lista.txt
+                        string listPath = Path.Combine(pDir, "lista.txt");
+                        if (File.Exists(listPath))
+                        {
+                            var lines = File.ReadAllLines(listPath);
+                            var existingGameKeys = new HashSet<string>(context.Games.Where(g => g.PlatformId == platform.Id).Select(g => $"{g.Name}|{g.Region}"), StringComparer.OrdinalIgnoreCase);
+
+                            foreach (var line in lines)
+                            {
+                                if (string.IsNullOrWhiteSpace(line)) continue;
+                                var game = ImportService.ParseGameLine(line, platform.Id);
+                                
+                                string uniqueKey = $"{game.Name}|{game.Region}";
+                                if (!existingGameKeys.Contains(uniqueKey))
+                                {
+                                    // Intentar asociar ROM
+                                    string romPath = Path.Combine(pDir, line.Trim());
+                                    if (File.Exists(romPath))
+                                    {
+                                        game.RomPath = romPath;
+                                    }
+
+                                    context.Games.Add(game);
+                                    existingGameKeys.Add(uniqueKey);
+                                    gameCount++;
+                                }
+                            }
+                        }
+                    }
+                    context.SaveChanges();
+                }
+
+                LoadPlatforms();
+                LoadDashboard();
+                ShowMessage($"Importación finalizada.\nPlataformas nuevas/procesadas: {platformDirs.Length}\nJuegos nuevos añadidos: {gameCount}");
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error durante la importación: {ex.Message}");
+            }
+        }
+    }
+
+    private async void MenuScanLocalCovers_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedPlatform == null)
+        {
+            ShowMessage("Por favor, selecciona primero una plataforma para asociar las carátulas.");
+            return;
+        }
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Seleccionar Carpeta de Carátulas",
+            AllowMultiple = false
+        });
+
+        if (folders.Count > 0)
+        {
+            var coverPath = folders[0].Path.LocalPath;
+            try
+            {
+                ShowMessage("Buscando carátulas coincidentes...");
+                var coverFiles = Directory.GetFiles(coverPath, "*.*", SearchOption.TopDirectoryOnly)
+                                         .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
+                                         .ToList();
+
+                int matchCount = 0;
+                using (var context = new GestorJuegos.Data.AppDbContext())
+                {
+                    var games = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id && (g.Cover == null || g.Cover.Length == 0)).ToList();
+
+                    foreach (var game in games)
+                    {
+                        // Buscar archivo que contenga el nombre del juego
+                        var match = coverFiles.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).Equals(game.Name, StringComparison.OrdinalIgnoreCase) || 
+                                                                    game.Name.Contains(Path.GetFileNameWithoutExtension(f), StringComparison.OrdinalIgnoreCase));
+
+                        if (match != null)
+                        {
+                            game.Cover = File.ReadAllBytes(match);
+                            context.Games.Update(game);
+                            matchCount++;
+                        }
+                    }
+                    context.SaveChanges();
+                }
+
+                LoadGames();
+                ShowMessage($"Escaneo de carátulas finalizado.\nSe han asociado {matchCount} carátulas a juegos de {_selectedPlatform.Name}.");
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error durante el escaneo de carátulas: {ex.Message}");
+            }
         }
     }
 }

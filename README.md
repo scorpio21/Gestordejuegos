@@ -19,7 +19,12 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.4 (Actual)**
+**Version 1.0.5 (Actual)**
+
+- **Nuevo:** Importación Avanzada por Carpetas. Ahora puedes importar toda tu colección seleccionando una carpeta raíz. El sistema crea las plataformas automáticamente basándose en las subcarpetas y vincula las ROMs si el archivo `lista.txt` está presente.
+- **Nuevo:** Escaneo de Carátulas Locales. Permite asociar imágenes a tus juegos desde una carpeta local mediante coincidencia de nombres, ideal para colecciones con artes ya descargados.
+
+**Version 1.0.4**
 
 - **Nuevo:** Soporte para Mando (Gamepad Support). Navegación completa por la cuadrícula y lista de juegos mediante mandos tipo Xbox/PlayStation utilizando el D-Pad o el stick analógico izquierdo. Lanzamiento rápido de juegos con el botón `A` y cancelación de menús con `B` (mira Issue #9).
 

@@ -21,15 +21,23 @@
     </Window.Resources>
 
     <Window.Styles>
-        <Style Selector="Button:focus">
+        <Style Selector="Button:focus /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="BorderBrush" Value="#10b981" />
             <Setter Property="BorderThickness" Value="2" />
         </Style>
-        <Style Selector="ToggleButton:focus">
+        <Style Selector="ToggleButton:focus /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="BorderBrush" Value="#10b981" />
             <Setter Property="BorderThickness" Value="2" />
         </Style>
-        <Style Selector="TextBox:focus">
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#10b981" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="ComboBox:focus /template/ Border#Background">
+            <Setter Property="BorderBrush" Value="#10b981" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style Selector="NumericUpDown:focus /template/ Border#PART_BorderElement">
             <Setter Property="BorderBrush" Value="#10b981" />
             <Setter Property="BorderThickness" Value="2" />
         </Style>
@@ -57,6 +65,11 @@
                                     <MenuItem Name="MenuBatchScrapeTgdb" Header="Usar TheGamesDB" />
                                     <MenuItem Name="MenuBatchScrapeGameTdb" Header="Usar GameTDB" />
                                     <MenuItem Name="MenuBatchScrapePalSnes" Header="Usar PalSnesCovers" />
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem Header="Importación Avanzada">
+                                    <MenuItem Name="MenuImportFolders" Header="Importar Colección por Carpetas..." />
+                                    <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales..." />
                                 </MenuItem>
                             </MenuItem>
                         </Menu>
