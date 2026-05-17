@@ -1845,33 +1845,50 @@ public partial class MainWindow : Window
                             platformCount++;
                         }
 
-                        // Buscar archivo lista.txt
-                        string listPath = Path.Combine(pDir, "lista.txt");
-                        if (File.Exists(listPath))
+                        // Escaneo directo de archivos en la carpeta de la plataforma
+                        var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
+                        { 
+                            ".zip", ".7z", ".rar", ".iso", ".bin", ".cue", ".n64", ".v64", ".z64", 
+                            ".sfc", ".smc", ".nes", ".gb", ".gbc", ".gba", ".nds", ".3ds", ".cia", 
+                            ".pbp", ".cso", ".rvz", ".wbfs", ".gcm", ".gdi", ".chd", ".m3u", ".txt" 
+                        };
+
+                        var gameFiles = Directory.GetFiles(pDir, "*.*", SearchOption.TopDirectoryOnly)
+                                                .Where(f => extensions.Contains(Path.GetExtension(f)))
+                                                .ToList();
+
+                        if (gameFiles.Count > 0)
                         {
-                            var lines = File.ReadAllLines(listPath);
                             var existingGameKeys = new HashSet<string>(context.Games
                                 .Where(g => g.PlatformId == platform.Id)
                                 .Select(g => $"{g.Name}|{g.Region}|{g.Languages}"), StringComparer.OrdinalIgnoreCase);
 
-                            foreach (var line in lines)
+                            foreach (var filePath in gameFiles)
                             {
-                                if (string.IsNullOrWhiteSpace(line)) continue;
-                                var game = ImportService.ParseGameLine(line, platform.Id);
+                                string fileName = Path.GetFileName(filePath);
+                                // Evitar importar el propio lista.txt si existiera o archivos de sistema
+                                if (fileName.Equals("lista.txt", StringComparison.OrdinalIgnoreCase)) continue;
+
+                                var game = ImportService.ParseGameLine(fileName, platform.Id);
+                                game.RomPath = filePath; // Ruta absoluta del archivo encontrado
                                 
                                 string uniqueKey = $"{game.Name}|{game.Region}|{game.Languages}";
                                 if (!existingGameKeys.Contains(uniqueKey))
                                 {
-                                    // Intentar asociar ROM
-                                    string romPath = Path.Combine(pDir, line.Trim());
-                                    if (File.Exists(romPath))
-                                    {
-                                        game.RomPath = romPath;
-                                    }
-
                                     context.Games.Add(game);
                                     existingGameKeys.Add(uniqueKey);
                                     gameCount++;
+                                }
+                                else
+                                {
+                                    // Si el juego existe pero no tenía ruta de ROM, la actualizamos
+                                    var existingGame = context.Games.FirstOrDefault(g => g.PlatformId == platform.Id && 
+                                                        g.Name == game.Name && g.Region == game.Region && g.Languages == game.Languages);
+                                    if (existingGame != null && string.IsNullOrEmpty(existingGame.RomPath))
+                                    {
+                                        existingGame.RomPath = filePath;
+                                        context.Games.Update(existingGame);
+                                    }
                                 }
                             }
                         }
@@ -1913,8 +1930,10 @@ public partial class MainWindow : Window
             try
             {
                 ShowMessage("Buscando carátulas coincidentes...");
-                var coverFiles = Directory.GetFiles(coverPath, "*.*", SearchOption.TopDirectoryOnly)
-                                         .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
+                var coverFiles = Directory.GetFiles(coverPath, "*.*", SearchOption.AllDirectories)
+                                         .Where(f => f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || 
+                                                     f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
+                                                     f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
                                          .ToList();
 
                 int matchCount = 0;
