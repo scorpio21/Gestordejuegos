@@ -72,6 +72,11 @@
                                     <MenuItem Name="MenuImportFolders" Header="Importar Colección por Carpetas..." />
                                     <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales..." />
                                 </MenuItem>
+                                <Separator />
+                                <MenuItem Header="Salud de la Base de Datos">
+                                    <MenuItem Name="MenuCleanupOrphans" Header="Limpiar Juegos Huérfanos (Ruta no encontrada)" />
+                                    <MenuItem Name="MenuManageDross" Header="Gestionar Dross (Filtros de importación)" />
+                                </MenuItem>
                             </MenuItem>
                         </Menu>
                         <Menu Background="Transparent">
@@ -509,14 +514,32 @@
                     
                     <StackPanel Spacing="8">
                         <TextBlock Text="Sistema Vimm:" Foreground="#94a3b8" FontWeight="SemiBold"/>
-                        <ComboBox Name="CmbVimmSystem" HorizontalAlignment="Stretch" Background="#0f172a" BorderBrush="#334155" CornerRadius="6" Padding="10,8">
-                            <!-- Items se cargan por código -->
+                        <ComboBox Name="CmbVimmSystem" HorizontalAlignment="Stretch" Background="#0f172a" BorderBrush="#334155" CornerRadius="6" Padding="10,8" x:CompileBindings="False">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Key}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
                         </ComboBox>
                     </StackPanel>
 
                     <Grid ColumnDefinitions="*,*" Margin="0,10,0,0">
                         <Button Name="BtnCancelVimm" Content="Cancelar" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,5,0" Background="#334155" Foreground="White" CornerRadius="6" Padding="10" HorizontalContentAlignment="Center"/>
                         <Button Name="BtnConfirmVimm" Content="Iniciar Descarga" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,0,0,0" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="10" HorizontalContentAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- Confirmation Overlay -->
+        <Border Name="OverlayConfirm" Background="#AA000000" IsVisible="False" ZIndex="210">
+            <Border Background="{StaticResource PanelBrush}" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
+                <StackPanel Spacing="15">
+                    <TextBlock Name="TxtConfirmTitle" Text="¿Estás seguro?" FontSize="20" FontWeight="Bold" Foreground="#ef4444" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                    <TextBlock Name="TxtConfirmContent" Text="Esta acción no se puede deshacer." Foreground="#e2e8f0" FontSize="15" TextWrapping="Wrap" TextAlignment="Center"/>
+                    <Grid ColumnDefinitions="*,*" Margin="0,15,0,0">
+                        <Button Name="BtnCancelConfirm" Content="Cancelar" Grid.Column="0" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="15,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,5,0"/>
+                        <Button Name="BtnAcceptConfirm" Content="Confirmar" Grid.Column="1" Background="#ef4444" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="15,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="5,0,0,0"/>
                     </Grid>
                 </StackPanel>
             </Border>

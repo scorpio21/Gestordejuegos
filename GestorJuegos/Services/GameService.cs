@@ -127,6 +127,35 @@ namespace GestorJuegos.Services
             return context.Games.Count();
         }
 
+        public List<Game> GetOrphanedGames()
+        {
+            using var context = new AppDbContext();
+            context.Database.EnsureCreated();
+            var allGames = context.Games.Include(g => g.Platform).ToList();
+            var orphaned = new List<Game>();
+
+            foreach (var game in allGames)
+            {
+                if (string.IsNullOrEmpty(game.RomPath) || !System.IO.File.Exists(game.RomPath))
+                {
+                    orphaned.Add(game);
+                }
+            }
+            return orphaned;
+        }
+
+        public void DeleteGames(List<int> gameIds)
+        {
+            using var context = new AppDbContext();
+            context.Database.EnsureCreated();
+            var games = context.Games.Where(g => gameIds.Contains(g.Id)).ToList();
+            if (games.Count > 0)
+            {
+                context.Games.RemoveRange(games);
+                context.SaveChanges();
+            }
+        }
+
         public Dictionary<string, int> GetGamesCountByPlatform()
         {
             using var context = new AppDbContext();

@@ -44,5 +44,16 @@ namespace GestorJuegos.Services
                 RomPath = "" // Will be filled if file is found
             };
         }
+
+        public static bool IsDross(string fileName, List<string> drossPatterns)
+        {
+            if (drossPatterns == null || drossPatterns.Count == 0) return false;
+            foreach (var pattern in drossPatterns)
+            {
+                if (fileName.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
     }
 }

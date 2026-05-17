@@ -42,34 +42,41 @@ namespace GestorJuegos.Services
             Log($"GetSystemCode para: '{platformName}'");
             string lowerName = platformName.ToLower();
 
-            if (lowerName.Contains("atari 2600")) return "2600";
-            if (lowerName.Contains("atari 5200")) return "5200";
-            if (lowerName.Contains("atari 7800")) return "7800";
-            if (lowerName.Contains("nes") || lowerName.Contains("nintendo entertainment system")) return "NES";
+            if (lowerName.Contains("atari 2600")) return "Atari2600";
+            if (lowerName.Contains("atari 5200")) return "Atari5200";
+            if (lowerName.Contains("atari 7800")) return "Atari7800";
+            if (lowerName.Contains("nes") || lowerName.Contains("nintendo entertainment system") || lowerName.Contains("nintendo")) return "NES";
             if (lowerName.Contains("snes") || lowerName.Contains("super nintendo")) return "SNES";
             if (lowerName.Contains("n64") || lowerName.Contains("nintendo 64")) return "N64";
             if (lowerName.Contains("gamecube") || lowerName.Contains("gc")) return "GameCube";
+            if (lowerName.Contains("wiiware")) return "WiiWare";
             if (lowerName.Contains("wii") && !lowerName.Contains("wiiu")) return "Wii";
             if (lowerName.Contains("game boy") && !lowerName.Contains("color") && !lowerName.Contains("advance")) return "GB";
             if (lowerName.Contains("game boy color") || lowerName.Contains("gbc")) return "GBC";
             if (lowerName.Contains("game boy advance") || lowerName.Contains("gba")) return "GBA";
             if (lowerName.Contains("ds") && !lowerName.Contains("3ds")) return "DS";
             if (lowerName.Contains("3ds")) return "3DS";
-            if (lowerName.Contains("master system")) return "SMS";
-            if (lowerName.Contains("genesis") || lowerName.Contains("mega drive")) return "Genesis";
-            if (lowerName.Contains("game gear")) return "GG";
-            if (lowerName.Contains("saturn")) return "Saturn";
+            if (lowerName.Contains("master system") || lowerName.Contains("sistema maestro")) return "SMS";
+            if (lowerName.Contains("genesis") || lowerName.Contains("mega drive") || lowerName.Contains("génesis")) return "Genesis";
+            if (lowerName.Contains("game gear") || lowerName.Contains("equipo de juego")) return "GG";
+            if (lowerName.Contains("saturn") || lowerName.Contains("saturno")) return "Saturn";
+            if (lowerName.Contains("32x")) return "32X";
+            if (lowerName.Contains("sega cd")) return "SegaCD";
             if (lowerName.Contains("dreamcast")) return "Dreamcast";
             if (lowerName.Contains("ps1") || lowerName.Contains("playstation 1") || (lowerName.Contains("playstation") && !lowerName.Contains("2") && !lowerName.Contains("3") && !lowerName.Contains("portable"))) return "PS1";
             if (lowerName.Contains("ps2") || lowerName.Contains("playstation 2")) return "PS2";
             if (lowerName.Contains("ps3") || lowerName.Contains("playstation 3")) return "PS3";
             if (lowerName.Contains("psp") || lowerName.Contains("playstation portable")) return "PSP";
-            if (lowerName.Contains("xbox") && !lowerName.Contains("360")) return "Xbox";
+            if (lowerName.Contains("xbox 360 (digital)") || lowerName.Contains("x360-d")) return "X360-D";
             if (lowerName.Contains("xbox 360")) return "Xbox360";
+            if (lowerName.Contains("xbox") && !lowerName.Contains("360")) return "Xbox";
             if (lowerName.Contains("turbografx-16") || lowerName.Contains("tg16") || lowerName.Contains("pc engine")) return "TG16";
+            if (lowerName.Contains("turbografx-cd") || lowerName.Contains("tgcd")) return "TGCD";
+            if (lowerName.Contains("jaguar cd")) return "JaguarCD";
             if (lowerName.Contains("jaguar")) return "Jaguar";
             if (lowerName.Contains("lynx")) return "Lynx";
-            if (lowerName.Contains("virtual boy")) return "VB";
+            if (lowerName.Contains("virtual boy") || lowerName.Contains("chico virtual") || lowerName.Contains("vb")) return "VB";
+            if (lowerName.Contains("cd-i") || lowerName.Contains("cdi")) return "CDi";
 
             Log($"No se encontró código de sistema para: '{platformName}'");
             return null;
@@ -368,34 +375,40 @@ namespace GestorJuegos.Services
 
         public static Dictionary<string, string> GetSupportedPlatforms() => new()
         {
-            { "Atari 2600", "2600" },
-            { "Atari 5200", "5200" },
-            { "Atari 7800", "7800" },
-            { "ColecoVision", "ColecoVision" },
-            { "Commodore 64", "64" },
-            { "Intellivision", "Intellivision" },
+            { "Atari 2600", "Atari2600" },
+            { "Atari 5200", "Atari5200" },
             { "Nintendo (NES)", "NES" },
-            { "Sega Master System", "SMS" },
-            { "Sega Genesis", "Genesis" },
-            { "Sega Game Gear", "GG" },
-            { "Game Boy", "GB" },
+            { "Master System", "SMS" },
+            { "Atari 7800", "Atari7800" },
             { "TurboGrafx-16", "TG16" },
+            { "Genesis", "Genesis" },
+            { "TurboGrafx-CD", "TGCD" },
             { "Super Nintendo", "SNES" },
-            { "Game Boy Color", "GBC" },
-            { "Sega Saturn", "Saturn" },
+            { "CD-i", "CDi" },
+            { "Sega CD", "SegaCD" },
+            { "Jaguar", "Jaguar" },
+            { "Sega 32X", "32X" },
+            { "Saturn", "Saturn" },
             { "PlayStation", "PS1" },
-            { "Virtual Boy", "VB" },
+            { "Jaguar CD", "JaguarCD" },
             { "Nintendo 64", "N64" },
-            { "Game Boy Advance", "GBA" },
+            { "Dreamcast", "Dreamcast" },
             { "PlayStation 2", "PS2" },
             { "GameCube", "GameCube" },
             { "Xbox", "Xbox" },
-            { "Sega Dreamcast", "Dreamcast" },
-            { "Nintendo DS", "DS" },
             { "Xbox 360", "Xbox360" },
-            { "Nintendo Wii", "Wii" },
-            { "PS Portable", "PSP" },
+            { "Xbox 360 (Digital)", "X360-D" },
             { "PlayStation 3", "PS3" },
+            { "Wii", "Wii" },
+            { "WiiWare", "WiiWare" },
+            { "Game Boy", "GB" },
+            { "Lynx", "Lynx" },
+            { "Game Gear", "GG" },
+            { "Virtual Boy", "VB" },
+            { "Game Boy Color", "GBC" },
+            { "Game Boy Advance", "GBA" },
+            { "Nintendo DS", "DS" },
+            { "PlayStation Portable", "PSP" },
             { "Nintendo 3DS", "3DS" }
         };
 

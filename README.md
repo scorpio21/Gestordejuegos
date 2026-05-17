@@ -19,15 +19,14 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.8 (Actual)**
+**Version 1.0.9 (Actual)**
 
-- **Nuevo:** Soporte **Drag & Drop** para archivos comprimidos (`.zip`, `.7z`, `.rar`) y ROMs directas. Arrastra archivos al listado para añadirlos automáticamente con nombre, región e idiomas procesados.
-- **Mejora:** Selector de **Sistema Oficial** para Vimm's Lair. Ahora puedes elegir el sistema exacto antes de la descarga masiva para garantizar resultados perfectos.
-- **Mejora:** Validación de existencia en Vimm. El sistema comprueba si la plataforma existe antes de iniciar el escaneo masivo.
-- **Mejora:** Motor de Importación inteligente. Ahora distingue entre carpetas de marca (ej: "Sega") y plataformas reales, y detecta automáticamente juegos dentro de carpetas `Games` o `Roms`.
-- **Nuevo:** Gestión de exclusiones mediante **`blacklist.json`** personalizable y compatible con caracteres especiales (tildes, ñ).
+- **Nuevo: Salud de la Base de Datos**: Añadida herramienta para detectar y limpiar "Juegos Huérfanos" (registros cuyas ROMs ya no existen en disco) con overlay de confirmación.
+- **Nuevo: Filtrado Inteligente de Importación**: Implementado sistema de filtros mediante `dross_filter.json` para ignorar automáticamente Demos, Prototipos y Samples en todos los métodos de importación.
+- **Mejora: Vimm's Lair Pro**: Sincronización total con la lista oficial (36 sistemas), soporte corregido para 32X y sistemas CD, y nombres legibles en el selector.
+- **Mejora: Estabilidad UI**: Añadido overlay de confirmación genérico para acciones críticas y correcciones en la compilación de enlaces XAML.
 
-**Version 1.0.7**
+**Version 1.0.8**
 
 **Version 1.0.6**
 

@@ -33,6 +33,22 @@ public partial class MainWindow : Window
     private const int PageSize = 100;
     private System.Collections.ObjectModel.ObservableCollection<string> _currentRoms = new();
     private System.Threading.CancellationTokenSource? _cts;
+    private Action? _onConfirmAction;
+
+    private List<string> LoadDrossPatterns()
+    {
+        string drossPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dross_filter.json");
+        if (File.Exists(drossPath))
+        {
+            try
+            {
+                var json = File.ReadAllText(drossPath);
+                return System.Text.Json.JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+            }
+            catch { }
+        }
+        return new List<string>();
+    }
 
     public MainWindow()
     {
@@ -178,6 +194,14 @@ public partial class MainWindow : Window
 
         BtnCancelVimm.Click += (s, e) => OverlayVimmSystem.IsVisible = false;
         BtnConfirmVimm.Click += BtnConfirmVimm_Click;
+
+        MenuCleanupOrphans.Click += MenuCleanupOrphans_Click;
+        MenuManageDross.Click += MenuManageDross_Click;
+        BtnCancelConfirm.Click += (s, e) => OverlayConfirm.IsVisible = false;
+        BtnAcceptConfirm.Click += (s, e) => {
+            OverlayConfirm.IsVisible = false;
+            _onConfirmAction?.Invoke();
+        };
 
         InitVirtualKeyboard();
     }
@@ -718,12 +742,18 @@ public partial class MainWindow : Window
             // PROCESAR ARCHIVOS ROM/ZIP DIRECTOS
             if (romFiles.Count > 0)
             {
+                var drossPatterns = LoadDrossPatterns();
                 foreach (var romPath in romFiles)
                 {
                     string fileName = Path.GetFileName(romPath);
+                    if (ImportService.IsDross(fileName, drossPatterns))
+                    {
+                        skippedCount++;
+                        continue;
+                    }
+
                     var game = ImportService.ParseGameLine(fileName, _selectedPlatform.Id);
                     game.RomPath = romPath;
-
                     string uniqueKey = $"{game.Name}|{game.Region}";
                     if (!existingNames.Contains(uniqueKey))
                     {
@@ -1047,6 +1077,38 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (source == "Vimm's Lair")
+        {
+            LogDebug("Iniciando flujo de Batch Scrape para Vimm's Lair");
+            var platforms = VimmVaultService.GetSupportedPlatforms();
+            CmbVimmSystem.ItemsSource = platforms;
+            
+            // Intentar pre-seleccionar la mejor coincidencia
+            var currentName = _selectedPlatform.Name.ToLower();
+            var bestMatch = platforms.FirstOrDefault(p => currentName.Contains(p.Key.ToLower()) || p.Key.ToLower().Contains(currentName));
+            
+            if (bestMatch.Key != null)
+            {
+                LogDebug($"Pre-seleccionando sistema Vimm: {bestMatch.Key} para plataforma: {_selectedPlatform.Name}");
+                CmbVimmSystem.SelectedItem = bestMatch;
+            }
+            else 
+            {
+                LogDebug($"No se encontró coincidencia automática para: {_selectedPlatform.Name}. Seleccionando primero por defecto.");
+                CmbVimmSystem.SelectedIndex = 0;
+            }
+
+            OverlayVimmSystem.IsVisible = true;
+            return;
+        }
+
+        StartGenericBatchScrape(source);
+    }
+
+    private async void StartGenericBatchScrape(string source)
+    {
+        if (_selectedPlatform == null) return;
+
         var gamesWithoutCover = _gameService.GetGamesByPlatform(_selectedPlatform.Id)
                                             .Where(g => g.Cover == null || g.Cover.Length == 0)
                                             .ToList();
@@ -1057,9 +1119,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        ShowMessage($"Iniciando descarga para {gamesWithoutCover.Count} juegos...");
-        BtnCloseMessage.IsEnabled = false; // Deshabilitar para no cerrar mientras carga
-        
+        ShowMessage($"Iniciando descarga ({source}) para {gamesWithoutCover.Count} juegos...");
+        BtnCloseMessage.IsEnabled = false;
+
         await System.Threading.Tasks.Task.Run(async () =>
         {
             int successCount = 0;
@@ -1068,7 +1130,7 @@ public partial class MainWindow : Window
                 var game = gamesWithoutCover[i];
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
-                    TxtMessageContent.Text = $"Buscando carátula para '{game.Name}' ({i + 1}/{gamesWithoutCover.Count})...";
+                    TxtMessageContent.Text = $"[{source}] Buscando '{game.Name}' ({i + 1}/{gamesWithoutCover.Count})...";
                 });
 
                 try
@@ -1078,29 +1140,6 @@ public partial class MainWindow : Window
                     else if (source == "TheGamesDB") results = await _theGamesDbService.SearchGamesAsync(game.Name);
                     else if (source == "GameTDB" && _selectedPlatform != null) results = await _gameTdbService.SearchGamesAsync(game.Name, _selectedPlatform.Name);
                     else if (source == "PalSnesCovers") results = await _palSnesCoversService.SearchGamesAsync(game.Name);
-                    else if (source == "Vimm's Lair" && _selectedPlatform != null)
-                    {
-                        var systemCode = VimmVaultService.GetSystemCode(_selectedPlatform.Name);
-                        if (!string.IsNullOrEmpty(systemCode))
-                        {
-                            var vimmId = await _vimmService.FindGameIdAsync(systemCode, game.Name, game.Region, game.Languages);
-                            if (vimmId.HasValue)
-                            {
-                                var coverData = await _vimmService.DownloadBoxArtAsync(vimmId.Value);
-                                if (coverData != null && coverData.Length > 0)
-                                {
-                                    game.Cover = coverData;
-                                    using (var context = new GestorJuegos.Data.AppDbContext())
-                                    {
-                                        context.Games.Update(game);
-                                        context.SaveChanges();
-                                    }
-                                    successCount++;
-                                    continue; // Skip the rest of the generic logic
-                                }
-                            }
-                        }
-                    }
 
                     GestorJuegos.Services.IgdbSearchResult? match = null;
                     if (results.Count > 0)
@@ -1123,53 +1162,27 @@ public partial class MainWindow : Window
                         if (coverData != null && coverData.Length > 0)
                         {
                             game.Cover = coverData;
-                            
-                            // Comprobar y actualizar metadatos si faltan o tienen valores por defecto
-                            if (match.Year.HasValue && (game.Year == DateTime.Now.Year || game.Year == 0))
-                            {
-                                game.Year = match.Year.Value;
-                            }
-                            
-                            if (!string.IsNullOrEmpty(match.Genre) && string.IsNullOrEmpty(game.Genre))
-                            {
-                                game.Genre = match.Genre;
-                            }
-                            
-                            // Guardar en la DB usando un nuevo contexto por ser asíncrono
+                            if (match.Year.HasValue && (game.Year == DateTime.Now.Year || game.Year == 0)) game.Year = match.Year.Value;
+                            if (!string.IsNullOrEmpty(match.Genre) && string.IsNullOrEmpty(game.Genre)) game.Genre = match.Genre;
+
                             using (var context = new GestorJuegos.Data.AppDbContext())
                             {
                                 context.Games.Update(game);
                                 context.SaveChanges();
                             }
-                            
                             successCount++;
                         }
                     }
-                    
-                    // Pequeña pausa para no saturar la API (Rate limit es 4 peticiones por segundo en Twitch/IGDB)
                     await System.Threading.Tasks.Task.Delay(300); 
                 }
-                catch
-                {
-                    // Ignorar errores individuales para no detener el lote
-                }
+                catch { }
             }
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 BtnCloseMessage.IsEnabled = true;
-                LoadGames(); // Actualizar la vista
-                if (_selectedGame != null && _selectedGame.Id != 0)
-                {
-                    // Refrescar carátula si el juego estaba seleccionado
-                    var updatedGame = gamesWithoutCover.FirstOrDefault(g => g.Id == _selectedGame.Id);
-                    if (updatedGame != null)
-                    {
-                        _currentCover = updatedGame.Cover;
-                        UpdateCoverImage();
-                    }
-                }
-                ShowMessage($"¡Proceso completado! Se descargaron {successCount} carátulas de {gamesWithoutCover.Count} juegos faltantes.");
+                LoadGames();
+                ShowMessage($"¡Proceso completado! Se descargaron {successCount} carátulas.");
             });
         });
     }
@@ -1219,11 +1232,18 @@ public partial class MainWindow : Window
                     }
                     
                     int skippedCount = 0;
+                    var drossPatterns = LoadDrossPatterns();
 
                     foreach (var gameNode in games)
                     {
                         string name = gameNode.Attribute("name")?.Value ?? "";
                         if (string.IsNullOrEmpty(name)) continue;
+
+                        if (ImportService.IsDross(name, drossPatterns))
+                        {
+                            skippedCount++;
+                            continue;
+                        }
 
                         string region = "🌎 World";
                         if (name.Contains("(JP") || name.Contains("(Japan")) region = "🇯🇵 JP";
@@ -2198,6 +2218,9 @@ public partial class MainWindow : Window
                                     string fileName = Path.GetFileName(filePath);
                                     if (fileName.Equals("lista.txt", StringComparison.OrdinalIgnoreCase)) continue;
 
+                                    var drossPatterns = LoadDrossPatterns();
+                                    if (ImportService.IsDross(fileName, drossPatterns)) continue;
+
                                     if (i % 20 == 0)
                                     {
                                         Avalonia.Threading.Dispatcher.UIThread.Post(() => {
@@ -2344,6 +2367,49 @@ public partial class MainWindow : Window
                 OverlayProgress.IsVisible = false;
                 ShowMessage($"Error durante el escaneo de carátulas: {ex.Message}");
             }
+        }
+    }
+
+    private void MenuCleanupOrphans_Click(object? sender, RoutedEventArgs e)
+    {
+        var orphaned = _gameService.GetOrphanedGames();
+        if (orphaned.Count == 0)
+        {
+            ShowMessage("No se han encontrado juegos huérfanos. Todas las rutas de ROM son válidas.");
+            return;
+        }
+
+        TxtConfirmTitle.Text = "Limpiar Juegos Huérfanos";
+        TxtConfirmContent.Text = $"Se han encontrado {orphaned.Count} juegos cuya ruta de ROM ya no existe en el disco.\n\n" +
+                               "¿Deseas eliminar estos registros de la base de datos? Esta acción no afectará a tus archivos físicos.";
+        
+        _onConfirmAction = () => {
+            _gameService.DeleteGames(orphaned.Select(g => g.Id).ToList());
+            LoadGames();
+            LoadDashboard();
+            ShowMessage($"Se han eliminado {orphaned.Count} registros huérfanos con éxito.");
+        };
+        OverlayConfirm.IsVisible = true;
+    }
+
+    private void MenuManageDross_Click(object? sender, RoutedEventArgs e)
+    {
+        string drossPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dross_filter.json");
+        if (!File.Exists(drossPath))
+        {
+            var defaultDross = new List<string> { "(Demo)", "(Proto)", "(Sample)", "(Beta)", "[b]", "[t]", "[h]" };
+            var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            File.WriteAllText(drossPath, System.Text.Json.JsonSerializer.Serialize(defaultDross, options));
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(drossPath) { UseShellExecute = true });
+            ShowMessage("Se ha abierto el archivo 'dross_filter.json'.\n\nEdita la lista de palabras clave que deseas ignorar durante la importación y guarda el archivo.");
+        }
+        catch
+        {
+            ShowMessage("No se pudo abrir el archivo de filtros automáticamente. Puedes encontrarlo y editarlo en: " + drossPath);
         }
     }
 }
