@@ -19,12 +19,15 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.7 (Actual)**
+**Version 1.0.8 (Actual)**
 
-- **Nuevo:** Integración con **Vimm's Lair**. Ahora puedes descargar carátulas directamente desde Vimm's Lair, tanto en búsquedas individuales como en lote para plataformas enteras. El sistema mapea automáticamente tus plataformas a los códigos de sistema de Vimm.
-- **Mejora:** Corregido el motor de **Importación por Carpetas**. Ahora detecta correctamente las plataformas cuando se selecciona una carpeta de sistema directamente (ej: "Nintendo - Game Boy") y gestiona mejor las rutas complejas.
-- **Mejora:** Añadido sistema de **Logs de Diagnóstico** (`vimm_debug_log.txt`) para solucionar problemas de conexión o mapeo con scrapers externos.
-- **Mejora:** Ampliado el soporte de scrapers en el buscador manual y en lote.
+- **Nuevo:** Soporte **Drag & Drop** para archivos comprimidos (`.zip`, `.7z`, `.rar`) y ROMs directas. Arrastra archivos al listado para añadirlos automáticamente con nombre, región e idiomas procesados.
+- **Mejora:** Selector de **Sistema Oficial** para Vimm's Lair. Ahora puedes elegir el sistema exacto antes de la descarga masiva para garantizar resultados perfectos.
+- **Mejora:** Validación de existencia en Vimm. El sistema comprueba si la plataforma existe antes de iniciar el escaneo masivo.
+- **Mejora:** Motor de Importación inteligente. Ahora distingue entre carpetas de marca (ej: "Sega") y plataformas reales, y detecta automáticamente juegos dentro de carpetas `Games` o `Roms`.
+- **Nuevo:** Gestión de exclusiones mediante **`blacklist.json`** personalizable y compatible con caracteres especiales (tildes, ñ).
+
+**Version 1.0.7**
 
 **Version 1.0.6**
 

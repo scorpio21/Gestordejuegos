@@ -366,6 +366,39 @@ namespace GestorJuegos.Services
 
         private sealed record VaultSearchResult(int Id, string Title, string Region, string Languages);
 
+        public static Dictionary<string, string> GetSupportedPlatforms() => new()
+        {
+            { "Atari 2600", "2600" },
+            { "Atari 5200", "5200" },
+            { "Atari 7800", "7800" },
+            { "ColecoVision", "ColecoVision" },
+            { "Commodore 64", "64" },
+            { "Intellivision", "Intellivision" },
+            { "Nintendo (NES)", "NES" },
+            { "Sega Master System", "SMS" },
+            { "Sega Genesis", "Genesis" },
+            { "Sega Game Gear", "GG" },
+            { "Game Boy", "GB" },
+            { "TurboGrafx-16", "TG16" },
+            { "Super Nintendo", "SNES" },
+            { "Game Boy Color", "GBC" },
+            { "Sega Saturn", "Saturn" },
+            { "PlayStation", "PS1" },
+            { "Virtual Boy", "VB" },
+            { "Nintendo 64", "N64" },
+            { "Game Boy Advance", "GBA" },
+            { "PlayStation 2", "PS2" },
+            { "GameCube", "GameCube" },
+            { "Xbox", "Xbox" },
+            { "Sega Dreamcast", "Dreamcast" },
+            { "Nintendo DS", "DS" },
+            { "Xbox 360", "Xbox360" },
+            { "Nintendo Wii", "Wii" },
+            { "PS Portable", "PSP" },
+            { "PlayStation 3", "PS3" },
+            { "Nintendo 3DS", "3DS" }
+        };
+
         public void Dispose() => _http.Dispose();
     }
 }
