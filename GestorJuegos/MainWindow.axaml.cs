@@ -1826,82 +1826,130 @@ public partial class MainWindow : Window
             var rootPath = folders[0].Path.LocalPath;
             try
             {
-                ShowMessage("Escaneando carpetas de plataformas...");
-                var platformDirs = Directory.GetDirectories(rootPath);
-                int platformCount = 0;
-                int gameCount = 0;
+                OverlayProgress.IsVisible = true;
+                ProgBarImport.Value = 0;
+                TxtProgressDetail.Text = "Escaneando carpetas de plataformas...";
 
-                using (var context = new GestorJuegos.Data.AppDbContext())
+                await System.Threading.Tasks.Task.Run(async () =>
                 {
-                    foreach (var pDir in platformDirs)
+                    var platformDirs = Directory.GetDirectories(rootPath);
+                    int platformCount = 0;
+                    int gameCount = 0;
+
+                    // Extensiones soportadas
+                    var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
+                    { 
+                        ".zip", ".7z", ".rar", ".iso", ".bin", ".cue", ".n64", ".v64", ".z64", 
+                        ".sfc", ".smc", ".nes", ".gb", ".gbc", ".gba", ".nds", ".3ds", ".cia", 
+                        ".pbp", ".cso", ".rvz", ".wbfs", ".gcm", ".gdi", ".chd", ".m3u", ".txt" 
+                    };
+
+                    using (var context = new GestorJuegos.Data.AppDbContext())
                     {
-                        string pName = Path.GetFileName(pDir);
-                        var platform = context.Platforms.FirstOrDefault(p => p.Name == pName);
-                        if (platform == null)
+                        foreach (var pDir in platformDirs)
                         {
-                            platform = new Platform { Name = pName };
-                            context.Platforms.Add(platform);
-                            context.SaveChanges();
-                            platformCount++;
-                        }
+                            string pName = Path.GetFileName(pDir);
+                            
+                            Avalonia.Threading.Dispatcher.UIThread.Post(() => {
+                                TxtProgressDetail.Text = $"Plataforma: {pName}...";
+                            });
 
-                        // Escaneo directo de archivos en la carpeta de la plataforma
-                        var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
-                        { 
-                            ".zip", ".7z", ".rar", ".iso", ".bin", ".cue", ".n64", ".v64", ".z64", 
-                            ".sfc", ".smc", ".nes", ".gb", ".gbc", ".gba", ".nds", ".3ds", ".cia", 
-                            ".pbp", ".cso", ".rvz", ".wbfs", ".gcm", ".gdi", ".chd", ".m3u", ".txt" 
-                        };
-
-                        var gameFiles = Directory.GetFiles(pDir, "*.*", SearchOption.TopDirectoryOnly)
-                                                .Where(f => extensions.Contains(Path.GetExtension(f)))
-                                                .ToList();
-
-                        if (gameFiles.Count > 0)
-                        {
-                            var existingGameKeys = new HashSet<string>(context.Games
-                                .Where(g => g.PlatformId == platform.Id)
-                                .Select(g => $"{g.Name}|{g.Region}|{g.Languages}"), StringComparer.OrdinalIgnoreCase);
-
-                            foreach (var filePath in gameFiles)
+                            var platform = context.Platforms.FirstOrDefault(p => p.Name == pName);
+                            if (platform == null)
                             {
-                                string fileName = Path.GetFileName(filePath);
-                                // Evitar importar el propio lista.txt si existiera o archivos de sistema
-                                if (fileName.Equals("lista.txt", StringComparison.OrdinalIgnoreCase)) continue;
+                                platform = new Platform { Name = pName };
+                                context.Platforms.Add(platform);
+                                context.SaveChanges();
+                                platformCount++;
+                            }
 
-                                var game = ImportService.ParseGameLine(fileName, platform.Id);
-                                game.RomPath = filePath; // Ruta absoluta del archivo encontrado
-                                
-                                string uniqueKey = $"{game.Name}|{game.Region}|{game.Languages}";
-                                if (!existingGameKeys.Contains(uniqueKey))
+                            // Escaneo RECURSIVO MANUAL Y ROBUSTO (Stack-based)
+                            var gameFiles = new System.Collections.Generic.List<string>();
+                            var dirStack = new System.Collections.Generic.Stack<string>();
+                            dirStack.Push(pDir);
+
+                            while (dirStack.Count > 0)
+                            {
+                                string currentDir = dirStack.Pop();
+                                try
                                 {
-                                    context.Games.Add(game);
-                                    existingGameKeys.Add(uniqueKey);
-                                    gameCount++;
-                                }
-                                else
-                                {
-                                    // Si el juego existe pero no tenía ruta de ROM, la actualizamos
-                                    var existingGame = context.Games.FirstOrDefault(g => g.PlatformId == platform.Id && 
-                                                        g.Name == game.Name && g.Region == game.Region && g.Languages == game.Languages);
-                                    if (existingGame != null && string.IsNullOrEmpty(existingGame.RomPath))
+                                    foreach (var f in Directory.GetFiles(currentDir))
                                     {
-                                        existingGame.RomPath = filePath;
-                                        context.Games.Update(existingGame);
+                                        if (extensions.Contains(Path.GetExtension(f)))
+                                        {
+                                            gameFiles.Add(f);
+                                        }
                                     }
+                                    foreach (var d in Directory.GetDirectories(currentDir))
+                                    {
+                                        dirStack.Push(d);
+                                    }
+                                }
+                                catch { }
+                            }
+
+                            if (gameFiles.Count > 0)
+                            {
+                                var existingGameKeys = new HashSet<string>(context.Games
+                                    .Where(g => g.PlatformId == platform.Id)
+                                    .Select(g => $"{g.Name}|{g.Region}|{g.Languages}"), StringComparer.OrdinalIgnoreCase);
+
+                                for (int i = 0; i < gameFiles.Count; i++)
+                                {
+                                    string filePath = gameFiles[i];
+                                    string fileName = Path.GetFileName(filePath);
+                                    
+                                    if (fileName.Equals("lista.txt", StringComparison.OrdinalIgnoreCase)) continue;
+
+                                    // Reportar progreso del escaneo de esta plataforma
+                                    int currentI = i;
+                                    int totalI = gameFiles.Count;
+                                    Avalonia.Threading.Dispatcher.UIThread.Post(() => {
+                                        ProgBarImport.Value = (currentI * 100) / totalI;
+                                        TxtProgressDetail.Text = $"[{pName}] {currentI}/{totalI}: {fileName}";
+                                    });
+
+                                    var game = ImportService.ParseGameLine(fileName, platform.Id);
+                                    game.RomPath = filePath;
+                                    
+                                    string uniqueKey = $"{game.Name}|{game.Region}|{game.Languages}";
+                                    if (!existingGameKeys.Contains(uniqueKey))
+                                    {
+                                        context.Games.Add(game);
+                                        existingGameKeys.Add(uniqueKey);
+                                        gameCount++;
+                                    }
+                                    else
+                                    {
+                                        var existingGame = context.Games.FirstOrDefault(g => g.PlatformId == platform.Id && 
+                                                            g.Name == game.Name && g.Region == game.Region && g.Languages == game.Languages);
+                                        if (existingGame != null && string.IsNullOrEmpty(existingGame.RomPath))
+                                        {
+                                            existingGame.RomPath = filePath;
+                                            context.Games.Update(existingGame);
+                                        }
+                                    }
+
+                                    // Guardar cada 50 juegos para no saturar memoria en grandes colecciones
+                                    if (gameCount % 50 == 0) context.SaveChanges();
                                 }
                             }
                         }
+                        context.SaveChanges();
                     }
-                    context.SaveChanges();
-                }
 
-                LoadPlatforms();
-                LoadDashboard();
-                ShowMessage($"Importación finalizada.\nPlataformas nuevas/procesadas: {platformDirs.Length}\nJuegos nuevos añadidos: {gameCount}");
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        OverlayProgress.IsVisible = false;
+                        LoadPlatforms();
+                        LoadDashboard();
+                        ShowMessage($"¡Importación finalizada!\n\nPlataformas procesadas: {platformDirs.Length}\nTotal de juegos nuevos añadidos: {gameCount}\n\n(Se han revisado todas las subcarpetas de cada plataforma)");
+                    });
+                });
             }
             catch (Exception ex)
             {
+                OverlayProgress.IsVisible = false;
                 ShowMessage($"Error durante la importación: {ex.Message}");
             }
         }
@@ -1929,39 +1977,67 @@ public partial class MainWindow : Window
             var coverPath = folders[0].Path.LocalPath;
             try
             {
-                ShowMessage("Buscando carátulas coincidentes...");
-                var coverFiles = Directory.GetFiles(coverPath, "*.*", SearchOption.AllDirectories)
-                                         .Where(f => f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || 
-                                                     f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
-                                                     f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
-                                         .ToList();
+                OverlayProgress.IsVisible = true;
+                ProgBarImport.Value = 0;
+                TxtProgressTitle.Text = "Buscando Carátulas...";
+                TxtProgressDetail.Text = "Escaneando archivos de imagen...";
 
-                int matchCount = 0;
-                using (var context = new GestorJuegos.Data.AppDbContext())
+                await System.Threading.Tasks.Task.Run(async () =>
                 {
-                    var games = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id && (g.Cover == null || g.Cover.Length == 0)).ToList();
+                    var coverFiles = Directory.GetFiles(coverPath, "*.*", SearchOption.AllDirectories)
+                                             .Where(f => f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || 
+                                                         f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
+                                                         f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+                                             .ToList();
 
-                    foreach (var game in games)
+                    int matchCount = 0;
+                    using (var context = new GestorJuegos.Data.AppDbContext())
                     {
-                        // Buscar archivo que contenga el nombre del juego
-                        var match = coverFiles.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).Equals(game.Name, StringComparison.OrdinalIgnoreCase) || 
-                                                                    game.Name.Contains(Path.GetFileNameWithoutExtension(f), StringComparison.OrdinalIgnoreCase));
+                        var games = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id && (g.Cover == null || g.Cover.Length == 0)).ToList();
 
-                        if (match != null)
+                        for (int i = 0; i < games.Count; i++)
                         {
-                            game.Cover = File.ReadAllBytes(match);
-                            context.Games.Update(game);
-                            matchCount++;
-                        }
-                    }
-                    context.SaveChanges();
-                }
+                            var game = games[i];
+                            
+                            int currentI = i;
+                            int totalI = games.Count;
+                            Avalonia.Threading.Dispatcher.UIThread.Post(() => {
+                                ProgBarImport.Value = (currentI * 100) / totalI;
+                                TxtProgressDetail.Text = $"Buscando para: {game.Name} ({currentI}/{totalI})";
+                            });
 
-                LoadGames();
-                ShowMessage($"Escaneo de carátulas finalizado.\nSe han asociado {matchCount} carátulas a juegos de {_selectedPlatform.Name}.");
+                            // Lógica de coincidencia mejorada (bidireccional y limpieza básica)
+                            var match = coverFiles.FirstOrDefault(f => {
+                                string fileName = Path.GetFileNameWithoutExtension(f);
+                                return fileName.Equals(game.Name, StringComparison.OrdinalIgnoreCase) || 
+                                       fileName.Contains(game.Name, StringComparison.OrdinalIgnoreCase) ||
+                                       game.Name.Contains(fileName, StringComparison.OrdinalIgnoreCase);
+                            });
+
+                            if (match != null)
+                            {
+                                try 
+                                {
+                                    game.Cover = File.ReadAllBytes(match);
+                                    context.Games.Update(game);
+                                    matchCount++;
+                                } catch { }
+                            }
+                        }
+                        context.SaveChanges();
+                    }
+
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        OverlayProgress.IsVisible = false;
+                        LoadGames();
+                        ShowMessage($"Escaneo de carátulas finalizado.\n\nSe han asociado {matchCount} carátulas buscando recursivamente en {_selectedPlatform.Name}.");
+                    });
+                });
             }
             catch (Exception ex)
             {
+                OverlayProgress.IsVisible = false;
                 ShowMessage($"Error durante el escaneo de carátulas: {ex.Message}");
             }
         }

@@ -486,5 +486,16 @@
             </StackPanel>
         </Border>
 
+        <!-- Progress Overlay -->
+        <Border Name="OverlayProgress" Background="#AA000000" IsVisible="False" ZIndex="500">
+            <Border Background="{StaticResource PanelBrush}" Width="450" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="30" BorderBrush="#334155" BorderThickness="1">
+                <StackPanel Spacing="20">
+                    <TextBlock Name="TxtProgressTitle" Text="Procesando Importación..." FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                    <ProgressBar Name="ProgBarImport" Height="25" Minimum="0" Maximum="100" Value="0" ShowProgressText="True" Foreground="#10b981" Background="#0f172a" CornerRadius="6"/>
+                    <TextBlock Name="TxtProgressDetail" Text="Escaneando archivos..." Foreground="#94a3b8" FontSize="14" TextAlignment="Center" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </Border>
+
     </Grid>
 </Window>
