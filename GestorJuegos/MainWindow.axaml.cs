@@ -1850,14 +1850,16 @@ public partial class MainWindow : Window
                         if (File.Exists(listPath))
                         {
                             var lines = File.ReadAllLines(listPath);
-                            var existingGameKeys = new HashSet<string>(context.Games.Where(g => g.PlatformId == platform.Id).Select(g => $"{g.Name}|{g.Region}"), StringComparer.OrdinalIgnoreCase);
+                            var existingGameKeys = new HashSet<string>(context.Games
+                                .Where(g => g.PlatformId == platform.Id)
+                                .Select(g => $"{g.Name}|{g.Region}|{g.Languages}"), StringComparer.OrdinalIgnoreCase);
 
                             foreach (var line in lines)
                             {
                                 if (string.IsNullOrWhiteSpace(line)) continue;
                                 var game = ImportService.ParseGameLine(line, platform.Id);
                                 
-                                string uniqueKey = $"{game.Name}|{game.Region}";
+                                string uniqueKey = $"{game.Name}|{game.Region}|{game.Languages}";
                                 if (!existingGameKeys.Contains(uniqueKey))
                                 {
                                     // Intentar asociar ROM
