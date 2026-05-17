@@ -87,15 +87,17 @@
                                 <MenuItem Name="MenuImportDat" Header="Importar Formato (.XML, .DAT)"/>
                             </MenuItem>
                         </Menu>
-                        <Menu Background="Transparent">
-                            <MenuItem Name="MenuAyuda" Header="❓ Ayuda" FontSize="14" Foreground="#cbd5e1">
-                                <MenuItem Name="MenuHelpEmulator" Header="Configurar Emuladores..."/>
-                                <MenuItem Name="MenuHelpMultiDisk" Header="Usar soporte Multi-Disco..."/>
-                            </MenuItem>
-                        </Menu>
                         <Button Name="BtnGoDashboard" Content="🏠 Inicio" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
                         <Button Name="BtnManagePlatforms" Content="⚙️ Gestionar" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="1" BorderBrush="#334155"/>
                         <Button Name="BtnAddPlatform" Content="+ Añadir Plataforma" Background="{StaticResource AccentBrush}" Foreground="White" CornerRadius="6" Padding="10,5" FontWeight="SemiBold" BorderThickness="0"/>
+                        <Menu Background="Transparent">
+                            <MenuItem Name="MenuAyuda" Header="❓ Ayuda" FontSize="14" Foreground="#cbd5e1">
+                                <MenuItem Name="MenuHelpEmulator" Header="Guía: Configurar Emuladores"/>
+                                <MenuItem Name="MenuHelpMultiDisk" Header="Guía: Juegos Multi-Disco"/>
+                                <Separator />
+                                <MenuItem Name="MenuAbout" Header="Acerca de Gestor de Juegos..."/>
+                            </MenuItem>
+                        </Menu>
                     </StackPanel>
                 </DockPanel>
             </Border>
@@ -157,6 +159,18 @@
                                 <StackPanel Spacing="20">
                                     <TextBlock Text="¡Bienvenido a tu Ludoteca!" FontSize="28" FontWeight="Bold" Foreground="White" Margin="0,0,0,10" HorizontalAlignment="Center"/>
                                     
+                                    <!-- Global Search Bar -->
+                                    <Border Background="#0f172a" CornerRadius="12" Padding="20" BorderBrush="{StaticResource AccentBrush}" BorderThickness="2" Margin="0,0,0,10">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="🔍 Búsqueda Global" FontSize="18" FontWeight="SemiBold" Foreground="White"/>
+                                            <Grid ColumnDefinitions="*, Auto, Auto">
+                                                <TextBox Name="TxtGlobalSearch" PlaceholderText="Busca cualquier juego en toda tu colección..." FontSize="16" CornerRadius="6" Background="#1e293b" BorderBrush="#334155" Padding="12,10"/>
+                                                <Button Grid.Column="1" Name="BtnClearGlobalSearch" Content="✕" Margin="5,0,0,0" Background="#334155" CornerRadius="6" Width="40" HorizontalContentAlignment="Center"/>
+                                                <Button Grid.Column="2" Name="BtnCheckDuplicates" Content="👯 Buscar Duplicados" Margin="5,0,0,0" Background="#6366f1" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="15,10"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
                                     <!-- Stats Cards -->
                                     <Grid ColumnDefinitions="*, *, *" Margin="0,0,0,10">
                                         <!-- Card 1: Total Games -->
@@ -230,6 +244,39 @@
                                     </Grid>
                                 </StackPanel>
                             </ScrollViewer>
+
+                            <!-- Global Search Results -->
+                            <DockPanel Name="PnlGlobalSearch" IsVisible="False" Margin="0,10,0,0">
+                                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,15">
+                                    <Button Name="BtnBackFromSearch" Content="⬅ Volver al Dashboard" Background="Transparent" Foreground="#94a3b8" Padding="0,5"/>
+                                    <TextBlock Name="TxtSearchStatus" Text="Resultados de búsqueda" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                </DockPanel>
+                                <ListBox Name="LstGlobalSearchResults" Background="Transparent" BorderThickness="0">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="models:Game">
+                                            <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Margin="0,0,0,8" Padding="12">
+                                                <Grid ColumnDefinitions="Auto, *, Auto, Auto">
+                                                    <Border Grid.Column="0" CornerRadius="4" ClipToBounds="True" Margin="0,0,15,0">
+                                                        <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="50" Height="70" Stretch="UniformToFill"/>
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="18" Margin="0,0,0,4"/>
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <Border Background="#334155" CornerRadius="4" Padding="6,2">
+                                                                <TextBlock Text="{Binding Platform.Name}" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                                            </Border>
+                                                            <TextBlock Text="{Binding Genre}" Foreground="#94a3b8" FontSize="13" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="•" Foreground="#475569" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding Year}" Foreground="#94a3b8" FontSize="13" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <Image Grid.Column="2" Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="40" Height="30" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,15,0" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
 
                             <!-- List View -->
                             <ListBox Name="LstGames" Background="Transparent" BorderThickness="0" IsVisible="False">

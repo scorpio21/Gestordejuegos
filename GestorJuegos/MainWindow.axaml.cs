@@ -183,6 +183,7 @@ public partial class MainWindow : Window
         BtnSelectOverrideEmulator.Click += BtnSelectOverrideEmulator_Click;
         MenuHelpEmulator.Click += MenuHelpEmulator_Click;
         MenuHelpMultiDisk.Click += MenuHelpMultiDisk_Click;
+        MenuAbout.Click += MenuAbout_Click;
         BtnLaunchGame.Click += BtnLaunchGame_Click;
 
         BtnToggleFilters.Click += BtnToggleFilters_Click;
@@ -203,7 +204,79 @@ public partial class MainWindow : Window
             _onConfirmAction?.Invoke();
         };
 
+        TxtGlobalSearch.TextChanged += TxtGlobalSearch_TextChanged;
+        BtnClearGlobalSearch.Click += (s, e) => TxtGlobalSearch.Text = string.Empty;
+        BtnCheckDuplicates.Click += BtnCheckDuplicates_Click;
+        BtnBackFromSearch.Click += (s, e) => {
+            TxtGlobalSearch.Text = string.Empty;
+            PnlGlobalSearch.IsVisible = false;
+            PnlDashboard.IsVisible = true;
+        };
+        LstGlobalSearchResults.SelectionChanged += LstGlobalSearchResults_SelectionChanged;
+
         InitVirtualKeyboard();
+    }
+
+    private void TxtGlobalSearch_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        string query = TxtGlobalSearch.Text?.Trim().ToLower() ?? "";
+        if (string.IsNullOrEmpty(query))
+        {
+            if (PnlGlobalSearch.IsVisible)
+            {
+                PnlGlobalSearch.IsVisible = false;
+                PnlDashboard.IsVisible = true;
+            }
+            return;
+        }
+
+        PnlDashboard.IsVisible = false;
+        PnlGlobalSearch.IsVisible = true;
+        PnlHeaderToggles.IsVisible = false;
+        PnlPagination.IsVisible = false;
+        PnlGameDetails.IsVisible = false;
+
+        using var context = new GestorJuegos.Data.AppDbContext();
+        var results = context.Games
+            .Include(g => g.Platform)
+            .Where(g => g.Name.ToLower().Contains(query) || (g.Genre != null && g.Genre.ToLower().Contains(query)))
+            .OrderBy(g => g.Name)
+            .Take(50) // Límite para rendimiento
+            .ToList();
+
+        LstGlobalSearchResults.ItemsSource = results;
+        TxtSearchStatus.Text = results.Count > 0 
+            ? $"Resultados para '{query}' ({results.Count})" 
+            : $"No hay resultados para '{query}'";
+    }
+
+    private void LstGlobalSearchResults_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (LstGlobalSearchResults.SelectedItem is Game game)
+        {
+            // Al seleccionar un juego de la búsqueda global, cargamos su plataforma
+            _selectedPlatform = game.Platform;
+            PnlGlobalSearch.IsVisible = false;
+            PnlDashboard.IsVisible = false;
+            PnlHeaderToggles.IsVisible = true;
+            PnlPagination.IsVisible = true;
+            
+            TxtSelectedPlatform.Text = $"Plataforma: {_selectedPlatform.Name}";
+            
+            // Forzar vista de lista para mostrar la selección
+            BtnViewList_Click(null, new RoutedEventArgs());
+            
+            LoadGames();
+            
+            // Buscar el juego en la lista cargada y seleccionarlo
+            var loadedGame = _currentPlatformGames.FirstOrDefault(g => g.Id == game.Id);
+            if (loadedGame != null)
+            {
+                // Calcular en qué página está (opcional, por ahora lo seleccionamos si está en la 1)
+                LstGames.SelectedItem = loadedGame;
+                LstGames.ScrollIntoView(loadedGame);
+            }
+        }
     }
 
     private async void BtnConfirmVimm_Click(object? sender, RoutedEventArgs e)
@@ -477,12 +550,12 @@ public partial class MainWindow : Window
         if (buttons.HasFlag(Vortice.XInput.GamepadButtons.X))
         {
             BtnQuickFavorite.IsChecked = !BtnQuickFavorite.IsChecked;
-            BtnQuickFavorite_Click(null, null);
+            BtnQuickFavorite_Click(null, new RoutedEventArgs());
             return;
         }
         if (buttons.HasFlag(Vortice.XInput.GamepadButtons.Y))
         {
-            BtnToggleFilters_Click(null, null);
+            BtnToggleFilters_Click(null, new RoutedEventArgs());
             return;
         }
 
@@ -495,7 +568,7 @@ public partial class MainWindow : Window
             }
             if (OverlayIgdbSearch.IsVisible)
             {
-                BtnSelectIgdb_Click(null, null);
+                BtnSelectIgdb_Click(null, new RoutedEventArgs());
                 return;
             }
             if (_gamepadInHeader)
@@ -532,7 +605,7 @@ public partial class MainWindow : Window
 
             if (PnlGameDetails.IsVisible && _selectedGame != null && BtnLaunchGame.IsVisible)
             {
-                BtnLaunchGame_Click(null, null);
+                BtnLaunchGame_Click(null, new RoutedEventArgs());
             }
             return;
         }
@@ -591,11 +664,11 @@ public partial class MainWindow : Window
 
         if (buttons.HasFlag(Vortice.XInput.GamepadButtons.LeftShoulder))
         {
-            if (BtnPrevPage.IsVisible) BtnPrevPage_Click(null, null);
+            if (BtnPrevPage.IsVisible) BtnPrevPage_Click(null, new RoutedEventArgs());
         }
         else if (buttons.HasFlag(Vortice.XInput.GamepadButtons.RightShoulder))
         {
-            if (BtnNextPage.IsVisible) BtnNextPage_Click(null, null);
+            if (BtnNextPage.IsVisible) BtnNextPage_Click(null, new RoutedEventArgs());
         }
 
         Avalonia.Controls.ListBox? activeList = LstGames.IsVisible ? LstGames : (LstGamesGrid.IsVisible ? LstGamesGrid : null);
@@ -1848,34 +1921,53 @@ public partial class MainWindow : Window
 
     private void MenuHelpEmulator_Click(object? sender, RoutedEventArgs e)
     {
-        string helpText = "CONFIGURACIÓN DE EMULADORES:\n\n" +
-            "1. Por Plataforma (Recomendado):\n" +
-            "   Ve a '⚙️ Gestionar' (arriba a la derecha), selecciona una plataforma e indica su Emulador y Argumentos. " +
-            "Todos los juegos de esa plataforma lo usarán por defecto.\n\n" +
-            "2. Por Juego (Perfil Avanzado):\n" +
-            "   Si un juego requiere un emulador distinto (ej. Snes9x en vez de RetroArch), edita el juego " +
-            "y rellena la sección '⚙️ Perfil de Emulador' para sobrescribir la configuración global.\n\n" +
-            "Argumentos: Usa {0} para indicar dónde va la ruta del juego.\n" +
-            "Ejemplo RetroArch: -L cores/snes9x_libretro.dll \"{0}\"\n" +
-            "Ejemplo Normal: \"{0}\"";
+        string helpText = "🚀 CONFIGURACIÓN DE EMULADORES\n\n" +
+            "Para que tus juegos funcionen, el Gestor necesita saber con qué programa abrirlos:\n\n" +
+            "• CONFIGURACIÓN GLOBAL (Por Plataforma):\n" +
+            "  Es la forma más rápida. Haz clic en '⚙️ Gestionar' (arriba a la derecha), selecciona una consola (ej. NES) " +
+            "y busca el archivo .exe de tu emulador. Una vez guardado, todos los juegos de esa consola se abrirán con él.\n\n" +
+            "• CONFIGURACIÓN INDIVIDUAL (Por Juego):\n" +
+            "  Si un juego específico necesita un emulador distinto o una configuración especial, puedes editarlo " +
+            "y rellenar la sección 'Perfil de Emulador'. Esto ignorará la configuración global solo para ese juego.\n\n" +
+            "💡 USO DE ARGUMENTOS:\n" +
+            "  Muchos emuladores necesitan comandos extra. Usa el marcador {0} para indicar dónde debe ir la ruta del juego.\n" +
+            "  Ejemplo: -L cores\\snes9x_libretro.dll \"{0}\"";
             
         ShowMessage(helpText);
     }
 
     private void MenuHelpMultiDisk_Click(object? sender, RoutedEventArgs e)
     {
-        string helpText = "CÓMO FUNCIONA LA OPCIÓN MULTI-DISCO:\n\n" +
-            "Si tienes un juego que viene en varios archivos (ej. Final Fantasy VII - Disco 1, Disco 2, etc.), " +
-            "ahora puedes tenerlos agrupados en una sola entrada de tu colección.\n\n" +
-            "1. En los detalles del juego, busca la lista 'Rutas de ROM (Multi-Disco)'.\n" +
-            "2. Pulsa '+ Añadir Disco' para insertar todos los archivos que componen el juego.\n" +
-            "3. Pulsa Guardar.\n\n" +
-            "¿Cómo elegir el disco a jugar?\n" +
-            "- Al momento de jugar, simplemente HAZ CLIC en el disco que desees dentro de esa lista " +
-            "para seleccionarlo, y luego pulsa el gran botón verde '▶ JUGAR'.\n" +
-            "- Si no seleccionas ninguno explícitamente, por defecto se cargará el primero de la lista.";
+        string helpText = "💿 SOPORTE PARA JUEGOS MULTI-DISCO\n\n" +
+            "Si tienes juegos que ocupan varios CD o diskettes, puedes agruparlos en una sola entrada:\n\n" +
+            "1. CÓMO AÑADIR DISCOS:\n" +
+            "   Al editar un juego, verás la lista 'Rutas de ROM (Multi-Disco)'. Pulsa el botón '+' para añadir todos los archivos (Disco 1, Disco 2, etc.).\n\n" +
+            "2. CÓMO JUGAR:\n" +
+            "   En el listado principal, selecciona el juego. En la sección de detalles verás la lista de discos. " +
+            "Simplemente HAZ CLIC sobre el disco que quieras cargar y luego pulsa '▶ JUGAR'.\n\n" +
+            "3. DISCO POR DEFECTO:\n" +
+            "   Si no seleccionas ninguno manualmente, el Gestor siempre cargará el primer disco de la lista.";
             
         ShowMessage(helpText);
+    }
+
+    private void MenuAbout_Click(object? sender, RoutedEventArgs e)
+    {
+        string aboutText = "🎮 GESTOR DE JUEGOS v1.0.9\n\n" +
+            "Un organizador integral para colecciones de juegos retro, diseñado para ser rápido, " +
+            "visual y fácil de usar con mando.\n\n" +
+            "👨‍💻 Autor: scorpio21\n" +
+            "📂 Repositorio: https://github.com/scorpio21/Gestordejuegos\n\n" +
+            "🙏 AGRADECIMIENTOS ESPECIALES:\n" +
+            "El sistema de carátulas y metadatos es posible gracias a la generosidad de:\n" +
+            "• IGDB.com (Twitch/Amazon)\n" +
+            "• TheGamesDB.net\n" +
+            "• Vimm.net (Vimm's Lair)\n" +
+            "• GameTDB.com\n" +
+            "• PalSnesCovers.com\n\n" +
+            "Gracias por apoyar la preservación del videojuego clásico.";
+
+        ShowMessage(aboutText);
     }
 
     private void BtnLaunchGame_Click(object? sender, RoutedEventArgs e)
@@ -2390,6 +2482,41 @@ public partial class MainWindow : Window
             ShowMessage($"Se han eliminado {orphaned.Count} registros huérfanos con éxito.");
         };
         OverlayConfirm.IsVisible = true;
+    }
+
+    private void BtnCheckDuplicates_Click(object? sender, RoutedEventArgs e)
+    {
+        PnlDashboard.IsVisible = false;
+        PnlGlobalSearch.IsVisible = true;
+        PnlHeaderToggles.IsVisible = false;
+        PnlPagination.IsVisible = false;
+        PnlGameDetails.IsVisible = false;
+
+        TxtSearchStatus.Text = "Buscando duplicados en toda la colección...";
+
+        using var context = new GestorJuegos.Data.AppDbContext();
+        
+        // Agrupar por nombre y región para encontrar repetidos
+        var duplicateGroups = context.Games
+            .GroupBy(g => new { g.Name, g.Region })
+            .Where(group => group.Count() > 1)
+            .Select(group => new { group.Key.Name, group.Key.Region })
+            .ToList();
+
+        var duplicateGames = new List<Game>();
+        foreach (var group in duplicateGroups)
+        {
+            var gamesInGroup = context.Games
+                .Include(g => g.Platform)
+                .Where(g => g.Name == group.Name && g.Region == group.Region)
+                .ToList();
+            duplicateGames.AddRange(gamesInGroup);
+        }
+
+        LstGlobalSearchResults.ItemsSource = duplicateGames.OrderBy(g => g.Name).ToList();
+        TxtSearchStatus.Text = duplicateGames.Count > 0 
+            ? $"Se han encontrado {duplicateGames.Count} juegos duplicados" 
+            : "No se han encontrado juegos duplicados en tu colección.";
     }
 
     private void MenuManageDross_Click(object? sender, RoutedEventArgs e)

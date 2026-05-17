@@ -19,12 +19,15 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.9 (Actual)**
+**Version 1.0.9.2 (Actual)**
 
-- **Nuevo: Salud de la Base de Datos**: Añadida herramienta para detectar y limpiar "Juegos Huérfanos" (registros cuyas ROMs ya no existen en disco) con overlay de confirmación.
-- **Nuevo: Filtrado Inteligente de Importación**: Implementado sistema de filtros mediante `dross_filter.json` para ignorar automáticamente Demos, Prototipos y Samples en todos los métodos de importación.
-- **Mejora: Vimm's Lair Pro**: Sincronización total con la lista oficial (36 sistemas), soporte corregido para 32X y sistemas CD, y nombres legibles en el selector.
-- **Mejora: Estabilidad UI**: Añadido overlay de confirmación genérico para acciones críticas y correcciones en la compilación de enlaces XAML.
+- **Nuevo: Búsqueda Global Multiplataforma**: Barra de búsqueda en el Dashboard para localizar cualquier juego en toda la colección de forma instantánea.
+- **Nuevo: Detector de Duplicados**: Herramienta para identificar juegos repetidos (por nombre y región) entre diferentes sistemas desde el Dashboard.
+- **Nuevo: Salud de la Base de Datos**: Herramienta para detectar y limpiar "Juegos Huérfanos" (registros cuyas ROMs ya no existen en disco) con overlay de confirmación.
+- **Nuevo: Filtrado Inteligente de Importación**: Sistema de filtros mediante `dross_filter.json` para ignorar automáticamente Demos, Prototipos y Samples.
+- **Mejora: Experiencia de Usuario (UX)**: Menú de Ayuda reorganizado a la derecha, guías de emulación actualizadas y nueva sección "Acerca de" con agradecimientos a las webs de scraping.
+- **Mejora: Vimm's Lair Pro**: Sincronización total con la lista oficial (36 sistemas), soporte corregido para 32X y sistemas CD Clásicos.
+- **Mejora: Estabilidad y Código**: Eliminadas todas las advertencias de compilación y corregidos errores estructurales para un rendimiento óptimo.
 
 **Version 1.0.6**
 
