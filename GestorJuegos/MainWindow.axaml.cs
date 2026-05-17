@@ -31,6 +31,7 @@ public partial class MainWindow : Window
     private int _currentPage = 1;
     private const int PageSize = 100;
     private System.Collections.ObjectModel.ObservableCollection<string> _currentRoms = new();
+    private System.Threading.CancellationTokenSource? _cts;
 
     public MainWindow()
     {
@@ -97,6 +98,8 @@ public partial class MainWindow : Window
         BtnSelectCover.Click += BtnSelectCover_Click;
         BtnClearCover.Click += BtnClearCover_Click;
         
+        BtnCancelProgress.Click += (s, e) => _cts?.Cancel();
+
         LstGames.SelectionChanged += LstGames_SelectionChanged;
         LstGamesGrid.SelectionChanged += LstGames_SelectionChanged;
         
@@ -1828,13 +1831,17 @@ public partial class MainWindow : Window
             {
                 OverlayProgress.IsVisible = true;
                 ProgBarImport.Value = 0;
+                TxtProgressTitle.Text = "Procesando Importación...";
                 TxtProgressDetail.Text = "Escaneando carpetas de plataformas...";
+                
+                _cts = new System.Threading.CancellationTokenSource();
 
                 await System.Threading.Tasks.Task.Run(async () =>
                 {
                     var platformDirs = Directory.GetDirectories(rootPath);
                     int platformCount = 0;
                     int gameCount = 0;
+                    bool cancelled = false;
 
                     // Extensiones soportadas
                     var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
@@ -1848,6 +1855,8 @@ public partial class MainWindow : Window
                     {
                         foreach (var pDir in platformDirs)
                         {
+                            if (_cts.IsCancellationRequested) { cancelled = true; break; }
+                            
                             string pName = Path.GetFileName(pDir);
                             
                             Avalonia.Threading.Dispatcher.UIThread.Post(() => {
@@ -1870,6 +1879,7 @@ public partial class MainWindow : Window
 
                             while (dirStack.Count > 0)
                             {
+                                if (_cts.IsCancellationRequested) break;
                                 string currentDir = dirStack.Pop();
                                 try
                                 {
@@ -1890,24 +1900,40 @@ public partial class MainWindow : Window
 
                             if (gameFiles.Count > 0)
                             {
+                                // Cargar rutas ya existentes para saltarlas al instante (Caché en memoria)
+                                var existingPaths = new HashSet<string>(context.Games
+                                    .Where(g => g.PlatformId == platform.Id && !string.IsNullOrEmpty(g.RomPath))
+                                    .Select(g => g.RomPath), StringComparer.OrdinalIgnoreCase);
+
                                 var existingGameKeys = new HashSet<string>(context.Games
                                     .Where(g => g.PlatformId == platform.Id)
                                     .Select(g => $"{g.Name}|{g.Region}|{g.Languages}"), StringComparer.OrdinalIgnoreCase);
 
                                 for (int i = 0; i < gameFiles.Count; i++)
                                 {
-                                    string filePath = gameFiles[i];
-                                    string fileName = Path.GetFileName(filePath);
+                                    if (_cts.IsCancellationRequested) { cancelled = true; break; }
                                     
+                                    string filePath = gameFiles[i];
+                                    
+                                    // FILTRO DE CACHÉ: Si la ruta ya existe, no perdemos tiempo procesando
+                                    if (existingPaths.Contains(filePath)) continue;
+
+                                    string fileName = Path.GetFileName(filePath);
                                     if (fileName.Equals("lista.txt", StringComparison.OrdinalIgnoreCase)) continue;
 
-                                    // Reportar progreso del escaneo de esta plataforma
+                                    // Reportar progreso
                                     int currentI = i;
                                     int totalI = gameFiles.Count;
-                                    Avalonia.Threading.Dispatcher.UIThread.Post(() => {
-                                        ProgBarImport.Value = (currentI * 100) / totalI;
-                                        TxtProgressDetail.Text = $"[{pName}] {currentI}/{totalI}: {fileName}";
-                                    });
+                                    if (currentI % 10 == 0) // Actualizar UI cada 10 para no saturar
+                                    {
+                                        Avalonia.Threading.Dispatcher.UIThread.Post(() => {
+                                            ProgBarImport.Value = (currentI * 100) / totalI;
+                                            TxtProgressDetail.Text = $"[{pName}] {currentI}/{totalI}: {fileName}";
+                                        });
+                                    }
+
+                                    // Pequeño retardo opcional
+                                    await System.Threading.Tasks.Task.Delay(1);
 
                                     var game = ImportService.ParseGameLine(fileName, platform.Id);
                                     game.RomPath = filePath;
@@ -1921,6 +1947,7 @@ public partial class MainWindow : Window
                                     }
                                     else
                                     {
+                                        // Si el juego existe por nombre pero no tenía esta ruta, la actualizamos
                                         var existingGame = context.Games.FirstOrDefault(g => g.PlatformId == platform.Id && 
                                                             g.Name == game.Name && g.Region == game.Region && g.Languages == game.Languages);
                                         if (existingGame != null && string.IsNullOrEmpty(existingGame.RomPath))
@@ -1930,10 +1957,11 @@ public partial class MainWindow : Window
                                         }
                                     }
 
-                                    // Guardar cada 50 juegos para no saturar memoria en grandes colecciones
-                                    if (gameCount % 50 == 0) context.SaveChanges();
+                                    // Guardar cada 500 juegos para máximo rendimiento en colecciones como MAME
+                                    if (gameCount % 500 == 0) context.SaveChanges();
                                 }
                             }
+                            platform.LastScanDate = DateTime.Now;
                         }
                         context.SaveChanges();
                     }
@@ -1943,7 +1971,8 @@ public partial class MainWindow : Window
                         OverlayProgress.IsVisible = false;
                         LoadPlatforms();
                         LoadDashboard();
-                        ShowMessage($"¡Importación finalizada!\n\nPlataformas procesadas: {platformDirs.Length}\nTotal de juegos nuevos añadidos: {gameCount}\n\n(Se han revisado todas las subcarpetas de cada plataforma)");
+                        string status = cancelled ? "Importación CANCELADA" : "¡Importación finalizada!";
+                        ShowMessage($"{status}\n\nPlataformas procesadas: {platformDirs.Length}\nTotal de juegos nuevos añadidos: {gameCount}\n\n(Se han guardado todos los juegos procesados hasta el momento)");
                     });
                 });
             }
@@ -1981,6 +2010,8 @@ public partial class MainWindow : Window
                 ProgBarImport.Value = 0;
                 TxtProgressTitle.Text = "Buscando Carátulas...";
                 TxtProgressDetail.Text = "Escaneando archivos de imagen...";
+                
+                _cts = new System.Threading.CancellationTokenSource();
 
                 await System.Threading.Tasks.Task.Run(async () =>
                 {
@@ -1991,12 +2022,15 @@ public partial class MainWindow : Window
                                              .ToList();
 
                     int matchCount = 0;
+                    bool cancelled = false;
                     using (var context = new GestorJuegos.Data.AppDbContext())
                     {
                         var games = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id && (g.Cover == null || g.Cover.Length == 0)).ToList();
 
                         for (int i = 0; i < games.Count; i++)
                         {
+                            if (_cts.IsCancellationRequested) { cancelled = true; break; }
+                            
                             var game = games[i];
                             
                             int currentI = i;
@@ -2031,7 +2065,8 @@ public partial class MainWindow : Window
                     {
                         OverlayProgress.IsVisible = false;
                         LoadGames();
-                        ShowMessage($"Escaneo de carátulas finalizado.\n\nSe han asociado {matchCount} carátulas buscando recursivamente en {_selectedPlatform.Name}.");
+                        string status = cancelled ? "Escaneo CANCELADO" : "Escaneo de carátulas finalizado";
+                        ShowMessage($"{status}\n\nSe han asociado {matchCount} carátulas buscando recursivamente en {_selectedPlatform.Name}.");
                     });
                 });
             }

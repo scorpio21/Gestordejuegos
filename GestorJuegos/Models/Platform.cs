@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace GestorJuegos.Models
@@ -8,6 +9,7 @@ namespace GestorJuegos.Models
         public string Name { get; set; } = string.Empty;
         public string EmulatorPath { get; set; } = string.Empty;
         public string LaunchArguments { get; set; } = "\"{0}\"";
+        public DateTime? LastScanDate { get; set; }
         public List<Game> Games { get; set; } = new();
     }
 }
