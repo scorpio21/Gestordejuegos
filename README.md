@@ -19,10 +19,18 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.5 (Actual)**
+**Version 1.0.6 (Actual)**
 
-- **Nuevo:** Importación Avanzada por Carpetas. Ahora puedes importar toda tu colección seleccionando una carpeta raíz. El sistema crea las plataformas automáticamente basándose en las subcarpetas y vincula las ROMs si el archivo `lista.txt` está presente.
-- **Nuevo:** Escaneo de Carátulas Locales. Permite asociar imágenes a tus juegos desde una carpeta local mediante coincidencia de nombres, ideal para colecciones con artes ya descargados.
+- **Mejora:** Optimización para colecciones masivas (MAME, etc.). Escaneo ultra-rápido mediante sistema de caché por ruta en memoria.
+- **Nuevo:** Motor "Deep Hierarchy Scan". Detecta automáticamente plataformas reales en estructuras complejas (ej. RomVault) ignorando categorías y respetando subcarpetas de regiones.
+- **Nuevo:** Barra de progreso visual con porcentaje (%) y detalle del proceso en tiempo real para importaciones y escaneo de carátulas.
+- **Nuevo:** Botón de "Cancelar Proceso" con guardado de seguridad para no perder el progreso ya realizado.
+- **Mejora:** Guardado en base de datos optimizado por lotes (cada 500 juegos) para máximo rendimiento de disco.
+
+**Version 1.0.5**
+
+- **Nuevo:** Importación Avanzada por Carpetas. Ahora puedes importar toda tu colección seleccionando una carpeta raíz. El sistema crea las plataformas automáticamente basándose en las subcarpetas y vincula las ROMs.
+- **Nuevo:** Escaneo de Carátulas Locales. Permite asociar imágenes a tus juegos desde una carpeta local mediante coincidencia de nombres recursiva.
 
 **Version 1.0.4**
 
