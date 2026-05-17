@@ -65,6 +65,7 @@
                                     <MenuItem Name="MenuBatchScrapeTgdb" Header="Usar TheGamesDB" />
                                     <MenuItem Name="MenuBatchScrapeGameTdb" Header="Usar GameTDB" />
                                     <MenuItem Name="MenuBatchScrapePalSnes" Header="Usar PalSnesCovers" />
+                                    <MenuItem Name="MenuBatchScrapeVimm" Header="Usar Vimm's Lair" />
                                 </MenuItem>
                                 <Separator />
                                 <MenuItem Header="Importación Avanzada">
@@ -302,6 +303,7 @@
                                         <ComboBoxItem Content="TheGamesDB" />
                                         <ComboBoxItem Content="GameTDB" />
                                         <ComboBoxItem Content="PalSnesCovers" />
+                                        <ComboBoxItem Content="Vimm's Lair" />
                                     </ComboBox>
                                     <Button Grid.Column="2" Name="BtnSearchIgdb" Content="🔍 Buscar" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="4" Padding="10,5"/>
                                 </Grid>

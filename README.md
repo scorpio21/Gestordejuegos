@@ -19,13 +19,16 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.6 (Actual)**
+**Version 1.0.7 (Actual)**
+
+- **Nuevo:** Integración con **Vimm's Lair**. Ahora puedes descargar carátulas directamente desde Vimm's Lair, tanto en búsquedas individuales como en lote para plataformas enteras. El sistema mapea automáticamente tus plataformas a los códigos de sistema de Vimm.
+- **Mejora:** Corregido el motor de **Importación por Carpetas**. Ahora detecta correctamente las plataformas cuando se selecciona una carpeta de sistema directamente (ej: "Nintendo - Game Boy") y gestiona mejor las rutas complejas.
+- **Mejora:** Añadido sistema de **Logs de Diagnóstico** (`vimm_debug_log.txt`) para solucionar problemas de conexión o mapeo con scrapers externos.
+- **Mejora:** Ampliado el soporte de scrapers en el buscador manual y en lote.
+
+**Version 1.0.6**
 
 - **Mejora:** Optimización para colecciones masivas (MAME, etc.). Escaneo ultra-rápido mediante sistema de caché por ruta en memoria.
-- **Nuevo:** Motor "Deep Hierarchy Scan". Detecta automáticamente plataformas reales en estructuras complejas (ej. RomVault) ignorando categorías y respetando subcarpetas de regiones.
-- **Nuevo:** Barra de progreso visual con porcentaje (%) y detalle del proceso en tiempo real para importaciones y escaneo de carátulas.
-- **Nuevo:** Botón de "Cancelar Proceso" con guardado de seguridad para no perder el progreso ya realizado.
-- **Mejora:** Guardado en base de datos optimizado por lotes (cada 500 juegos) para máximo rendimiento de disco.
 
 **Version 1.0.5**
 

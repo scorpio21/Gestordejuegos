@@ -26,6 +26,7 @@ public partial class MainWindow : Window
     private readonly TheGamesDbService _theGamesDbService;
     private readonly GameTdbService _gameTdbService;
     private readonly PalSnesCoversService _palSnesCoversService;
+    private readonly VimmVaultService _vimmService;
     private string _currentScraperSource = "IGDB";
     private System.Collections.Generic.List<Game> _currentPlatformGames = new System.Collections.Generic.List<Game>();
     private int _currentPage = 1;
@@ -107,6 +108,7 @@ public partial class MainWindow : Window
         _theGamesDbService = new TheGamesDbService(theGamesDbKey);
         _gameTdbService = new GameTdbService();
         _palSnesCoversService = new PalSnesCoversService();
+        _vimmService = new VimmVaultService();
 
         LoadPlatforms();
         LoadDashboard();
@@ -149,6 +151,7 @@ public partial class MainWindow : Window
         MenuBatchScrapeTgdb.Click += (s, e) => RunBatchScrape("TheGamesDB");
         MenuBatchScrapeGameTdb.Click += (s, e) => RunBatchScrape("GameTDB");
         MenuBatchScrapePalSnes.Click += (s, e) => RunBatchScrape("PalSnesCovers");
+        MenuBatchScrapeVimm.Click += (s, e) => RunBatchScrape("Vimm's Lair");
 
         MenuImportFolders.Click += MenuImportFolders_Click;
         MenuScanLocalCovers.Click += MenuScanLocalCovers_Click;
@@ -939,10 +942,21 @@ public partial class MainWindow : Window
         }
     }
 
+    private void LogDebug(string message)
+    {
+        try
+        {
+            File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vimm_debug_log.txt"), $"[UI Debug] {message}{Environment.NewLine}");
+        }
+        catch { }
+    }
+
     private async void RunBatchScrape(string source)
     {
+        LogDebug($"RunBatchScrape llamado con source: {source}");
         if (_selectedPlatform == null)
         {
+            LogDebug("Error: _selectedPlatform es nulo");
             ShowMessage("Por favor, selecciona primero la plataforma a la que quieres descargar carátulas.");
             return;
         }
@@ -978,6 +992,29 @@ public partial class MainWindow : Window
                     else if (source == "TheGamesDB") results = await _theGamesDbService.SearchGamesAsync(game.Name);
                     else if (source == "GameTDB" && _selectedPlatform != null) results = await _gameTdbService.SearchGamesAsync(game.Name, _selectedPlatform.Name);
                     else if (source == "PalSnesCovers") results = await _palSnesCoversService.SearchGamesAsync(game.Name);
+                    else if (source == "Vimm's Lair" && _selectedPlatform != null)
+                    {
+                        var systemCode = VimmVaultService.GetSystemCode(_selectedPlatform.Name);
+                        if (!string.IsNullOrEmpty(systemCode))
+                        {
+                            var vimmId = await _vimmService.FindGameIdAsync(systemCode, game.Name, game.Region, game.Languages);
+                            if (vimmId.HasValue)
+                            {
+                                var coverData = await _vimmService.DownloadBoxArtAsync(vimmId.Value);
+                                if (coverData != null && coverData.Length > 0)
+                                {
+                                    game.Cover = coverData;
+                                    using (var context = new GestorJuegos.Data.AppDbContext())
+                                    {
+                                        context.Games.Update(game);
+                                        context.SaveChanges();
+                                    }
+                                    successCount++;
+                                    continue; // Skip the rest of the generic logic
+                                }
+                            }
+                        }
+                    }
 
                     GestorJuegos.Services.IgdbSearchResult? match = null;
                     if (results.Count > 0)
@@ -1168,6 +1205,7 @@ public partial class MainWindow : Window
     private async void BtnSearchIgdb_Click(object? sender, RoutedEventArgs e)
     {
         string query = TxtName.Text?.Trim() ?? "";
+        LogDebug($"BtnSearchIgdb_Click llamado. Query: '{query}'");
         if (string.IsNullOrEmpty(query))
         {
             ShowMessage("Por favor, escriba el nombre del juego antes de buscar.");
@@ -1179,6 +1217,7 @@ public partial class MainWindow : Window
         {
             selectedSource = item.Content.ToString() ?? "IGDB";
         }
+        LogDebug($"Source seleccionada: {selectedSource}");
         _currentScraperSource = selectedSource;
 
         OverlayIgdbSearch.IsVisible = true;
@@ -1201,6 +1240,21 @@ public partial class MainWindow : Window
                 results = await _gameTdbService.SearchGamesAsync(query, _selectedPlatform.Name);
             }
             else if (selectedSource == "PalSnesCovers") results = await _palSnesCoversService.SearchGamesAsync(query);
+            else if (selectedSource == "Vimm's Lair")
+            {
+                if (_selectedPlatform == null)
+                {
+                    TxtIgdbStatus.Text = "Vimm's Lair requiere seleccionar plataforma principal (Menú).";
+                    return;
+                }
+                var systemCode = VimmVaultService.GetSystemCode(_selectedPlatform.Name);
+                if (string.IsNullOrEmpty(systemCode))
+                {
+                    TxtIgdbStatus.Text = $"Plataforma '{_selectedPlatform.Name}' no soportada por Vimm.";
+                    return;
+                }
+                results = await _vimmService.SearchGamesAsync(systemCode, query);
+            }
 
             if (_selectedPlatform != null && selectedSource == "IGDB")
             {
@@ -1249,6 +1303,7 @@ public partial class MainWindow : Window
                     else if (_currentScraperSource == "TheGamesDB") _currentCover = await _theGamesDbService.DownloadCoverAsync(result.CoverUrl);
                     else if (_currentScraperSource == "GameTDB") _currentCover = await _gameTdbService.DownloadCoverAsync(result.CoverUrl);
                     else if (_currentScraperSource == "PalSnesCovers") _currentCover = await _palSnesCoversService.DownloadCoverAsync(result.CoverUrl);
+                    else if (_currentScraperSource == "Vimm's Lair" && int.TryParse(result.CoverUrl, out var vimmId)) _currentCover = await _vimmService.DownloadBoxArtAsync(vimmId);
                     UpdateCoverImage();
                     OverlayMessage.IsVisible = false; // Ocultar mensaje al terminar
                 }
@@ -1876,9 +1931,12 @@ public partial class MainWindow : Window
                     {
                         if (_cts.IsCancellationRequested) return;
 
-                        var sDirs = Directory.GetDirectories(path);
+                        // Limpiar ruta para evitar problemas con Path.GetFileName si termina en barra
+                        string cleanPath = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                        var sDirs = Directory.GetDirectories(cleanPath);
+                        
                         // Heurística de juego (ignoramos .txt aquí para evitar falsos positivos en carpetas raíz)
-                        var gamesAtThisLevel = Directory.EnumerateFiles(path).Where(f => {
+                        var gamesAtThisLevel = Directory.EnumerateFiles(cleanPath).Where(f => {
                             string ext = Path.GetExtension(f).ToLower();
                             return ext != ".txt" && extensions.Contains(ext);
                         }).Take(11).ToList();
@@ -1894,14 +1952,14 @@ public partial class MainWindow : Window
                         });
 
                         // Heurística de nombre estándar o explícito
-                        string folderName = Path.GetFileName(path);
+                        string folderName = Path.GetFileName(cleanPath);
                         bool looksLikePlatform = folderName.Contains(" - ") || 
                                                  folderName.Equals("MAME", StringComparison.OrdinalIgnoreCase) ||
                                                  folderName.Contains("Arcade", StringComparison.OrdinalIgnoreCase);
 
                         if (hasGamesAtThisLevel || hasRegionSubdirs || looksLikePlatform || hasHighDensity)
                         {
-                            platformDirs.Add(path);
+                            platformDirs.Add(cleanPath);
                             // Detener búsqueda hacia abajo para no añadir las regiones como plataformas
                         }
                         else
@@ -1911,11 +1969,9 @@ public partial class MainWindow : Window
                         }
                     };
 
-                    // Escanear a partir del primer nivel del root seleccionado
-                    foreach (var dir in Directory.GetDirectories(rootPath))
-                    {
-                        findPlatformsRecursive(dir);
-                    }
+                    // Escanear recursivamente a partir del rootPath seleccionado.
+                    // Esto permite tanto seleccionar una carpeta con varias plataformas como una plataforma directamente.
+                    findPlatformsRecursive(rootPath);
 
                     using (var context = new GestorJuegos.Data.AppDbContext())
                     {
@@ -1925,6 +1981,7 @@ public partial class MainWindow : Window
                             if (_cts.IsCancellationRequested) { cancelled = true; break; }
                             
                             string pName = Path.GetFileName(pDir);
+                            if (string.IsNullOrEmpty(pName)) continue;
                             Avalonia.Threading.Dispatcher.UIThread.Post(() => {
                                 TxtProgressDetail.Text = $"Importando: {pName}...";
                             });
