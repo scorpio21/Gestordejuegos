@@ -26,8 +26,6 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 - **Mejora: Vimm's Lair Pro**: Sincronización total con la lista oficial (36 sistemas), soporte corregido para 32X y sistemas CD, y nombres legibles en el selector.
 - **Mejora: Estabilidad UI**: Añadido overlay de confirmación genérico para acciones críticas y correcciones en la compilación de enlaces XAML.
 
-**Version 1.0.8**
-
 **Version 1.0.6**
 
 - **Mejora:** Optimización para colecciones masivas (MAME, etc.). Escaneo ultra-rápido mediante sistema de caché por ruta en memoria.
