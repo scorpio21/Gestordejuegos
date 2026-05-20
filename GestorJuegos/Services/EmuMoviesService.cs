@@ -13,9 +13,9 @@ namespace GestorJuegos.Services
         private string? _sessionId;
         private const string ApiBaseUrl = "https://api.gamesdbase.com";
         
-        // Clave pública/genérica utilizada en otros proyectos de emulación
+        // Clave pública/genérica y nombre de producto de una herramienta autorizada
         private string _apiKey = "6021464670697368"; 
-        private string _productName = "GestorJuegos";
+        private string _productName = "Skyscraper";
 
         public bool IsLoggedIn => !string.IsNullOrEmpty(_sessionId);
 
