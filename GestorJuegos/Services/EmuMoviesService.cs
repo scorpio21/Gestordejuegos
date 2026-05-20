@@ -11,7 +11,7 @@ namespace GestorJuegos.Services
     {
         private readonly HttpClient _httpClient = new HttpClient();
         private string? _sessionId;
-        private const string ApiBaseUrl = "http://api.emumovies.com";
+        private const string ApiBaseUrl = "https://api.gamesdbase.com";
         
         // Clave pública/genérica utilizada en otros proyectos de emulación
         private string _apiKey = "6021464670697368"; 
