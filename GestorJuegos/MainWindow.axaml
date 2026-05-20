@@ -694,32 +694,6 @@
             </Border>
         </Border>
 
-        <!-- OVERLAY EMUMOVIES SEARCH -->
-        <Border Name="OverlayEmuSearch" IsVisible="False" Background="#AA000000" ZIndex="1000">
-            <Border Background="#1e293b" CornerRadius="12" Padding="25" Width="600" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="#334155" BorderThickness="1">
-                <StackPanel Spacing="15">
-                    <TextBlock Name="TxtEmuStatus" Text="Buscando en EmuMovies..." FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    <ListBox Name="LstEmuResults" Background="#0f172a" Height="300" CornerRadius="8" BorderBrush="#334155" BorderThickness="1">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Grid ColumnDefinitions="*, Auto">
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{Binding FileName}" FontWeight="Bold" Foreground="White" x:CompileBindings="False"/>
-                                        <TextBlock Text="{Binding Media}" FontSize="11" Foreground="#94a3b8" x:CompileBindings="False"/>
-                                    </StackPanel>
-                                    <TextBlock Grid.Column="1" Text="{Binding System}" FontSize="11" Foreground="#64748b" VerticalAlignment="Center" x:CompileBindings="False"/>
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                    <Grid ColumnDefinitions="*,*">
-                        <Button Name="BtnCancelEmu" Content="Cancelar" Grid.Column="0" Margin="0,0,5,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#ef4444" CornerRadius="6"/>
-                        <Button Name="BtnSelectEmu" Content="Seleccionar y Descargar" Grid.Column="1" Margin="5,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#10b981" CornerRadius="6"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-        </Border>
-
         <!-- OVERLAY: SELECCIONAR PLATAFORMA VIMM -->
         <Border Name="OverlayVimmSystem" Background="#AA000000" IsVisible="False" ZIndex="600">
             <Border Background="#1e293b" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="30" Width="450" BorderBrush="#334155" BorderThickness="1">
