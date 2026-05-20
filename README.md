@@ -1,4 +1,4 @@
-# 🎮 Gestor de Juegos (v1.0.9.9)
+# 🎮 Gestor de Juegos (v1.1.0.0)
 
 Organizador de colecciones de videojuegos para Windows, optimizado para grandes bibliotecas y uso con mando (Gamepad).
 
@@ -6,17 +6,22 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 🚀 Características Principales
 
-- **Importación Inteligente**: Compatible con carpetas recursivas, archivos DAT de No-Intro y LaunchBox.
-- **Base de Datos Dual**: Metadatos rápidos en un archivo y multimedia (carátulas/miniaturas) en otro.
-- **Modo Mando**: Navegación completa con mandos de Xbox/PlayStation mediante XInput.
-- **Optimización de Rendimiento**: Carga perezosa y miniaturas pre-generadas para bibliotecas de +20.000 juegos.
-- **Filtros Avanzados**: Búsqueda por género, año, región y favoritos con ordenación dinámica.
+- **Muro de Plataformas**: Navegación visual moderna con logos oficiales de consolas.
+- **Dashboard Dinámico**: Estadísticas rápidas, juegos recientes y acceso directo a sistemas.
+- **Estadísticas Detalladas**: Desglose por regiones, plataformas y géneros con banderas visuales.
+- **Modo Mando**: Navegación completa optimizada para mandos mediante XInput.
+- **Optimización Crítica**: Inserciones por lotes y miniaturas pre-generadas para fluidez máxima.
 
 ## 📅 Historial de Versiones
 
-### v1.0.9.9 (Actual)
-- **Eliminación de Integración EmuMovies**: Se ha retirado el soporte para la API de EmuMovies debido a restricciones de validación del servidor. Se recomienda el uso de herramientas externas como *EmuMovies Sync* para la descarga masiva y el escaneo local del Gestor para importarlas.
-- **Limpieza de Interfaz**: Eliminados campos de credenciales y botones de búsqueda redundantes para una experiencia más limpia enfocada en Vimm's Lair y artes locales.
+### v1.1.0.0 (Actual)
+- **Rediseño Estilo LaunchBox**: Implementación de un muro visual de plataformas que carga artes locales.
+- **Centro de Estadísticas**: Nueva vista detallada con gráficas de distribución y recuentos de colección.
+- **Actualización de Navegación**: Flujo de usuario mejorado centrado en la selección visual de sistemas.
+
+### v1.0.9.9
+- **Eliminación de Integración EmuMovies**: Retirada del soporte para la API de EmuMovies para favorecer el uso de artes locales y herramientas externas.
+- **Limpieza de Interfaz**: Eliminación de credenciales y campos de búsqueda redundantes.
 
 ### v1.0.9.8
 - **Optimización Crítica de Rendimiento**: Implementación de inserciones y actualizaciones por lotes (Batch Insert) en todos los importadores.
