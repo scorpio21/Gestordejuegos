@@ -266,12 +266,12 @@ public partial class MainWindow : Window
 
         try
         {
-            _emuService.SetCredentials(_settings.EmuMoviesApiKey, "GestorJuegos");
+            _emuService.SetCredentials(_settings.EmuMoviesApiKey, "Skyscraper");
             bool loggedIn = await _emuService.LoginAsync(_settings.EmuMoviesUser, _settings.EmuMoviesPass);
             
             if (!loggedIn)
             {
-                TxtEmuStatus.Text = "Error: Usuario o contraseña incorrectos.";
+                TxtEmuStatus.Text = $"Error: {_emuService.LastErrorMessage}";
                 return;
             }
 
