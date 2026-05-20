@@ -11,5 +11,8 @@ namespace GestorJuegos.Models
         public string LaunchArguments { get; set; } = "\"{0}\"";
         public DateTime? LastScanDate { get; set; }
         public List<Game> Games { get; set; } = new();
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public byte[]? Logo { get; set; }
     }
 }

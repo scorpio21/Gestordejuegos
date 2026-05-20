@@ -108,7 +108,7 @@ public partial class MainWindow : Window
         var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         if (version != null)
         {
-            Title = $"Gestor de Juegos v{version.Major}.{version.Minor}.{version.Build}";
+            Title = $"Gestor de Juegos v1.1.0.0";
         }
 
         _gameService = new GameService();
@@ -129,6 +129,13 @@ public partial class MainWindow : Window
 
         LstGames.SelectionChanged += LstGames_SelectionChanged;
         LstGamesGrid.SelectionChanged += LstGames_SelectionChanged;
+        
+        LstPlatformsWall.SelectionChanged += LstPlatformsWall_SelectionChanged;
+        BtnShowPlatformsWall.Click += (s, e) => LoadPlatformsWall();
+        BtnClosePlatformsWall.Click += (s, e) => OverlayPlatformsWall.IsVisible = false;
+        
+        BtnShowStats.Click += (s, e) => ShowFullStats();
+        BtnCloseFullStats.Click += (s, e) => OverlayFullStats.IsVisible = false;
         
         BtnViewList.Click += BtnViewList_Click;
         BtnViewGrid.Click += BtnViewGrid_Click;
@@ -1313,7 +1320,80 @@ public partial class MainWindow : Window
     private void BtnGoDashboard_Click(object? sender, RoutedEventArgs e)
     {
         _selectedPlatform = null;
-        LoadDashboard();
+        LoadPlatformsWall();
+    }
+
+    private void LstPlatformsWall_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (LstPlatformsWall.SelectedItem is Platform platform)
+        {
+            _selectedPlatform = platform;
+            TxtSelectedPlatform.Text = $"Plataforma: {platform.Name}";
+            
+            OverlayPlatformsWall.IsVisible = false;
+            PnlDashboard.IsVisible = false;
+            PnlHeaderToggles.IsVisible = true;
+            PnlPagination.IsVisible = true;
+            
+            // Forzar vista de rejilla por defecto al entrar
+            BtnViewGrid_Click(null, new RoutedEventArgs());
+            
+            LoadGames();
+            PnlGameDetails.IsVisible = false;
+            
+            // Limpiar selección para que se pueda volver a seleccionar
+            LstPlatformsWall.SelectedItem = null;
+        }
+    }
+
+    private void LoadPlatformsWall()
+    {
+        var platforms = _gameService.GetPlatforms();
+        string lbPath = _settings.LaunchBoxPath;
+
+        foreach (var p in platforms)
+        {
+            // Intentar cargar logo de LaunchBox
+            if (Directory.Exists(lbPath))
+            {
+                string logoPath = Path.Combine(lbPath, "Images", "Platforms", p.Name, "Clear Logo", $"{p.Name}.png");
+                if (File.Exists(logoPath))
+                {
+                    try { p.Logo = File.ReadAllBytes(logoPath); } catch { }
+                }
+            }
+        }
+
+        LstPlatformsWall.ItemsSource = platforms;
+        OverlayPlatformsWall.IsVisible = true;
+    }
+
+    private void ShowFullStats()
+    {
+        using var context = new GestorJuegos.Data.AppDbContext();
+        int totalGames = context.Games.Count();
+        int totalPlatforms = context.Platforms.Count();
+        int totalGenres = context.Games.Select(g => g.Genre).Distinct().Count();
+
+        FullStatsTotalGames.Text = totalGames.ToString();
+        FullStatsTotalPlatforms.Text = totalPlatforms.ToString();
+        FullStatsTotalGenres.Text = totalGenres.ToString();
+
+        var platformStats = _gameService.GetGamesCountByPlatform()
+            .Select(p => new { Key = p.Key, Value = p.Value })
+            .OrderByDescending(p => p.Value)
+            .ToList();
+        FullStatsPlatformList.ItemsSource = platformStats;
+
+        var regionStats = context.Games
+            .Where(g => !string.IsNullOrEmpty(g.Region))
+            .GroupBy(g => g.Region)
+            .OrderByDescending(g => g.Count())
+            .Select(g => new { Key = g.Key, Value = g.Count() })
+            .ToList();
+        FullStatsRegionList.ItemsSource = regionStats;
+
+        OverlayFullStats.IsVisible = true;
     }
 
     private void LoadDashboard()
@@ -1324,7 +1404,7 @@ public partial class MainWindow : Window
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = false;
         PnlGameDetails.IsVisible = false;
-
+        
         using var context = new GestorJuegos.Data.AppDbContext();
         context.Database.EnsureCreated();
 
