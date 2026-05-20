@@ -41,6 +41,7 @@ namespace GestorJuegos.Services
                 Region = region,
                 Languages = langs,
                 Year = DateTime.Now.Year,
+                DateAdded = DateTime.Now,
                 RomPath = "" // Will be filled if file is found
             };
         }

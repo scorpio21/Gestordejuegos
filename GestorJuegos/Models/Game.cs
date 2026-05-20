@@ -1,3 +1,5 @@
+using System;
+
 namespace GestorJuegos.Models
 {
     public class Game
@@ -14,6 +16,7 @@ namespace GestorJuegos.Models
         public bool IsFavorite { get; set; } = false;
         public string OverrideEmulatorPath { get; set; } = string.Empty;
         public string OverrideLaunchArguments { get; set; } = string.Empty;
+        public DateTime? DateAdded { get; set; }
         public int PlatformId { get; set; }
         public Platform Platform { get; set; } = null!;
     }

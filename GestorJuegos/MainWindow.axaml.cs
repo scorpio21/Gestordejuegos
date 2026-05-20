@@ -172,6 +172,9 @@ public partial class MainWindow : Window
         MenuImportFolders.Click += MenuImportFolders_Click;
         MenuScanLocalCovers.Click += MenuScanLocalCovers_Click;
 
+        BtnCancelExport.Click += (s, e) => OverlayExportOptions.IsVisible = false;
+        BtnConfirmExport.Click += BtnConfirmExport_Click;
+
         BtnCloseMessage.Click += BtnCloseMessage_Click;
         
         BtnSearchIgdb.Click += BtnSearchIgdb_Click;
@@ -183,6 +186,7 @@ public partial class MainWindow : Window
         BtnSelectOverrideEmulator.Click += BtnSelectOverrideEmulator_Click;
         MenuHelpEmulator.Click += MenuHelpEmulator_Click;
         MenuHelpMultiDisk.Click += MenuHelpMultiDisk_Click;
+        MenuHelpDatabase.Click += MenuHelpDatabase_Click;
         MenuAbout.Click += MenuAbout_Click;
         BtnLaunchGame.Click += BtnLaunchGame_Click;
 
@@ -779,117 +783,167 @@ public partial class MainWindow : Window
 
     private async void Window_Drop(object? sender, DragEventArgs e)
     {
-        if (_selectedPlatform == null)
-        {
-            ShowMessage("Por favor, selecciona una plataforma antes de soltar archivos.");
-            return;
-        }
-
         var filesData = e.DataTransfer.TryGetFiles();
         if (filesData == null) return;
         
-        var files = filesData.Select(f => f.TryGetLocalPath() ?? f.Name).Where(f => !string.IsNullOrEmpty(f)).ToList();
+        var dropPaths = filesData.Select(f => f.TryGetLocalPath() ?? f.Name).Where(f => !string.IsNullOrEmpty(f)).ToList();
+        if (dropPaths.Count == 0) return;
 
-        if (files == null || files.Count == 0) return;
-
-        // Separar archivos .txt (listas) de archivos de juego/comprimidos
-        var txtFiles = files.Where(f => f.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)).ToList();
         var romExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
         { 
             ".zip", ".7z", ".rar", ".iso", ".bin", ".cue", ".n64", ".v64", ".z64", 
             ".sfc", ".smc", ".nes", ".gb", ".gbc", ".gba", ".nds", ".3ds", ".cia", 
             ".pbp", ".cso", ".rvz", ".wbfs", ".gcm", ".gdi", ".chd", ".m3u" 
         };
-        var romFiles = files.Where(f => romExtensions.Contains(Path.GetExtension(f))).ToList();
 
-        int addedCount = 0;
-        int skippedCount = 0;
+        int totalAdded = 0;
+        int totalSkipped = 0;
+        var drossPatterns = LoadDrossPatterns();
 
-        using (var context = new GestorJuegos.Data.AppDbContext())
+        foreach (var path in dropPaths)
         {
-            // Cargar nombres existentes para evitar duplicados
-            var existingNames = new HashSet<string>(context.Games
-                .Where(g => g.PlatformId == _selectedPlatform.Id)
-                .Select(g => $"{g.Name}|{g.Region}"), StringComparer.OrdinalIgnoreCase);
+            Platform? targetPlatform = null;
 
-            // PROCESAR ARCHIVOS ROM/ZIP DIRECTOS
-            if (romFiles.Count > 0)
+            if (Directory.Exists(path))
             {
-                var drossPatterns = LoadDrossPatterns();
-                foreach (var romPath in romFiles)
+                // Es una carpeta: Crear o buscar plataforma con el nombre de la carpeta
+                string platformName = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+                using (var context = new GestorJuegos.Data.AppDbContext())
                 {
-                    string fileName = Path.GetFileName(romPath);
-                    if (ImportService.IsDross(fileName, drossPatterns))
+                    targetPlatform = context.Platforms.FirstOrDefault(p => p.Name == platformName);
+                    if (targetPlatform == null)
                     {
-                        skippedCount++;
-                        continue;
-                    }
-
-                    var game = ImportService.ParseGameLine(fileName, _selectedPlatform.Id);
-                    game.RomPath = romPath;
-                    string uniqueKey = $"{game.Name}|{game.Region}";
-                    if (!existingNames.Contains(uniqueKey))
-                    {
-                        context.Games.Add(game);
-                        existingNames.Add(uniqueKey);
-                        addedCount++;
-                    }
-                    else
-                    {
-                        skippedCount++;
+                        targetPlatform = new Platform { Name = platformName };
+                        context.Platforms.Add(targetPlatform);
+                        context.SaveChanges();
                     }
                 }
-            }
 
-            // PROCESAR ARCHIVOS .TXT (Listas de nombres)
-            if (txtFiles.Count > 0)
-            {
-                foreach (var txtFile in txtFiles)
+                if (targetPlatform == null) continue;
+
+                // Escaneo recursivo de archivos dentro de la carpeta
+                var allRomFiles = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories)
+                    .Where(f => romExtensions.Contains(Path.GetExtension(f)))
+                    .ToList();
+
+                using (var context = new GestorJuegos.Data.AppDbContext())
                 {
+                    var existingNames = new HashSet<string>(context.Games
+                        .Where(g => g.PlatformId == targetPlatform.Id)
+                        .Select(g => $"{g.Name}|{g.Region}"), StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var romPath in allRomFiles)
+                    {
+                        string fileName = Path.GetFileName(romPath);
+                        if (ImportService.IsDross(fileName, drossPatterns))
+                        {
+                            totalSkipped++;
+                            continue;
+                        }
+
+                        var game = ImportService.ParseGameLine(fileName, targetPlatform.Id);
+                        game.RomPath = romPath;
+                        string uniqueKey = $"{game.Name}|{game.Region}";
+                        
+                        if (!existingNames.Contains(uniqueKey))
+                        {
+                            context.Games.Add(game);
+                            existingNames.Add(uniqueKey);
+                            totalAdded++;
+                        }
+                        else
+                        {
+                            totalSkipped++;
+                        }
+                    }
+                    context.SaveChanges();
+                }
+            }
+            else if (File.Exists(path))
+            {
+                // Es un archivo suelto: Requiere plataforma seleccionada
+                if (_selectedPlatform == null)
+                {
+                    ShowMessage("Para importar archivos sueltos, primero selecciona una plataforma en el menú superior.");
+                    continue;
+                }
+
+                targetPlatform = _selectedPlatform;
+                string ext = Path.GetExtension(path);
+                
+                if (ext.Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Procesar lista TXT
                     try
                     {
-                        string content = await File.ReadAllTextAsync(txtFile);
+                        string content = await File.ReadAllTextAsync(path);
                         var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                        
-                        foreach (var line in lines)
+                        using (var context = new GestorJuegos.Data.AppDbContext())
                         {
-                            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("Plataforma:", StringComparison.OrdinalIgnoreCase)) continue;
-                            
-                            var game = ImportService.ParseGameLine(line, _selectedPlatform.Id);
-                            if (string.IsNullOrEmpty(game.Name)) continue;
+                            var existingNames = new HashSet<string>(context.Games
+                                .Where(g => g.PlatformId == targetPlatform.Id)
+                                .Select(g => $"{g.Name}|{g.Region}"), StringComparer.OrdinalIgnoreCase);
 
+                            foreach (var line in lines)
+                            {
+                                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("Plataforma:", StringComparison.OrdinalIgnoreCase)) continue;
+                                var game = ImportService.ParseGameLine(line, targetPlatform.Id);
+                                if (string.IsNullOrEmpty(game.Name)) continue;
+
+                                string uniqueKey = $"{game.Name}|{game.Region}";
+                                if (!existingNames.Contains(uniqueKey))
+                                {
+                                    context.Games.Add(game);
+                                    existingNames.Add(uniqueKey);
+                                    totalAdded++;
+                                }
+                                else { totalSkipped++; }
+                            }
+                            context.SaveChanges();
+                        }
+                    }
+                    catch { }
+                }
+                else if (romExtensions.Contains(ext))
+                {
+                    // Procesar ROM individual
+                    using (var context = new GestorJuegos.Data.AppDbContext())
+                    {
+                        var existingNames = new HashSet<string>(context.Games
+                            .Where(g => g.PlatformId == targetPlatform.Id)
+                            .Select(g => $"{g.Name}|{g.Region}"), StringComparer.OrdinalIgnoreCase);
+
+                        string fileName = Path.GetFileName(path);
+                        if (!ImportService.IsDross(fileName, drossPatterns))
+                        {
+                            var game = ImportService.ParseGameLine(fileName, targetPlatform.Id);
+                            game.RomPath = path;
                             string uniqueKey = $"{game.Name}|{game.Region}";
                             if (!existingNames.Contains(uniqueKey))
                             {
                                 context.Games.Add(game);
-                                existingNames.Add(uniqueKey);
-                                addedCount++;
+                                totalAdded++;
                             }
-                            else
-                            {
-                                skippedCount++;
-                            }
+                            else { totalSkipped++; }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        ShowMessage($"Error al leer el archivo de lista {Path.GetFileName(txtFile)}: {ex.Message}");
+                        context.SaveChanges();
                     }
                 }
             }
+        }
 
-            if (addedCount > 0)
-            {
-                context.SaveChanges();
-                LoadGames();
-                string msg = $"¡Importación completada! Se añadieron {addedCount} juegos.";
-                if (skippedCount > 0) msg += $" Se omitieron {skippedCount} duplicados.";
-                ShowMessage(msg);
-            }
-            else if (skippedCount > 0)
-            {
-                ShowMessage($"No se añadieron juegos nuevos (se detectaron {skippedCount} duplicados).");
-            }
+        if (totalAdded > 0)
+        {
+            LoadPlatforms();
+            if (_selectedPlatform != null) LoadGames();
+            LoadDashboard();
+            string msg = $"¡Importación completada! Se añadieron {totalAdded} juegos.";
+            if (totalSkipped > 0) msg += $" Se omitieron {totalSkipped} duplicados o archivos filtrados.";
+            ShowMessage(msg);
+        }
+        else if (totalSkipped > 0)
+        {
+            ShowMessage($"No se añadieron juegos nuevos (se detectaron {totalSkipped} duplicados o archivos filtrados).");
         }
     }
 
@@ -1039,9 +1093,26 @@ public partial class MainWindow : Window
         
         DashTopGenre.Text = topGenre;
 
+        // Estadísticas de Carátulas
+        using var coversContext = new GestorJuegos.Data.CoversDbContext();
+        int gamesWithCover = coversContext.Covers.Count();
+        double coverPercent = totalGames > 0 ? (gamesWithCover * 100.0) / totalGames : 0;
+        DashCoverProgress.Value = coverPercent;
+        DashCoverPercent.Text = $"{coverPercent:F1}% ({gamesWithCover}/{totalGames})";
+
+        // Estadísticas de Regiones
+        var regionStats = context.Games
+            .Where(g => !string.IsNullOrEmpty(g.Region))
+            .GroupBy(g => g.Region)
+            .OrderByDescending(g => g.Count())
+            .Take(5)
+            .Select(g => new { Key = g.Key, Value = g.Count() })
+            .ToList();
+        DashRegionStats.ItemsSource = regionStats;
+
         // Distribución
-        var platformStats = context.Platforms
-            .Select(p => new { Key = p.Name, Value = p.Games.Count })
+        var platformStats = _gameService.GetGamesCountByPlatform()
+            .Select(p => new { Key = p.Key, Value = p.Value })
             .OrderByDescending(p => p.Value)
             .ToList();
         DashPlatformStats.ItemsSource = platformStats;
@@ -1052,42 +1123,98 @@ public partial class MainWindow : Window
             .OrderByDescending(g => g.Id)
             .Take(10)
             .ToList();
+        
+        // Cargar miniaturas para los recientes
+        foreach(var rg in recentGames)
+        {
+            rg.Cover = _gameService.GetGameThumbnail(rg.Id);
+        }
         DashRecentGames.ItemsSource = recentGames;
     }
 
-    private async void MenuExportDB_Click(object? sender, RoutedEventArgs e)
+    private void MenuExportDB_Click(object? sender, RoutedEventArgs e)
     {
+        OverlayExportOptions.IsVisible = true;
+    }
+
+    private async void BtnConfirmExport_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayExportOptions.IsVisible = false;
+        
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel == null) return;
 
-        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-        {
-            Title = "Exportar Base de Datos",
-            SuggestedFileName = "GestorJuegos_Backup.db",
-            FileTypeChoices = new[] { new FilePickerFileType("SQLite Database") { Patterns = new[] { "*.db" } } }
-        });
+        bool exportGames = ChkExportGames.IsChecked ?? false;
+        bool exportCovers = ChkExportCovers.IsChecked ?? false;
 
-        if (file != null)
+        if (!exportGames && !exportCovers)
         {
-            try
+            ShowMessage("No se ha seleccionado nada para exportar.");
+            return;
+        }
+
+        try
+        {
+            int exportsDone = 0;
+
+            // 1. Exportar Base de Datos Principal
+            if (exportGames)
             {
-                string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GestorJuegos.db");
-                if (File.Exists(dbPath))
+                var fileData = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
-                    using var sourceStream = new FileStream(dbPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    using var destinationStream = await file.OpenWriteAsync();
-                    await sourceStream.CopyToAsync(destinationStream);
-                    ShowMessage("Base de datos exportada con éxito.");
-                }
-                else
+                    Title = "Exportar Base de Datos de Juegos",
+                    SuggestedFileName = "GestorJuegos_Backup.db",
+                    FileTypeChoices = new[] { new FilePickerFileType("SQLite Database") { Patterns = new[] { "*.db" } } }
+                });
+
+                if (fileData != null)
                 {
-                    ShowMessage("No se encontró la base de datos local para exportar.");
+                    string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GestorJuegos.db");
+                    if (File.Exists(dbPath))
+                    {
+                        using (var sourceStream = new FileStream(dbPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (var destinationStream = await fileData.OpenWriteAsync())
+                        {
+                            await sourceStream.CopyToAsync(destinationStream);
+                        }
+                        exportsDone++;
+                    }
                 }
             }
-            catch (Exception ex)
+
+            // 2. Exportar Base de Datos de Carátulas
+            if (exportCovers)
             {
-                ShowMessage($"Error al exportar: {ex.Message}");
+                var fileCovers = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = "Exportar Base de Datos de Carátulas",
+                    SuggestedFileName = "GestorCovers_Backup.db",
+                    FileTypeChoices = new[] { new FilePickerFileType("SQLite Database") { Patterns = new[] { "*.db" } } }
+                });
+
+                if (fileCovers != null)
+                {
+                    string coversDbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GestorCovers.db");
+                    if (File.Exists(coversDbPath))
+                    {
+                        using (var sourceStream = new FileStream(coversDbPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (var destinationStream = await fileCovers.OpenWriteAsync())
+                        {
+                            await sourceStream.CopyToAsync(destinationStream);
+                        }
+                        exportsDone++;
+                    }
+                }
             }
+
+            if (exportsDone > 0)
+            {
+                ShowMessage($"Respaldo completado: Se han exportado {exportsDone} archivos con éxito.");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Error al exportar: {ex.Message}");
         }
     }
 
@@ -1096,37 +1223,64 @@ public partial class MainWindow : Window
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel == null) return;
 
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        // 1. Importar Base de Datos Principal
+        var filesData = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Importar Base de Datos",
+            Title = "Importar Base de Datos de Juegos (GestorJuegos.db)",
             AllowMultiple = false,
             FileTypeFilter = new[] { new FilePickerFileType("SQLite Database") { Patterns = new[] { "*.db" } } }
         });
 
-        if (files.Count > 0)
+        if (filesData.Count > 0)
         {
             try
             {
-                var file = files[0];
+                var fileData = filesData[0];
                 string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GestorJuegos.db");
 
-                using var sourceStream = await file.OpenReadAsync();
-                using var destinationStream = new FileStream(dbPath, FileMode.Create, FileAccess.Write, FileShare.None);
-                await sourceStream.CopyToAsync(destinationStream);
+                using (var sourceStream = await fileData.OpenReadAsync())
+                using (var destinationStream = new FileStream(dbPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    await sourceStream.CopyToAsync(destinationStream);
+                }
 
-                // Clear UI and reload
+                // 2. Importar Base de Datos de Carátulas
+                var filesCovers = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Importar Base de Datos de Carátulas (GestorCovers.db)",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[] { new FilePickerFileType("SQLite Database") { Patterns = new[] { "*.db" } } }
+                });
+
+                if (filesCovers.Count > 0)
+                {
+                    var fileCovers = filesCovers[0];
+                    string coversDbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GestorCovers.db");
+
+                    using (var sourceStream = await fileCovers.OpenReadAsync())
+                    using (var destinationStream = new FileStream(coversDbPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        await sourceStream.CopyToAsync(destinationStream);
+                    }
+                    ShowMessage("Restauración completa: Se han importado los juegos y las carátulas.");
+                }
+                else
+                {
+                    ShowMessage("Se importaron los juegos, pero no se seleccionó base de datos de carátulas.");
+                }
+
+                // Recargar UI
                 _selectedPlatform = null;
                 TxtSelectedPlatform.Text = "Seleccione una plataforma";
                 LstGames.ItemsSource = null;
                 LstGamesGrid.ItemsSource = null;
                 PnlGameDetails.IsVisible = false;
                 LoadPlatforms();
-
-                ShowMessage("Base de datos importada con éxito.");
+                LoadDashboard();
             }
             catch (Exception ex)
             {
-                ShowMessage($"Error al importar: {ex.Message}. Asegúrese de no tener otras aplicaciones bloqueando el archivo.");
+                ShowMessage($"Error al importar: {ex.Message}. Asegúrese de cerrar el programa si el archivo está bloqueado.");
             }
         }
     }
@@ -1592,6 +1746,39 @@ public partial class MainWindow : Window
             filtered = filtered.Where(g => g.Year == (int)NumFilterYear.Value);
         }
 
+        // Aplicar Ordenación
+        if (CmbSortOrder != null)
+        {
+            switch (CmbSortOrder.SelectedIndex)
+            {
+                case 0: // Nombre (A-Z)
+                    filtered = filtered.OrderBy(g => g.Name);
+                    break;
+                case 1: // Nombre (Z-A)
+                    filtered = filtered.OrderByDescending(g => g.Name);
+                    break;
+                case 2: // Año (Asc)
+                    filtered = filtered.OrderBy(g => g.Year);
+                    break;
+                case 3: // Año (Desc)
+                    filtered = filtered.OrderByDescending(g => g.Year);
+                    break;
+                case 4: // Recién añadidos
+                    filtered = filtered.OrderByDescending(g => g.DateAdded ?? DateTime.MinValue).ThenBy(g => g.Name);
+                    break;
+                case 5: // Antiguos
+                    filtered = filtered.OrderBy(g => g.DateAdded ?? DateTime.MinValue).ThenBy(g => g.Name);
+                    break;
+                default:
+                    filtered = filtered.OrderBy(g => g.Name);
+                    break;
+            }
+        }
+        else
+        {
+            filtered = filtered.OrderBy(g => g.Name);
+        }
+
         var filteredList = filtered.ToList();
 
         int totalItems = filteredList.Count;
@@ -1600,6 +1787,12 @@ public partial class MainWindow : Window
         if (_currentPage > totalPages) _currentPage = totalPages;
 
         var paginated = filteredList.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
+
+        // Cargar miniaturas para la página actual
+        foreach (var game in paginated)
+        {
+            game.Cover = _gameService.GetGameThumbnail(game.Id);
+        }
 
         LstGames.ItemsSource = paginated;
         LstGamesGrid.ItemsSource = paginated;
@@ -1719,7 +1912,7 @@ public partial class MainWindow : Window
                 CmbRegion.SelectedIndex = 0;
             }
 
-            _currentCover = game.Cover;
+            _currentCover = _gameService.GetGameFullCover(game.Id);
             UpdateCoverImage();
 
             BtnDelete.IsVisible = true;
@@ -1924,13 +2117,12 @@ public partial class MainWindow : Window
         string helpText = "🚀 CONFIGURACIÓN DE EMULADORES\n\n" +
             "Para que tus juegos funcionen, el Gestor necesita saber con qué programa abrirlos:\n\n" +
             "• CONFIGURACIÓN GLOBAL (Por Plataforma):\n" +
-            "  Es la forma más rápida. Haz clic en '⚙️ Gestionar' (arriba a la derecha), selecciona una consola (ej. NES) " +
-            "y busca el archivo .exe de tu emulador. Una vez guardado, todos los juegos de esa consola se abrirán con él.\n\n" +
+            "  Haz clic en '⚙️ Gestionar' (arriba), selecciona una consola y busca el ejecutable (.exe). " +
+            "Todos los juegos de esa consola se abrirán con él por defecto.\n\n" +
             "• CONFIGURACIÓN INDIVIDUAL (Por Juego):\n" +
-            "  Si un juego específico necesita un emulador distinto o una configuración especial, puedes editarlo " +
-            "y rellenar la sección 'Perfil de Emulador'. Esto ignorará la configuración global solo para ese juego.\n\n" +
+            "  Puedes editar un juego específico y rellenar 'Perfil de Emulador' para ignorar la configuración global.\n\n" +
             "💡 USO DE ARGUMENTOS:\n" +
-            "  Muchos emuladores necesitan comandos extra. Usa el marcador {0} para indicar dónde debe ir la ruta del juego.\n" +
+            "  Usa el marcador {0} para indicar la ruta del juego.\n" +
             "  Ejemplo: -L cores\\snes9x_libretro.dll \"{0}\"";
             
         ShowMessage(helpText);
@@ -1939,33 +2131,45 @@ public partial class MainWindow : Window
     private void MenuHelpMultiDisk_Click(object? sender, RoutedEventArgs e)
     {
         string helpText = "💿 SOPORTE PARA JUEGOS MULTI-DISCO\n\n" +
-            "Si tienes juegos que ocupan varios CD o diskettes, puedes agruparlos en una sola entrada:\n\n" +
             "1. CÓMO AÑADIR DISCOS:\n" +
-            "   Al editar un juego, verás la lista 'Rutas de ROM (Multi-Disco)'. Pulsa el botón '+' para añadir todos los archivos (Disco 1, Disco 2, etc.).\n\n" +
+            "   Al editar un juego, pulsa el botón '+' en 'Rutas de ROM' para añadir Disco 1, Disco 2, etc.\n\n" +
             "2. CÓMO JUGAR:\n" +
-            "   En el listado principal, selecciona el juego. En la sección de detalles verás la lista de discos. " +
-            "Simplemente HAZ CLIC sobre el disco que quieras cargar y luego pulsa '▶ JUGAR'.\n\n" +
-            "3. DISCO POR DEFECTO:\n" +
-            "   Si no seleccionas ninguno manualmente, el Gestor siempre cargará el primer disco de la lista.";
+            "   Selecciona el juego, haz clic sobre el disco deseado en la lista de detalles y pulsa '▶ JUGAR'.\n\n" +
+            "3. IMPORTACIÓN INTELIGENTE:\n" +
+            "   Si sueltas una carpeta sobre el programa, este escaneará recursivamente y agrupará los juegos automáticamente.";
             
+        ShowMessage(helpText);
+    }
+
+    private void MenuHelpDatabase_Click(object? sender, RoutedEventArgs e)
+    {
+        string helpText = "🗄️ BASES DE DATOS Y RESPALDOS (v1.0.9.5)\n\n" +
+            "• ARQUITECTURA DUAL:\n" +
+            "  Tus datos están separados en dos archivos para mayor velocidad:\n" +
+            "  - GestorJuegos.db: Información de textos (rápida).\n" +
+            "  - GestorCovers.db: Imágenes y miniaturas (multimedia).\n\n" +
+            "• RESPALDOS:\n" +
+            "  Al exportar, verás un panel para elegir qué base de datos quieres salvar. Recomendamos exportar ambas periódicamente.\n\n" +
+            "• MINIATURAS (CACHE):\n" +
+            "  El programa genera miniaturas automáticas. Esto permite navegar por miles de juegos sin ralentizar tu PC.";
+
         ShowMessage(helpText);
     }
 
     private void MenuAbout_Click(object? sender, RoutedEventArgs e)
     {
-        string aboutText = "🎮 GESTOR DE JUEGOS v1.0.9\n\n" +
-            "Un organizador integral para colecciones de juegos retro, diseñado para ser rápido, " +
-            "visual y fácil de usar con mando.\n\n" +
-            "👨‍💻 Autor: scorpio21\n" +
+        string aboutText = "🎮 GESTOR DE JUEGOS v1.0.9.5\n\n" +
+            "Un organizador integral para colecciones de juegos retro, optimizado para grandes bibliotecas y uso con mando.\n\n" +
+            "👨‍💻 Autor: scorpio21 / Gemini CLI\n" +
             "📂 Repositorio: https://github.com/scorpio21/Gestordejuegos\n\n" +
-            "🙏 AGRADECIMIENTOS ESPECIALES:\n" +
-            "El sistema de carátulas y metadatos es posible gracias a la generosidad de:\n" +
-            "• IGDB.com (Twitch/Amazon)\n" +
-            "• TheGamesDB.net\n" +
-            "• Vimm.net (Vimm's Lair)\n" +
-            "• GameTDB.com\n" +
-            "• PalSnesCovers.com\n\n" +
-            "Gracias por apoyar la preservación del videojuego clásico.";
+            "🔥 NOVEDADES v1.0.9.5:\n" +
+            "• Arquitectura de Base de Datos Dual (Datos + Multimedia).\n" +
+            "• Sistema de Miniaturas con SkiaSharp.\n" +
+            "• Drag & Drop recursivo de carpetas.\n" +
+            "• Estadísticas visuales en el Dashboard.\n" +
+            "• Filtros temporales y ordenación avanzada.\n\n" +
+            "🙏 AGRADECIMIENTOS:\n" +
+            "IGDB, TheGamesDB, GameTDB, PalSnesCovers y Vimm's Lair.";
 
         ShowMessage(aboutText);
     }

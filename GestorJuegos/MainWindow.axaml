@@ -94,6 +94,7 @@
                             <MenuItem Name="MenuAyuda" Header="❓ Ayuda" FontSize="14" Foreground="#cbd5e1">
                                 <MenuItem Name="MenuHelpEmulator" Header="Guía: Configurar Emuladores"/>
                                 <MenuItem Name="MenuHelpMultiDisk" Header="Guía: Juegos Multi-Disco"/>
+                                <MenuItem Name="MenuHelpDatabase" Header="Guía: Bases de Datos y Respaldos"/>
                                 <Separator />
                                 <MenuItem Name="MenuAbout" Header="Acerca de Gestor de Juegos..."/>
                             </MenuItem>
@@ -136,6 +137,16 @@
                                     <TextBlock Text="Año:" Foreground="#94a3b8" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                     <NumericUpDown Name="NumFilterYear" CornerRadius="4" Background="#1e293b" BorderBrush="#334155" Minimum="0" Maximum="2100" ShowButtonSpinner="False" AllowSpin="False" Margin="0,0,20,0" Width="100"/>
                                     <TextBlock Text="(0 = Todos)" Foreground="#64748b" FontSize="11" VerticalAlignment="Center" Margin="-15,0,20,0"/>
+
+                                    <TextBlock Text="Orden:" Foreground="#94a3b8" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <ComboBox Name="CmbSortOrder" SelectedIndex="0" CornerRadius="4" Background="#1e293b" BorderBrush="#334155" Margin="0,0,20,0">
+                                        <ComboBoxItem Content="Nombre (A-Z)" />
+                                        <ComboBoxItem Content="Nombre (Z-A)" />
+                                        <ComboBoxItem Content="Año (Asc)" />
+                                        <ComboBoxItem Content="Año (Desc)" />
+                                        <ComboBoxItem Content="Recién añadidos" />
+                                        <ComboBoxItem Content="Antiguos" />
+                                    </ComboBox>
 
                                     <Button Name="BtnApplyFilters" Content="Aplicar" Background="#6366f1" Foreground="White" CornerRadius="4" Padding="10,5" Margin="0,0,10,0"/>
                                     <Button Name="BtnClearFilters" Content="Limpiar" Background="#334155" Foreground="White" CornerRadius="4" Padding="10,5"/>
@@ -194,6 +205,42 @@
                                             <StackPanel>
                                                 <TextBlock Text="Género Favorito" Foreground="#94a3b8" FontSize="14" HorizontalAlignment="Center"/>
                                                 <TextBlock Name="DashTopGenre" Text="Ninguno" Foreground="#f59e0b" FontSize="20" FontWeight="Bold" Margin="0,10,0,0" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" TextAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Stats Cards Row 2 (Covers & Regions) -->
+                                    <Grid ColumnDefinitions="*, *" Margin="0,0,0,10">
+                                        <!-- Card 4: Cover Coverage -->
+                                        <Border Grid.Column="0" Background="#0f172a" CornerRadius="8" Padding="15" BorderBrush="#334155" BorderThickness="1" Margin="0,0,5,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Cobertura de Carátulas" Foreground="#94a3b8" FontSize="13" HorizontalAlignment="Center"/>
+                                                <ProgressBar Name="DashCoverProgress" Height="8" Margin="0,10" Foreground="#10b981" Background="#1e293b" CornerRadius="4" Value="0" Minimum="0" Maximum="100"/>
+                                                <TextBlock Name="DashCoverPercent" Text="0%" Foreground="#10b981" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        
+                                        <!-- Card 5: Region Stats -->
+                                        <Border Grid.Column="1" Background="#0f172a" CornerRadius="8" Padding="15" BorderBrush="#334155" BorderThickness="1" Margin="5,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Regiones (Top 5)" Foreground="#94a3b8" FontSize="13" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                                                <ItemsControl Name="DashRegionStats">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel HorizontalAlignment="Center"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:CompileBindings="False">
+                                                            <Border Background="#1e293b" CornerRadius="4" Padding="8,4" Margin="4">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <Image Source="{Binding Key, Converter={StaticResource RegionToFlag}}" Width="16" Height="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                                    <TextBlock Text="{Binding Value}" Foreground="White" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                             </StackPanel>
                                         </Border>
                                     </Grid>
@@ -443,10 +490,31 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
-        </Border>
-        
-        <!-- Message Overlay -->
-        <Border Name="OverlayMessage" Background="#AA000000" IsVisible="False" ZIndex="200">
+            </Border>
+
+            <!-- Export Options Overlay -->
+            <Border Name="OverlayExportOptions" Background="#AA000000" IsVisible="False" ZIndex="250">
+            <Border Background="{StaticResource PanelBrush}" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Opciones de Respaldo" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Selecciona qué deseas exportar:" Foreground="#94a3b8" FontSize="14" HorizontalAlignment="Center"/>
+
+                    <Border Background="#0f172a" CornerRadius="8" Padding="15" Margin="0,10">
+                        <StackPanel Spacing="12">
+                            <CheckBox Name="ChkExportGames" Content="Datos de Juegos (GestorJuegos.db)" Foreground="White" IsChecked="True"/>
+                            <CheckBox Name="ChkExportCovers" Content="Carátulas y Miniaturas (GestorCovers.db)" Foreground="White" IsChecked="True"/>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15" Margin="0,15,0,0">
+                        <Button Name="BtnCancelExport" Content="Cancelar" Background="Transparent" Foreground="#cbd5e1" CornerRadius="6" Padding="20,8"/>
+                        <Button Name="BtnConfirmExport" Content="Exportar Seleccionados" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="20,8"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            </Border>
+
+            <!-- Message Overlay -->        <Border Name="OverlayMessage" Background="#AA000000" IsVisible="False" ZIndex="200">
             <Border Background="{StaticResource PanelBrush}" Width="350" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="12" Padding="25" BorderBrush="#334155" BorderThickness="1">
                 <StackPanel Spacing="15">
                     <TextBlock Text="Aviso" FontSize="20" FontWeight="Bold" Foreground="#fbbf24" Margin="0,0,0,5" HorizontalAlignment="Center"/>

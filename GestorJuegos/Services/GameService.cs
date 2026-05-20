@@ -3,6 +3,8 @@ using System.Linq;
 using GestorJuegos.Data;
 using GestorJuegos.Models;
 using Microsoft.EntityFrameworkCore;
+using GestorJuegos.Utils;
+using System;
 
 namespace GestorJuegos.Services
 {
@@ -14,45 +16,86 @@ namespace GestorJuegos.Services
         {
             if (!_schemaUpdated)
             {
-                using var context = new AppDbContext();
-                context.Database.EnsureCreated();
-                try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN RomPath TEXT NOT NULL DEFAULT ''"); } catch (System.Exception ex) { System.Console.WriteLine("Migración RomPath: " + ex.Message); }
-                try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN EmulatorPath TEXT NOT NULL DEFAULT ''"); } catch (System.Exception ex) { System.Console.WriteLine("Migración EmulatorPath: " + ex.Message); }
-                try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN LaunchArguments TEXT NOT NULL DEFAULT '\"{{0}}\"'"); } catch (System.Exception ex) { System.Console.WriteLine("Migración LaunchArgs: " + ex.Message); }
-                try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN OverrideEmulatorPath TEXT NOT NULL DEFAULT ''"); } catch (System.Exception ex) { System.Console.WriteLine("Migración OverrideEmulatorPath: " + ex.Message); }
-                try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN OverrideLaunchArguments TEXT NOT NULL DEFAULT ''"); } catch (System.Exception ex) { System.Console.WriteLine("Migración OverrideLaunchArgs: " + ex.Message); }
-                try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN AdditionalRoms TEXT NOT NULL DEFAULT ''"); } catch (System.Exception ex) { System.Console.WriteLine("Migración AdditionalRoms: " + ex.Message); }
-                try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN IsFavorite INTEGER NOT NULL DEFAULT 0"); } catch { }
-                
-                // Nueva migración: LastScanDate (usamos TEXT para SQLite)
-                try 
-                { 
-                    context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN LastScanDate TEXT;"); 
-                } 
-                catch (System.Exception ex) 
-                { 
-                    // Si falla es probablemente porque ya existe
-                    System.Diagnostics.Debug.WriteLine("Info: LastScanDate migration skipped or failed: " + ex.Message);
+                using (var context = new AppDbContext())
+                {
+                    context.Database.EnsureCreated();
+                    // Migraciones existentes...
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN RomPath TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN EmulatorPath TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN LaunchArguments TEXT NOT NULL DEFAULT '\"{0}\"'"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN OverrideEmulatorPath TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN OverrideLaunchArguments TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN AdditionalRoms TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN IsFavorite INTEGER NOT NULL DEFAULT 0"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN DateAdded TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN LastScanDate TEXT;"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("DELETE FROM Games WHERE PlatformId NOT IN (SELECT Id FROM Platforms)"); } catch { }
                 }
-                
-                // Limpiar juegos huérfanos (por si se eliminó una plataforma en el pasado sin borrar sus juegos)
-                try { context.Database.ExecuteSqlRaw("DELETE FROM Games WHERE PlatformId NOT IN (SELECT Id FROM Platforms)"); } catch { }
+
+                using (var coversContext = new CoversDbContext())
+                {
+                    coversContext.Database.EnsureCreated();
+                }
+
+                // Migrar portadas si es necesario
+                MigrateCoversToNewDb();
                 
                 _schemaUpdated = true;
             }
         }
 
+        private void MigrateCoversToNewDb()
+        {
+            using (var context = new AppDbContext())
+            using (var coversContext = new CoversDbContext())
+            {
+                var gamesWithCoversInMainDb = context.Games.Where(g => g.Cover != null).ToList();
+                if (gamesWithCoversInMainDb.Count > 0)
+                {
+                    foreach (var game in gamesWithCoversInMainDb)
+                    {
+                        if (game.Cover != null)
+                        {
+                            if (!coversContext.Covers.Any(c => c.Id == game.Id))
+                            {
+                                coversContext.Covers.Add(new GameCover
+                                {
+                                    Id = game.Id,
+                                    ImageData = game.Cover,
+                                    ThumbnailData = ImageHelper.GenerateThumbnail(game.Cover)
+                                });
+                            }
+                            game.Cover = null;
+                        }
+                    }
+                    coversContext.SaveChanges();
+                    context.SaveChanges();
+                    try { context.Database.ExecuteSqlRaw("VACUUM"); } catch { }
+                }
+            }
+        }
+
+        public byte[]? GetGameThumbnail(int gameId)
+        {
+            using var coversContext = new CoversDbContext();
+            return coversContext.Covers.Where(c => c.Id == gameId).Select(c => c.ThumbnailData).FirstOrDefault();
+        }
+
+        public byte[]? GetGameFullCover(int gameId)
+        {
+            using var coversContext = new CoversDbContext();
+            return coversContext.Covers.Where(c => c.Id == gameId).Select(c => c.ImageData).FirstOrDefault();
+        }
+
         public List<Platform> GetPlatforms()
         {
             using var context = new AppDbContext();
-            context.Database.EnsureCreated();
-            return context.Platforms.ToList();
+            return context.Platforms.OrderBy(p => p.Name).ToList();
         }
 
         public void AddPlatform(Platform platform)
         {
             using var context = new AppDbContext();
-            context.Database.EnsureCreated();
             context.Platforms.Add(platform);
             context.SaveChanges();
         }
@@ -70,96 +113,126 @@ namespace GestorJuegos.Services
             var platform = context.Platforms.Find(platformId);
             if (platform != null)
             {
-                // Eliminar explícitamente los juegos asociados a esta plataforma
                 var games = context.Games.Where(g => g.PlatformId == platformId).ToList();
-                if (games.Count > 0)
-                {
-                    context.Games.RemoveRange(games);
-                }
+                var gameIds = games.Select(g => g.Id).ToList();
                 
+                context.Games.RemoveRange(games);
                 context.Platforms.Remove(platform);
                 context.SaveChanges();
+
+                using var coversContext = new CoversDbContext();
+                var covers = coversContext.Covers.Where(c => gameIds.Contains(c.Id)).ToList();
+                coversContext.Covers.RemoveRange(covers);
+                coversContext.SaveChanges();
             }
         }
 
         public List<Game> GetGamesByPlatform(int platformId)
         {
             using var context = new AppDbContext();
-            context.Database.EnsureCreated();
-            return context.Games
-                .Include(g => g.Platform)
-                .Where(g => g.PlatformId == platformId)
-                .ToList();
+            return context.Games.Where(g => g.PlatformId == platformId).ToList();
         }
 
         public void AddGame(Game game)
         {
+            byte[]? coverData = game.Cover;
+            game.Cover = null; 
+
             using var context = new AppDbContext();
-            context.Database.EnsureCreated();
             context.Games.Add(game);
             context.SaveChanges();
+
+            if (coverData != null)
+            {
+                using var coversContext = new CoversDbContext();
+                coversContext.Covers.Add(new GameCover
+                {
+                    Id = game.Id,
+                    ImageData = coverData,
+                    ThumbnailData = ImageHelper.GenerateThumbnail(coverData)
+                });
+                coversContext.SaveChanges();
+            }
         }
 
         public void UpdateGame(Game game)
         {
+            byte[]? coverData = game.Cover;
+            game.Cover = null;
+
             using var context = new AppDbContext();
-            context.Database.EnsureCreated();
             context.Games.Update(game);
             context.SaveChanges();
+
+            using var coversContext = new CoversDbContext();
+            var existingCover = coversContext.Covers.Find(game.Id);
+            if (coverData != null)
+            {
+                if (existingCover == null)
+                {
+                    coversContext.Covers.Add(new GameCover
+                    {
+                        Id = game.Id,
+                        ImageData = coverData,
+                        ThumbnailData = ImageHelper.GenerateThumbnail(coverData)
+                    });
+                }
+                else
+                {
+                    existingCover.ImageData = coverData;
+                    existingCover.ThumbnailData = ImageHelper.GenerateThumbnail(coverData);
+                    coversContext.Covers.Update(existingCover);
+                }
+                coversContext.SaveChanges();
+            }
+            else if (existingCover != null)
+            {
+                coversContext.Covers.Remove(existingCover);
+                coversContext.SaveChanges();
+            }
         }
 
         public void DeleteGame(int gameId)
         {
             using var context = new AppDbContext();
-            context.Database.EnsureCreated();
             var game = context.Games.Find(gameId);
             if (game != null)
             {
                 context.Games.Remove(game);
                 context.SaveChanges();
-            }
-        }
 
-        public int GetTotalGamesCount()
-        {
-            using var context = new AppDbContext();
-            context.Database.EnsureCreated();
-            return context.Games.Count();
-        }
-
-        public List<Game> GetOrphanedGames()
-        {
-            using var context = new AppDbContext();
-            context.Database.EnsureCreated();
-            var allGames = context.Games.Include(g => g.Platform).ToList();
-            var orphaned = new List<Game>();
-
-            foreach (var game in allGames)
-            {
-                if (string.IsNullOrEmpty(game.RomPath) || !System.IO.File.Exists(game.RomPath))
+                using var coversContext = new CoversDbContext();
+                var cover = coversContext.Covers.Find(gameId);
+                if (cover != null)
                 {
-                    orphaned.Add(game);
+                    coversContext.Covers.Remove(cover);
+                    coversContext.SaveChanges();
                 }
             }
-            return orphaned;
         }
 
         public void DeleteGames(List<int> gameIds)
         {
             using var context = new AppDbContext();
-            context.Database.EnsureCreated();
             var games = context.Games.Where(g => gameIds.Contains(g.Id)).ToList();
-            if (games.Count > 0)
-            {
-                context.Games.RemoveRange(games);
-                context.SaveChanges();
-            }
+            context.Games.RemoveRange(games);
+            context.SaveChanges();
+
+            using var coversContext = new CoversDbContext();
+            var covers = coversContext.Covers.Where(c => gameIds.Contains(c.Id)).ToList();
+            coversContext.Covers.RemoveRange(covers);
+            coversContext.SaveChanges();
+        }
+
+        public List<Game> GetOrphanedGames()
+        {
+            using var context = new AppDbContext();
+            return context.Games.AsEnumerable().Where(g => !string.IsNullOrEmpty(g.RomPath) && !System.IO.File.Exists(g.RomPath)).ToList();
         }
 
         public Dictionary<string, int> GetGamesCountByPlatform()
         {
             using var context = new AppDbContext();
-            context.Database.EnsureCreated();
             return context.Platforms
                 .Select(p => new { p.Name, Count = p.Games.Count })
                 .ToDictionary(x => x.Name, x => x.Count);

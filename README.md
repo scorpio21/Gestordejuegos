@@ -19,9 +19,22 @@ Una aplicación de escritorio moderna construida con **Avalonia UI** y **.NET 9*
 
 ## 🚀 Registro de Cambios (Changelog)
 
-**Version 1.0.9.2 (Actual)**
+**Version 1.0.9.5 (Actual)**
 
-- **Nuevo: Búsqueda Global Multiplataforma**: Barra de búsqueda en el Dashboard para localizar cualquier juego en toda la colección de forma instantánea.
+- **Nuevo: Arquitectura de Base de Datos Dual**: Las carátulas ahora se almacenan en una base de datos independiente (`GestorCovers.db`), manteniendo la base de datos principal ligera y extremadamente rápida.
+- **Nuevo: Respaldo Integral Dual**: El sistema de exportación e importación ha sido actualizado para gestionar automáticamente ambos archivos (`GestorJuegos.db` y `GestorCovers.db`), asegurando que tus copias de seguridad incluyan siempre toda tu colección multimedia.
+- **Nuevo: Menú de Ayuda Extendido**: Añadida una nueva guía sobre el sistema de Bases de Datos Duales y Respaldos, y actualizada la sección "Acerca de..." con las últimas novedades.
+- **Nuevo: Sistema de Miniaturas (Cache)**: Generación automática de miniaturas al importar juegos, reduciendo el consumo de RAM y acelerando la navegación por la colección.
+- **Mejora: Rendimiento y Carga Diferida**: La interfaz solo carga las imágenes que son visibles en pantalla y utiliza las miniaturas en las listas y el Dashboard.
+- **Migración Automática**: Al iniciar esta versión, el programa moverá automáticamente tus carátulas existentes a la nueva base de datos multimedia.
+
+**Version 1.0.9.4**
+
+- **Nuevo: Estadísticas Visuales en Dashboard**: Añadida una nueva sección de métricas que muestra la cobertura de carátulas (porcentaje de juegos con imagen) y la distribución de juegos por región (Top 5 con banderas).
+
+**Version 1.0.9.3**
+
+- **Nuevo: Filtros Temporales**: Ahora puedes ordenar tu colección de juegos por "Recién añadidos" o "Antiguos", permitiendo localizar fácilmente los últimos títulos escaneados.
 - **Nuevo: Detector de Duplicados**: Herramienta para identificar juegos repetidos (por nombre y región) entre diferentes sistemas desde el Dashboard.
 - **Nuevo: Salud de la Base de Datos**: Herramienta para detectar y limpiar "Juegos Huérfanos" (registros cuyas ROMs ya no existen en disco) con overlay de confirmación.
 - **Nuevo: Filtrado Inteligente de Importación**: Sistema de filtros mediante `dross_filter.json` para ignorar automáticamente Demos, Prototipos y Samples.
