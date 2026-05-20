@@ -50,17 +50,18 @@ namespace GestorJuegos.Services
                 System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] Respuesta RAW: {response}{Environment.NewLine}");
 
                 var xml = XDocument.Parse(response);
+                var resultElement = xml.Root?.Element("Result");
                 
-                var status = xml.Root?.Element("Status")?.Value;
-                if (status == "Success")
+                var success = resultElement?.Attribute("Success")?.Value;
+                if (success == "True")
                 {
-                    _sessionId = xml.Root?.Element("SessionID")?.Value;
+                    _sessionId = resultElement?.Attribute("Session")?.Value;
                     System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] Login Exitoso. SessionID obtenido.{Environment.NewLine}");
                     return true;
                 }
                 else
                 {
-                    LastErrorMessage = xml.Root?.Element("Message")?.Value ?? "Login Failure";
+                    LastErrorMessage = resultElement?.Attribute("MSG")?.Value ?? "Login Failure";
                     System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] Error en Login: {LastErrorMessage}{Environment.NewLine}");
                     return false;
                 }
