@@ -22,12 +22,7 @@ public partial class MainWindow : Window
     private Platform? _selectedPlatform;
     private Game? _selectedGame;
     private byte[]? _currentCover;
-    private readonly IgdbService _igdbService;
-    private readonly TheGamesDbService _theGamesDbService;
-    private readonly GameTdbService _gameTdbService;
-    private readonly PalSnesCoversService _palSnesCoversService;
     private readonly VimmVaultService _vimmService;
-    private string _currentScraperSource = "IGDB";
     private System.Collections.Generic.List<Game> _currentPlatformGames = new System.Collections.Generic.List<Game>();
     private int _currentPage = 1;
     private const int PageSize = 100;
@@ -88,42 +83,6 @@ public partial class MainWindow : Window
         }
 
         _gameService = new GameService();
-        string clientId = "";
-        string clientSecret = "";
-        string theGamesDbKey = "";
-        try
-        {
-            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
-            if (File.Exists(configPath))
-            {
-                var json = File.ReadAllText(configPath);
-                using var doc = System.Text.Json.JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("IGDB", out var igdbConfig))
-                {
-                    clientId = igdbConfig.GetProperty("ClientId").GetString() ?? "";
-                    clientSecret = igdbConfig.GetProperty("ClientSecret").GetString() ?? "";
-                }
-                if (doc.RootElement.TryGetProperty("TheGamesDB", out var tgdbConfig))
-                {
-                    theGamesDbKey = tgdbConfig.GetProperty("ApiKey").GetString() ?? "";
-                }
-            }
-            else
-            {
-                var defaultConfig = new
-                {
-                    IGDB = new { ClientId = "", ClientSecret = "" },
-                    TheGamesDB = new { ApiKey = "" }
-                };
-                File.WriteAllText(configPath, System.Text.Json.JsonSerializer.Serialize(defaultConfig, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
-            }
-        }
-        catch { }
-
-        _igdbService = new IgdbService(clientId, clientSecret);
-        _theGamesDbService = new TheGamesDbService(theGamesDbKey);
-        _gameTdbService = new GameTdbService();
-        _palSnesCoversService = new PalSnesCoversService();
         _vimmService = new VimmVaultService();
 
         LoadPlatforms();
@@ -163,13 +122,10 @@ public partial class MainWindow : Window
         MenuExportDB.Click += MenuExportDB_Click;
         MenuImportDB.Click += MenuImportDB_Click;
         MenuImportDat.Click += MenuImportDat_Click;
-        MenuBatchScrapeIgdb.Click += (s, e) => RunBatchScrape("IGDB");
-        MenuBatchScrapeTgdb.Click += (s, e) => RunBatchScrape("TheGamesDB");
-        MenuBatchScrapeGameTdb.Click += (s, e) => RunBatchScrape("GameTDB");
-        MenuBatchScrapePalSnes.Click += (s, e) => RunBatchScrape("PalSnesCovers");
         MenuBatchScrapeVimm.Click += (s, e) => RunBatchScrape("Vimm's Lair");
 
         MenuImportFolders.Click += MenuImportFolders_Click;
+        MenuImportLaunchBox.Click += MenuImportLaunchBox_Click;
         MenuScanLocalCovers.Click += MenuScanLocalCovers_Click;
 
         BtnCancelExport.Click += (s, e) => OverlayExportOptions.IsVisible = false;
@@ -947,6 +903,201 @@ public partial class MainWindow : Window
         }
     }
 
+    private string GetSavedLaunchBoxPath()
+    {
+        try
+        {
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+            if (File.Exists(configPath))
+            {
+                var json = File.ReadAllText(configPath);
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("LaunchBoxPath", out var pathProp))
+                {
+                    return pathProp.GetString() ?? @"H:\LaunchBox";
+                }
+            }
+        }
+        catch { }
+        return @"H:\LaunchBox";
+    }
+
+    private void SaveLaunchBoxPath(string path)
+    {
+        try
+        {
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+            var config = new Dictionary<string, string>();
+            
+            if (File.Exists(configPath))
+            {
+                var json = File.ReadAllText(configPath);
+                config = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+            }
+            
+            config["LaunchBoxPath"] = path;
+            File.WriteAllText(configPath, System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        }
+        catch { }
+    }
+
+    private async void MenuImportLaunchBox_Click(object? sender, RoutedEventArgs e)
+    {
+        string lbPath = GetSavedLaunchBoxPath();
+        
+        if (!Directory.Exists(lbPath) || !Directory.Exists(Path.Combine(lbPath, "Data", "Platforms")))
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel == null) return;
+
+            var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "Seleccionar Carpeta Raíz de LaunchBox (Ej: C:\\Users\\Nombre\\LaunchBox)",
+                AllowMultiple = false
+            });
+
+            if (folders.Count > 0)
+            {
+                lbPath = folders[0].Path.LocalPath;
+                // Validar que es una carpeta de LaunchBox
+                if (!Directory.Exists(Path.Combine(lbPath, "Data", "Platforms")))
+                {
+                    ShowMessage("La carpeta seleccionada no parece ser una instalación válida de LaunchBox (No se encontró 'Data\\Platforms').");
+                    return;
+                }
+                SaveLaunchBoxPath(lbPath);
+            }
+            else return;
+        }
+
+        string platformsPath = Path.Combine(lbPath, "Data", "Platforms");
+        if (!Directory.Exists(platformsPath))
+        {
+            ShowMessage("No se encontró la carpeta 'Data\\Platforms' en la ruta de LaunchBox seleccionada.");
+            return;
+        }
+
+        try
+        {
+            OverlayProgress.IsVisible = true;
+            ProgBarImport.Value = 0;
+            TxtProgressTitle.Text = "Importando desde LaunchBox...";
+            TxtProgressDetail.Text = "Escaneando archivos de plataforma...";
+            
+            _cts = new System.Threading.CancellationTokenSource();
+
+            await System.Threading.Tasks.Task.Run(async () =>
+            {
+                var xmlFiles = Directory.GetFiles(platformsPath, "*.xml");
+                int totalGamesAdded = 0;
+                bool cancelled = false;
+
+                using (var context = new GestorJuegos.Data.AppDbContext())
+                {
+                    for (int i = 0; i < xmlFiles.Length; i++)
+                    {
+                        if (_cts.IsCancellationRequested) { cancelled = true; break; }
+                        
+                        string xmlFile = xmlFiles[i];
+                        string platformName = Path.GetFileNameWithoutExtension(xmlFile);
+                        
+                        Avalonia.Threading.Dispatcher.UIThread.Post(() => {
+                            ProgBarImport.Value = (i * 100) / xmlFiles.Length;
+                            TxtProgressDetail.Text = $"Procesando plataforma: {platformName}...";
+                        });
+
+                        var platform = context.Platforms.FirstOrDefault(p => p.Name == platformName);
+                        if (platform == null)
+                        {
+                            platform = new Platform { Name = platformName };
+                            context.Platforms.Add(platform);
+                            context.SaveChanges();
+                        }
+
+                        try
+                        {
+                            var doc = XDocument.Load(xmlFile);
+                            var gamesNodes = doc.Descendants("Game").ToList();
+                            
+                            var existingGameKeys = new HashSet<string>(context.Games
+                                .Where(g => g.PlatformId == platform.Id)
+                                .Select(g => $"{g.Name}|{g.Region}"), StringComparer.OrdinalIgnoreCase);
+
+                            foreach (var node in gamesNodes)
+                            {
+                                if (_cts.IsCancellationRequested) break;
+
+                                string title = node.Element("Title")?.Value ?? "";
+                                if (string.IsNullOrEmpty(title)) continue;
+
+                                string region = node.Element("Region")?.Value ?? "🌎 World";
+                                if (string.IsNullOrEmpty(region)) region = "🌎 World";
+                                else if (region.Contains("Japan", StringComparison.OrdinalIgnoreCase)) region = "🇯🇵 JP";
+                                else if (region.Contains("United States", StringComparison.OrdinalIgnoreCase) || region.Contains("North America", StringComparison.OrdinalIgnoreCase)) region = "🇺🇸 US";
+                                else if (region.Contains("Europe", StringComparison.OrdinalIgnoreCase)) region = "🇪🇺 EU";
+                                else if (region.Contains("Spain", StringComparison.OrdinalIgnoreCase)) region = "🇪🇸 ES";
+
+                                string uniqueKey = $"{title}|{region}";
+                                if (existingGameKeys.Contains(uniqueKey)) continue;
+
+                                string genre = node.Element("Genre")?.Value ?? "";
+                                string appPath = node.Element("ApplicationPath")?.Value ?? "";
+                                
+                                // Resolve path if relative
+                                if (!string.IsNullOrEmpty(appPath) && !Path.IsPathRooted(appPath))
+                                {
+                                    appPath = Path.GetFullPath(Path.Combine(lbPath, appPath));
+                                }
+
+                                int year = 0;
+                                string relDate = node.Element("ReleaseDate")?.Value ?? "";
+                                if (!string.IsNullOrEmpty(relDate) && DateTime.TryParse(relDate, out var dt))
+                                {
+                                    year = dt.Year;
+                                }
+
+                                bool isFavorite = (node.Element("Favorite")?.Value ?? "").Equals("true", StringComparison.OrdinalIgnoreCase);
+
+                                context.Games.Add(new Game
+                                {
+                                    Name = title,
+                                    PlatformId = platform.Id,
+                                    Genre = genre,
+                                    Year = year,
+                                    Region = region,
+                                    RomPath = appPath,
+                                    IsFavorite = isFavorite,
+                                    DateAdded = DateTime.Now
+                                });
+                                
+                                existingGameKeys.Add(uniqueKey);
+                                totalGamesAdded++;
+
+                                if (totalGamesAdded % 500 == 0) context.SaveChanges();
+                            }
+                            context.SaveChanges();
+                        }
+                        catch { }
+                    }
+                }
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    OverlayProgress.IsVisible = false;
+                    LoadPlatforms();
+                    LoadDashboard();
+                    string status = cancelled ? "Importación CANCELADA" : "¡Importación desde LaunchBox finalizada!";
+                    ShowMessage($"{status}\n\nSe han procesado las plataformas y juegos correctamente.\nTotal de juegos nuevos añadidos: {totalGamesAdded}");
+                });
+            });
+        }
+        catch (Exception ex)
+        {
+            OverlayProgress.IsVisible = false;
+            ShowMessage($"Error durante la importación de LaunchBox: {ex.Message}");
+        }
+    }
+
     private void ShowMessage(string message)
     {
         TxtMessageContent.Text = message;
@@ -1294,7 +1445,7 @@ public partial class MainWindow : Window
         catch { }
     }
 
-    private async void RunBatchScrape(string source)
+    private void RunBatchScrape(string source)
     {
         LogDebug($"RunBatchScrape llamado con source: {source}");
         if (_selectedPlatform == null)
@@ -1328,90 +1479,6 @@ public partial class MainWindow : Window
             OverlayVimmSystem.IsVisible = true;
             return;
         }
-
-        StartGenericBatchScrape(source);
-    }
-
-    private async void StartGenericBatchScrape(string source)
-    {
-        if (_selectedPlatform == null) return;
-
-        var gamesWithoutCover = _gameService.GetGamesByPlatform(_selectedPlatform.Id)
-                                            .Where(g => g.Cover == null || g.Cover.Length == 0)
-                                            .ToList();
-
-        if (gamesWithoutCover.Count == 0)
-        {
-            ShowMessage("Todos los juegos de esta plataforma ya tienen carátula.");
-            return;
-        }
-
-        ShowMessage($"Iniciando descarga ({source}) para {gamesWithoutCover.Count} juegos...");
-        BtnCloseMessage.IsEnabled = false;
-
-        await System.Threading.Tasks.Task.Run(async () =>
-        {
-            int successCount = 0;
-            for (int i = 0; i < gamesWithoutCover.Count; i++)
-            {
-                var game = gamesWithoutCover[i];
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    TxtMessageContent.Text = $"[{source}] Buscando '{game.Name}' ({i + 1}/{gamesWithoutCover.Count})...";
-                });
-
-                try
-                {
-                    var results = new System.Collections.Generic.List<GestorJuegos.Services.IgdbSearchResult>();
-                    if (source == "IGDB") results = await _igdbService.SearchGamesAsync(game.Name);
-                    else if (source == "TheGamesDB") results = await _theGamesDbService.SearchGamesAsync(game.Name);
-                    else if (source == "GameTDB" && _selectedPlatform != null) results = await _gameTdbService.SearchGamesAsync(game.Name, _selectedPlatform.Name);
-                    else if (source == "PalSnesCovers") results = await _palSnesCoversService.SearchGamesAsync(game.Name);
-
-                    GestorJuegos.Services.IgdbSearchResult? match = null;
-                    if (results.Count > 0)
-                    {
-                        if (_selectedPlatform != null)
-                        {
-                            match = results.FirstOrDefault(r => !string.IsNullOrEmpty(r.CoverUrl) && r.Platforms.Any(p => p.Contains(_selectedPlatform.Name, StringComparison.OrdinalIgnoreCase) || _selectedPlatform.Name.Contains(p, StringComparison.OrdinalIgnoreCase)));
-                        }
-                        if (match == null) match = results.FirstOrDefault(r => !string.IsNullOrEmpty(r.CoverUrl));
-                    }
-                    
-                    if (match != null)
-                    {
-                        byte[]? coverData = null;
-                        if (source == "IGDB") coverData = await _igdbService.DownloadCoverAsync(match.CoverUrl);
-                        else if (source == "TheGamesDB") coverData = await _theGamesDbService.DownloadCoverAsync(match.CoverUrl);
-                        else if (source == "GameTDB") coverData = await _gameTdbService.DownloadCoverAsync(match.CoverUrl);
-                        else if (source == "PalSnesCovers") coverData = await _palSnesCoversService.DownloadCoverAsync(match.CoverUrl);
-                        
-                        if (coverData != null && coverData.Length > 0)
-                        {
-                            game.Cover = coverData;
-                            if (match.Year.HasValue && (game.Year == DateTime.Now.Year || game.Year == 0)) game.Year = match.Year.Value;
-                            if (!string.IsNullOrEmpty(match.Genre) && string.IsNullOrEmpty(game.Genre)) game.Genre = match.Genre;
-
-                            using (var context = new GestorJuegos.Data.AppDbContext())
-                            {
-                                context.Games.Update(game);
-                                context.SaveChanges();
-                            }
-                            successCount++;
-                        }
-                    }
-                    await System.Threading.Tasks.Task.Delay(300); 
-                }
-                catch { }
-            }
-
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                BtnCloseMessage.IsEnabled = true;
-                LoadGames();
-                ShowMessage($"¡Proceso completado! Se descargaron {successCount} carátulas.");
-            });
-        });
     }
 
     private async void MenuImportDat_Click(object? sender, RoutedEventArgs e)
@@ -1538,61 +1605,32 @@ public partial class MainWindow : Window
     private async void BtnSearchIgdb_Click(object? sender, RoutedEventArgs e)
     {
         string query = TxtName.Text?.Trim() ?? "";
-        LogDebug($"BtnSearchIgdb_Click llamado. Query: '{query}'");
         if (string.IsNullOrEmpty(query))
         {
             ShowMessage("Por favor, escriba el nombre del juego antes de buscar.");
             return;
         }
 
-        string selectedSource = "IGDB";
-        if (CmbScraperSource.SelectedItem is ComboBoxItem item && item.Content != null)
+        if (_selectedPlatform == null)
         {
-            selectedSource = item.Content.ToString() ?? "IGDB";
+            ShowMessage("Por favor, selecciona primero la plataforma principal.");
+            return;
         }
-        LogDebug($"Source seleccionada: {selectedSource}");
-        _currentScraperSource = selectedSource;
+
+        var systemCode = VimmVaultService.GetSystemCode(_selectedPlatform.Name);
+        if (string.IsNullOrEmpty(systemCode))
+        {
+            ShowMessage($"Plataforma '{_selectedPlatform.Name}' no soportada por Vimm's Lair.");
+            return;
+        }
 
         OverlayIgdbSearch.IsVisible = true;
-        TxtIgdbStatus.Text = $"Buscando '{query}' en {selectedSource}...";
+        TxtIgdbStatus.Text = $"Buscando '{query}' en Vimm's Lair...";
         LstIgdbResults.ItemsSource = null;
 
         try
         {
-            var results = new System.Collections.Generic.List<GestorJuegos.Services.IgdbSearchResult>();
-            
-            if (selectedSource == "IGDB") results = await _igdbService.SearchGamesAsync(query);
-            else if (selectedSource == "TheGamesDB") results = await _theGamesDbService.SearchGamesAsync(query);
-            else if (selectedSource == "GameTDB") 
-            {
-                if (_selectedPlatform == null)
-                {
-                    TxtIgdbStatus.Text = "GameTDB requiere seleccionar plataforma principal (Menú).";
-                    return;
-                }
-                results = await _gameTdbService.SearchGamesAsync(query, _selectedPlatform.Name);
-            }
-            else if (selectedSource == "PalSnesCovers") results = await _palSnesCoversService.SearchGamesAsync(query);
-            else if (selectedSource == "Vimm's Lair")
-            {
-                if (_selectedPlatform == null)
-                {
-                    TxtIgdbStatus.Text = "Vimm's Lair requiere seleccionar plataforma principal (Menú).";
-                    return;
-                }
-                var systemCode = VimmVaultService.GetSystemCode(_selectedPlatform.Name);
-                if (string.IsNullOrEmpty(systemCode))
-                {
-                    TxtIgdbStatus.Text = $"Plataforma '{_selectedPlatform.Name}' no soportada por Vimm.";
-                    return;
-                }
-                results = await _vimmService.SearchGamesAsync(systemCode, query);
-            }
-
-            if (_selectedPlatform != null && selectedSource == "IGDB")
-            {
-                results = results.OrderByDescending(r => r.Platforms.Any(p => p.Contains(_selectedPlatform.Name, StringComparison.OrdinalIgnoreCase) || _selectedPlatform.Name.Contains(p, StringComparison.OrdinalIgnoreCase))).ToList();
-            }
+            var results = await _vimmService.SearchGamesAsync(systemCode, query);
             LstIgdbResults.ItemsSource = results;
             if (results.Count == 0)
             {
@@ -1600,12 +1638,12 @@ public partial class MainWindow : Window
             }
             else
             {
-                TxtIgdbStatus.Text = $"Resultados de Búsqueda ({selectedSource})";
+                TxtIgdbStatus.Text = "Resultados de Búsqueda (Vimm's Lair)";
             }
         }
         catch (Exception ex)
         {
-            TxtIgdbStatus.Text = $"Error al buscar en {selectedSource}.";
+            TxtIgdbStatus.Text = "Error al buscar en Vimm's Lair.";
             ShowMessage($"Error de API: {ex.Message}");
         }
     }
@@ -1620,25 +1658,16 @@ public partial class MainWindow : Window
         if (LstIgdbResults.SelectedItem is IgdbSearchResult result)
         {
             TxtName.Text = result.Name;
-            if (result.Year.HasValue)
-                NumYear.Value = result.Year.Value;
-            if (!string.IsNullOrEmpty(result.Genre))
-                TxtGenre.Text = result.Genre;
-
             OverlayIgdbSearch.IsVisible = false;
 
-            if (!string.IsNullOrEmpty(result.CoverUrl))
+            if (!string.IsNullOrEmpty(result.CoverUrl) && int.TryParse(result.CoverUrl, out var vimmId))
             {
                 try
                 {
                     ShowMessage("Descargando carátula...");
-                    if (_currentScraperSource == "IGDB") _currentCover = await _igdbService.DownloadCoverAsync(result.CoverUrl);
-                    else if (_currentScraperSource == "TheGamesDB") _currentCover = await _theGamesDbService.DownloadCoverAsync(result.CoverUrl);
-                    else if (_currentScraperSource == "GameTDB") _currentCover = await _gameTdbService.DownloadCoverAsync(result.CoverUrl);
-                    else if (_currentScraperSource == "PalSnesCovers") _currentCover = await _palSnesCoversService.DownloadCoverAsync(result.CoverUrl);
-                    else if (_currentScraperSource == "Vimm's Lair" && int.TryParse(result.CoverUrl, out var vimmId)) _currentCover = await _vimmService.DownloadBoxArtAsync(vimmId);
+                    _currentCover = await _vimmService.DownloadBoxArtAsync(vimmId);
                     UpdateCoverImage();
-                    OverlayMessage.IsVisible = false; // Ocultar mensaje al terminar
+                    OverlayMessage.IsVisible = false;
                 }
                 catch
                 {

@@ -61,18 +61,14 @@
                         <Menu Background="Transparent">
                             <MenuItem Name="MenuHerramientas" Header="🛠️ Herramientas" FontSize="14" Foreground="#cbd5e1">
                                 <MenuItem Header="Auto-descargar carátulas faltantes">
-                                    <MenuItem Name="MenuBatchScrapeIgdb" Header="Usar IGDB" />
-                                    <MenuItem Name="MenuBatchScrapeTgdb" Header="Usar TheGamesDB" />
-                                    <MenuItem Name="MenuBatchScrapeGameTdb" Header="Usar GameTDB" />
-                                    <MenuItem Name="MenuBatchScrapePalSnes" Header="Usar PalSnesCovers" />
                                     <MenuItem Name="MenuBatchScrapeVimm" Header="Usar Vimm's Lair" />
                                 </MenuItem>
                                 <Separator />
                                 <MenuItem Header="Importación Avanzada">
                                     <MenuItem Name="MenuImportFolders" Header="Importar Colección por Carpetas..." />
+                                    <MenuItem Name="MenuImportLaunchBox" Header="Importar desde LaunchBox (H:\LaunchBox)..." />
                                     <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales..." />
-                                </MenuItem>
-                                <Separator />
+                                </MenuItem>                                <Separator />
                                 <MenuItem Header="Salud de la Base de Datos">
                                     <MenuItem Name="MenuCleanupOrphans" Header="Limpiar Juegos Huérfanos (Ruta no encontrada)" />
                                     <MenuItem Name="MenuManageDross" Header="Gestionar Dross (Filtros de importación)" />
@@ -395,16 +391,9 @@
                                 </StackPanel>
                                 
                                 <TextBlock Text="Nombre" Foreground="#94a3b8" FontSize="12" Margin="0,0,0,-10"/>
-                                <Grid ColumnDefinitions="*, Auto, Auto">
+                                <Grid ColumnDefinitions="*, Auto">
                                     <TextBox Grid.Column="0" Name="TxtName" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" Margin="0,0,5,0"/>
-                                    <ComboBox Grid.Column="1" Name="CmbScraperSource" SelectedIndex="0" CornerRadius="4" Background="#0f172a" BorderBrush="#334155" Margin="0,0,5,0">
-                                        <ComboBoxItem Content="IGDB" />
-                                        <ComboBoxItem Content="TheGamesDB" />
-                                        <ComboBoxItem Content="GameTDB" />
-                                        <ComboBoxItem Content="PalSnesCovers" />
-                                        <ComboBoxItem Content="Vimm's Lair" />
-                                    </ComboBox>
-                                    <Button Grid.Column="2" Name="BtnSearchIgdb" Content="🔍 Buscar" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="4" Padding="10,5"/>
+                                    <Button Grid.Column="1" Name="BtnSearchIgdb" Content="🔍 Buscar en Vimm's Lair" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="4" Padding="10,5"/>
                                 </Grid>
                                 
                                 <Grid ColumnDefinitions="*,*">
