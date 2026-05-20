@@ -17,6 +17,12 @@ namespace GestorJuegos.Services
         private string _apiKey = "6021464670697368"; 
         private string _productName = "Skyscraper";
 
+        public EmuMoviesService()
+        {
+            // Añadimos un User-Agent para que el servidor nos acepte como una herramienta legítima
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "Skyscraper/3.0 (EmuMovies Integration)");
+        }
+
         public bool IsLoggedIn => !string.IsNullOrEmpty(_sessionId);
 
         public void SetCredentials(string apiKey, string productName)
@@ -32,8 +38,8 @@ namespace GestorJuegos.Services
             try
             {
                 LastErrorMessage = null;
-                // El endpoint de login de EmuMovies
-                string url = $"{ApiBaseUrl}/login.aspx?user={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}&api={_apiKey}&product={_productName}";
+                // IMPORTANTE: La API de EmuMovies usa 'pass' en lugar de 'password'
+                string url = $"{ApiBaseUrl}/login.aspx?user={Uri.EscapeDataString(username)}&pass={Uri.EscapeDataString(password)}&api={_apiKey}&product={_productName}";
                 
                 var response = await _httpClient.GetStringAsync(url);
                 var xml = XDocument.Parse(response);
@@ -62,7 +68,7 @@ namespace GestorJuegos.Services
             if (!IsLoggedIn) return new List<EmuMediaResult>();
 
             try
-            {
+                {
                 string url = $"{ApiBaseUrl}/search.aspx?search={Uri.EscapeDataString(gameName)}&system={Uri.EscapeDataString(system)}&media={mediaType}&sessionid={_sessionId}";
                 
                 var response = await _httpClient.GetStringAsync(url);
