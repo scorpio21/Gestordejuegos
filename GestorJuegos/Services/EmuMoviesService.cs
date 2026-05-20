@@ -11,11 +11,10 @@ namespace GestorJuegos.Services
     {
         private readonly HttpClient _httpClient = new HttpClient();
         private string? _sessionId;
-        private const string ApiBaseUrl = "https://api.gamesdbase.com";
+        private const string ApiBaseUrl = "http://api.emumovies.com";
         
-        // Esta Key debería ser proporcionada por el desarrollador de la app
-        // o configurada por el usuario si tiene una propia.
-        private string _apiKey = "D4F5E6A7B8C9D0E1F2"; // Key de ejemplo o placeholder
+        // Clave pública/genérica utilizada en otros proyectos de emulación
+        private string _apiKey = "6021464670697368"; 
         private string _productName = "GestorJuegos";
 
         public bool IsLoggedIn => !string.IsNullOrEmpty(_sessionId);
@@ -26,22 +25,34 @@ namespace GestorJuegos.Services
             _productName = productName;
         }
 
+        public string? LastErrorMessage { get; private set; }
+
         public async Task<bool> LoginAsync(string username, string password)
         {
             try
             {
+                LastErrorMessage = null;
                 // El endpoint de login de EmuMovies
                 string url = $"{ApiBaseUrl}/login.aspx?user={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}&api={_apiKey}&product={_productName}";
                 
                 var response = await _httpClient.GetStringAsync(url);
                 var xml = XDocument.Parse(response);
                 
-                _sessionId = xml.Root?.Element("SessionID")?.Value;
-
-                return IsLoggedIn;
+                var status = xml.Root?.Element("Status")?.Value;
+                if (status == "Success")
+                {
+                    _sessionId = xml.Root?.Element("SessionID")?.Value;
+                    return true;
+                }
+                else
+                {
+                    LastErrorMessage = xml.Root?.Element("Message")?.Value ?? "Login Failure";
+                    return false;
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                LastErrorMessage = ex.Message;
                 return false;
             }
         }
