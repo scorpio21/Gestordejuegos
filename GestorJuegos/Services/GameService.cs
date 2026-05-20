@@ -135,60 +135,103 @@ namespace GestorJuegos.Services
 
         public void AddGame(Game game)
         {
-            byte[]? coverData = game.Cover;
-            game.Cover = null; 
+            AddGamesBatch(new List<Game> { game });
+        }
 
-            using var context = new AppDbContext();
-            context.Games.Add(game);
-            context.SaveChanges();
+        public void AddGamesBatch(List<Game> games)
+        {
+            if (games == null || games.Count == 0) return;
 
-            if (coverData != null)
+            const int batchSize = 500;
+            for (int i = 0; i < games.Count; i += batchSize)
             {
-                using var coversContext = new CoversDbContext();
-                coversContext.Covers.Add(new GameCover
+                var batch = games.Skip(i).Take(batchSize).ToList();
+                
+                // Guardar copias de los datos de carátula antes de limpiarlos del objeto Game
+                var coversToProcess = batch
+                    .Where(g => g.Cover != null && g.Cover.Length > 0)
+                    .Select(g => new { Game = g, Data = g.Cover })
+                    .ToList();
+
+                // Limpiar carátulas de los modelos de juego para que no se guarden en la DB principal
+                foreach (var g in batch) g.Cover = null;
+
+                using (var context = new AppDbContext())
                 {
-                    Id = game.Id,
-                    ImageData = coverData,
-                    ThumbnailData = ImageHelper.GenerateThumbnail(coverData)
-                });
-                coversContext.SaveChanges();
+                    context.Games.AddRange(batch);
+                    context.SaveChanges(); // Genera los IDs
+                }
+
+                if (coversToProcess.Any())
+                {
+                    using (var coversContext = new CoversDbContext())
+                    {
+                        var coversToAdd = coversToProcess.Select(cp => new GameCover
+                        {
+                            Id = cp.Game.Id,
+                            ImageData = cp.Data!,
+                            ThumbnailData = ImageHelper.GenerateThumbnail(cp.Data!)
+                        }).ToList();
+
+                        coversContext.Covers.AddRange(coversToAdd);
+                        coversContext.SaveChanges();
+                    }
+                }
             }
         }
 
         public void UpdateGame(Game game)
         {
-            byte[]? coverData = game.Cover;
-            game.Cover = null;
+            UpdateGamesBatch(new List<Game> { game });
+        }
 
-            using var context = new AppDbContext();
-            context.Games.Update(game);
-            context.SaveChanges();
+        public void UpdateGamesBatch(List<Game> games)
+        {
+            if (games == null || games.Count == 0) return;
 
-            using var coversContext = new CoversDbContext();
-            var existingCover = coversContext.Covers.Find(game.Id);
-            if (coverData != null)
+            const int batchSize = 500;
+            for (int i = 0; i < games.Count; i += batchSize)
             {
-                if (existingCover == null)
+                var batch = games.Skip(i).Take(batchSize).ToList();
+
+                // Extraer carátulas para procesarlas en la DB secundaria
+                var coversToUpdate = batch
+                    .Where(g => g.Cover != null && g.Cover.Length > 0)
+                    .Select(g => new { GameId = g.Id, Data = g.Cover })
+                    .ToList();
+
+                using (var context = new AppDbContext())
                 {
-                    coversContext.Covers.Add(new GameCover
+                    context.Games.UpdateRange(batch);
+                    context.SaveChanges();
+                }
+
+                if (coversToUpdate.Any())
+                {
+                    using (var coversContext = new CoversDbContext())
                     {
-                        Id = game.Id,
-                        ImageData = coverData,
-                        ThumbnailData = ImageHelper.GenerateThumbnail(coverData)
-                    });
+                        foreach (var cu in coversToUpdate)
+                        {
+                            var existingCover = coversContext.Covers.Find(cu.GameId);
+                            if (existingCover == null)
+                            {
+                                coversContext.Covers.Add(new GameCover
+                                {
+                                    Id = cu.GameId,
+                                    ImageData = cu.Data!,
+                                    ThumbnailData = ImageHelper.GenerateThumbnail(cu.Data!)
+                                });
+                            }
+                            else
+                            {
+                                existingCover.ImageData = cu.Data!;
+                                existingCover.ThumbnailData = ImageHelper.GenerateThumbnail(cu.Data!);
+                                coversContext.Covers.Update(existingCover);
+                            }
+                        }
+                        coversContext.SaveChanges();
+                    }
                 }
-                else
-                {
-                    existingCover.ImageData = coverData;
-                    existingCover.ThumbnailData = ImageHelper.GenerateThumbnail(coverData);
-                    coversContext.Covers.Update(existingCover);
-                }
-                coversContext.SaveChanges();
-            }
-            else if (existingCover != null)
-            {
-                coversContext.Covers.Remove(existingCover);
-                coversContext.SaveChanges();
             }
         }
 

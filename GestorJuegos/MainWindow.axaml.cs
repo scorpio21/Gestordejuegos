@@ -45,9 +45,38 @@ public partial class MainWindow : Window
         return new List<string>();
     }
 
+    private AppSettings _settings = new AppSettings();
+
+    private void LoadSettings()
+    {
+        try
+        {
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+            if (File.Exists(configPath))
+            {
+                var json = File.ReadAllText(configPath);
+                _settings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+            }
+        }
+        catch { _settings = new AppSettings(); }
+    }
+
+    private void SaveSettings()
+    {
+        try
+        {
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+            var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            string json = System.Text.Json.JsonSerializer.Serialize(_settings, options);
+            File.WriteAllText(configPath, json);
+        }
+        catch { }
+    }
+
     public MainWindow()
     {
         InitializeComponent();
+        LoadSettings();
 
         // MIGRACIÓN DE EMERGENCIA: Asegurar que la columna LastScanDate existe antes de que EF Core intente leerla
         try
@@ -158,6 +187,40 @@ public partial class MainWindow : Window
 
         MenuCleanupOrphans.Click += MenuCleanupOrphans_Click;
         MenuManageDross.Click += MenuManageDross_Click;
+        MenuSettings.Click += (s, e) => {
+            CfgLbPath.Text = _settings.LaunchBoxPath;
+            CfgArtType.SelectedIndex = CmbArtType.Items.Cast<ComboBoxItem>().ToList().FindIndex(i => i.Content?.ToString() == _settings.PreferredArtType);
+            if (CfgArtType.SelectedIndex < 0) CfgArtType.SelectedIndex = 0;
+            CfgAutoImportCovers.IsChecked = _settings.AutoImportCovers;
+            CfgEmuUser.Text = _settings.EmuMoviesUser;
+            CfgEmuPass.Text = _settings.EmuMoviesPass;
+            OverlaySettings.IsVisible = true;
+        };
+
+        BtnCancelSettings.Click += (s, e) => OverlaySettings.IsVisible = false;
+        BtnSaveSettings.Click += (s, e) => {
+            _settings.LaunchBoxPath = CfgLbPath.Text ?? "";
+            _settings.PreferredArtType = (CfgArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Box - Front";
+            _settings.AutoImportCovers = CfgAutoImportCovers.IsChecked ?? true;
+            _settings.EmuMoviesUser = CfgEmuUser.Text ?? "";
+            _settings.EmuMoviesPass = CfgEmuPass.Text ?? "";
+            SaveSettings();
+            OverlaySettings.IsVisible = false;
+        };
+
+        BtnBrowseLb.Click += async (s, e) => {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel != null)
+            {
+                var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    Title = "Seleccionar Carpeta Raíz de LaunchBox",
+                    AllowMultiple = false
+                });
+                if (folders.Count > 0) CfgLbPath.Text = folders[0].Path.LocalPath;
+            }
+        };
+
         BtnCancelConfirm.Click += (s, e) => OverlayConfirm.IsVisible = false;
         BtnAcceptConfirm.Click += (s, e) => {
             OverlayConfirm.IsVisible = false;
@@ -174,7 +237,46 @@ public partial class MainWindow : Window
         };
         LstGlobalSearchResults.SelectionChanged += LstGlobalSearchResults_SelectionChanged;
 
+        CmbArtType.SelectionChanged += CmbArtType_SelectionChanged;
+
         InitVirtualKeyboard();
+    }
+
+    private void CmbArtType_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_selectedGame == null || _selectedPlatform == null) return;
+        
+        // Si el usuario cambia el tipo de arte, intentamos ver si existe en LaunchBox localmente
+        string lbPath = _settings.LaunchBoxPath;
+        if (Directory.Exists(lbPath))
+        {
+            string artType = (CmbArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Box - Front";
+            string imagesPlatformPath = Path.Combine(lbPath, "Images", _selectedPlatform.Name, artType);
+            
+            if (Directory.Exists(imagesPlatformPath))
+            {
+                string title = _selectedGame.Name;
+                string imgPath = Path.Combine(imagesPlatformPath, $"{title}.jpg");
+                if (!File.Exists(imgPath)) imgPath = Path.Combine(imagesPlatformPath, $"{title}.png");
+                
+                if (!File.Exists(imgPath))
+                {
+                    imgPath = Directory.GetFiles(imagesPlatformPath, $"{title}*.*")
+                        .FirstOrDefault(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
+                                            f.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) ?? "";
+                }
+
+                if (File.Exists(imgPath))
+                {
+                    try
+                    {
+                        _currentCover = File.ReadAllBytes(imgPath);
+                        UpdateCoverImage();
+                    }
+                    catch { }
+                }
+            }
+        }
     }
 
     private void TxtGlobalSearch_TextChanged(object? sender, TextChangedEventArgs e)
@@ -755,6 +857,7 @@ public partial class MainWindow : Window
         int totalAdded = 0;
         int totalSkipped = 0;
         var drossPatterns = LoadDrossPatterns();
+        var gamesToImport = new List<Game>();
 
         foreach (var path in dropPaths)
         {
@@ -799,11 +902,12 @@ public partial class MainWindow : Window
 
                         var game = ImportService.ParseGameLine(fileName, targetPlatform.Id);
                         game.RomPath = romPath;
+                        game.DateAdded = DateTime.Now;
                         string uniqueKey = $"{game.Name}|{game.Region}";
                         
                         if (!existingNames.Contains(uniqueKey))
                         {
-                            context.Games.Add(game);
+                            gamesToImport.Add(game);
                             existingNames.Add(uniqueKey);
                             totalAdded++;
                         }
@@ -812,7 +916,6 @@ public partial class MainWindow : Window
                             totalSkipped++;
                         }
                     }
-                    context.SaveChanges();
                 }
             }
             else if (File.Exists(path))
@@ -845,17 +948,17 @@ public partial class MainWindow : Window
                                 if (string.IsNullOrWhiteSpace(line) || line.StartsWith("Plataforma:", StringComparison.OrdinalIgnoreCase)) continue;
                                 var game = ImportService.ParseGameLine(line, targetPlatform.Id);
                                 if (string.IsNullOrEmpty(game.Name)) continue;
+                                game.DateAdded = DateTime.Now;
 
                                 string uniqueKey = $"{game.Name}|{game.Region}";
                                 if (!existingNames.Contains(uniqueKey))
                                 {
-                                    context.Games.Add(game);
+                                    gamesToImport.Add(game);
                                     existingNames.Add(uniqueKey);
                                     totalAdded++;
                                 }
                                 else { totalSkipped++; }
                             }
-                            context.SaveChanges();
                         }
                     }
                     catch { }
@@ -874,18 +977,23 @@ public partial class MainWindow : Window
                         {
                             var game = ImportService.ParseGameLine(fileName, targetPlatform.Id);
                             game.RomPath = path;
+                            game.DateAdded = DateTime.Now;
                             string uniqueKey = $"{game.Name}|{game.Region}";
                             if (!existingNames.Contains(uniqueKey))
                             {
-                                context.Games.Add(game);
+                                gamesToImport.Add(game);
                                 totalAdded++;
                             }
                             else { totalSkipped++; }
                         }
-                        context.SaveChanges();
                     }
                 }
             }
+        }
+
+        if (gamesToImport.Any())
+        {
+            _gameService.AddGamesBatch(gamesToImport);
         }
 
         if (totalAdded > 0)
@@ -903,47 +1011,9 @@ public partial class MainWindow : Window
         }
     }
 
-    private string GetSavedLaunchBoxPath()
-    {
-        try
-        {
-            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
-            if (File.Exists(configPath))
-            {
-                var json = File.ReadAllText(configPath);
-                using var doc = System.Text.Json.JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("LaunchBoxPath", out var pathProp))
-                {
-                    return pathProp.GetString() ?? @"H:\LaunchBox";
-                }
-            }
-        }
-        catch { }
-        return @"H:\LaunchBox";
-    }
-
-    private void SaveLaunchBoxPath(string path)
-    {
-        try
-        {
-            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
-            var config = new Dictionary<string, string>();
-            
-            if (File.Exists(configPath))
-            {
-                var json = File.ReadAllText(configPath);
-                config = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
-            }
-            
-            config["LaunchBoxPath"] = path;
-            File.WriteAllText(configPath, System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
-        }
-        catch { }
-    }
-
     private async void MenuImportLaunchBox_Click(object? sender, RoutedEventArgs e)
     {
-        string lbPath = GetSavedLaunchBoxPath();
+        string lbPath = _settings.LaunchBoxPath;
         
         if (!Directory.Exists(lbPath) || !Directory.Exists(Path.Combine(lbPath, "Data", "Platforms")))
         {
@@ -965,7 +1035,8 @@ public partial class MainWindow : Window
                     ShowMessage("La carpeta seleccionada no parece ser una instalación válida de LaunchBox (No se encontró 'Data\\Platforms').");
                     return;
                 }
-                SaveLaunchBoxPath(lbPath);
+                _settings.LaunchBoxPath = lbPath;
+                SaveSettings();
             }
             else return;
         }
@@ -992,33 +1063,38 @@ public partial class MainWindow : Window
                 int totalGamesAdded = 0;
                 bool cancelled = false;
 
-                using (var context = new GestorJuegos.Data.AppDbContext())
+                for (int i = 0; i < xmlFiles.Length; i++)
                 {
-                    for (int i = 0; i < xmlFiles.Length; i++)
-                    {
-                        if (_cts.IsCancellationRequested) { cancelled = true; break; }
-                        
-                        string xmlFile = xmlFiles[i];
-                        string platformName = Path.GetFileNameWithoutExtension(xmlFile);
-                        
-                        Avalonia.Threading.Dispatcher.UIThread.Post(() => {
-                            ProgBarImport.Value = (i * 100) / xmlFiles.Length;
-                            TxtProgressDetail.Text = $"Procesando plataforma: {platformName}...";
-                        });
+                    if (_cts.IsCancellationRequested) { cancelled = true; break; }
+                    
+                    string xmlFile = xmlFiles[i];
+                    string platformName = Path.GetFileNameWithoutExtension(xmlFile);
+                    
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => {
+                        ProgBarImport.Value = (i * 100) / xmlFiles.Length;
+                        TxtProgressDetail.Text = $"Procesando plataforma: {platformName}...";
+                    });
 
-                        var platform = context.Platforms.FirstOrDefault(p => p.Name == platformName);
+                    Platform? platform;
+                    using (var context = new GestorJuegos.Data.AppDbContext())
+                    {
+                        platform = context.Platforms.FirstOrDefault(p => p.Name == platformName);
                         if (platform == null)
                         {
                             platform = new Platform { Name = platformName };
                             context.Platforms.Add(platform);
                             context.SaveChanges();
                         }
+                    }
 
-                        try
+                    try
+                    {
+                        var doc = XDocument.Load(xmlFile);
+                        var gamesNodes = doc.Descendants("Game").ToList();
+                        var gamesToImport = new List<Game>();
+                        
+                        using (var context = new GestorJuegos.Data.AppDbContext())
                         {
-                            var doc = XDocument.Load(xmlFile);
-                            var gamesNodes = doc.Descendants("Game").ToList();
-                            
                             var existingGameKeys = new HashSet<string>(context.Games
                                 .Where(g => g.PlatformId == platform.Id)
                                 .Select(g => $"{g.Name}|{g.Region}"), StringComparer.OrdinalIgnoreCase);
@@ -1058,7 +1134,32 @@ public partial class MainWindow : Window
 
                                 bool isFavorite = (node.Element("Favorite")?.Value ?? "").Equals("true", StringComparison.OrdinalIgnoreCase);
 
-                                context.Games.Add(new Game
+                                byte[]? coverData = null;
+                                if (_settings.AutoImportCovers)
+                                {
+                                    try
+                                    {
+                                        // Intentar buscar carátula local en LaunchBox usando la preferencia
+                                        string imagesPlatformPath = Path.Combine(lbPath, "Images", platformName, _settings.PreferredArtType);
+                                        if (Directory.Exists(imagesPlatformPath))
+                                        {
+                                            string imgPath = Path.Combine(imagesPlatformPath, $"{title}.jpg");
+                                            if (!File.Exists(imgPath)) imgPath = Path.Combine(imagesPlatformPath, $"{title}.png");
+                                            
+                                            if (!File.Exists(imgPath))
+                                            {
+                                                imgPath = Directory.GetFiles(imagesPlatformPath, $"{title}*.*")
+                                                    .FirstOrDefault(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
+                                                                        f.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) ?? "";
+                                            }
+
+                                            if (File.Exists(imgPath)) coverData = File.ReadAllBytes(imgPath);
+                                        }
+                                    }
+                                    catch { }
+                                }
+
+                                gamesToImport.Add(new Game
                                 {
                                     Name = title,
                                     PlatformId = platform.Id,
@@ -1067,18 +1168,21 @@ public partial class MainWindow : Window
                                     Region = region,
                                     RomPath = appPath,
                                     IsFavorite = isFavorite,
-                                    DateAdded = DateTime.Now
+                                    DateAdded = DateTime.Now,
+                                    Cover = coverData
                                 });
                                 
                                 existingGameKeys.Add(uniqueKey);
-                                totalGamesAdded++;
-
-                                if (totalGamesAdded % 500 == 0) context.SaveChanges();
                             }
-                            context.SaveChanges();
                         }
-                        catch { }
+
+                        if (gamesToImport.Any())
+                        {
+                            _gameService.AddGamesBatch(gamesToImport);
+                            totalGamesAdded += gamesToImport.Count;
+                        }
                     }
+                    catch { }
                 }
 
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -1577,11 +1681,15 @@ public partial class MainWindow : Window
 
                     using (var context = new GestorJuegos.Data.AppDbContext())
                     {
-                        context.Games.AddRange(newGames);
+                        context.Platforms.Update(_selectedPlatform);
                         context.SaveChanges();
                     }
-                    
-                    count = newGames.Count;
+
+                    if (newGames.Any())
+                    {
+                        _gameService.AddGamesBatch(newGames);
+                        count = newGames.Count;
+                    }
 
                     Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
@@ -2534,6 +2642,10 @@ public partial class MainWindow : Window
                                     .Where(g => g.PlatformId == platform.Id)
                                     .Select(g => $"{g.Name}|{g.Region}|{g.Languages}"), StringComparer.OrdinalIgnoreCase);
 
+                                var newGames = new List<Game>();
+                                var gamesToUpdate = new List<Game>();
+                                var drossPatterns = LoadDrossPatterns();
+
                                 for (int i = 0; i < gameFiles.Count; i++)
                                 {
                                     if (_cts.IsCancellationRequested) { cancelled = true; break; }
@@ -2543,7 +2655,6 @@ public partial class MainWindow : Window
                                     string fileName = Path.GetFileName(filePath);
                                     if (fileName.Equals("lista.txt", StringComparison.OrdinalIgnoreCase)) continue;
 
-                                    var drossPatterns = LoadDrossPatterns();
                                     if (ImportService.IsDross(fileName, drossPatterns)) continue;
 
                                     if (i % 20 == 0)
@@ -2557,11 +2668,12 @@ public partial class MainWindow : Window
                                     await System.Threading.Tasks.Task.Delay(1);
                                     var game = ImportService.ParseGameLine(fileName, platform.Id);
                                     game.RomPath = filePath;
+                                    game.DateAdded = DateTime.Now;
                                     
                                     string uniqueKey = $"{game.Name}|{game.Region}|{game.Languages}";
                                     if (!existingGameKeys.Contains(uniqueKey))
                                     {
-                                        context.Games.Add(game);
+                                        newGames.Add(game);
                                         existingGameKeys.Add(uniqueKey);
                                         gameCount++;
                                     }
@@ -2572,13 +2684,27 @@ public partial class MainWindow : Window
                                         if (existingGame != null && string.IsNullOrEmpty(existingGame.RomPath))
                                         {
                                             existingGame.RomPath = filePath;
-                                            context.Games.Update(existingGame);
+                                            gamesToUpdate.Add(existingGame);
                                         }
                                     }
-                                    if (gameCount % 500 == 0) context.SaveChanges();
+
+                                    if (newGames.Count >= 500)
+                                    {
+                                        _gameService.AddGamesBatch(newGames);
+                                        newGames.Clear();
+                                    }
+                                    if (gamesToUpdate.Count >= 500)
+                                    {
+                                        _gameService.UpdateGamesBatch(gamesToUpdate);
+                                        gamesToUpdate.Clear();
+                                    }
                                 }
+
+                                if (newGames.Any()) _gameService.AddGamesBatch(newGames);
+                                if (gamesToUpdate.Any()) _gameService.UpdateGamesBatch(gamesToUpdate);
                             }
                             platform.LastScanDate = DateTime.Now;
+                            context.Platforms.Update(platform);
                             context.SaveChanges();
                         }
                     }
@@ -2640,9 +2766,11 @@ public partial class MainWindow : Window
 
                     int matchCount = 0;
                     bool cancelled = false;
+                    
                     using (var context = new GestorJuegos.Data.AppDbContext())
                     {
-                        var games = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id && (g.Cover == null || g.Cover.Length == 0)).ToList();
+                        var games = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id).ToList();
+                        var gamesToUpdate = new List<Game>();
 
                         for (int i = 0; i < games.Count; i++)
                         {
@@ -2650,6 +2778,9 @@ public partial class MainWindow : Window
                             
                             var game = games[i];
                             
+                            // Solo buscar si no tiene carátula en la DB secundaria
+                            if (_gameService.GetGameThumbnail(game.Id) != null) continue;
+
                             int currentI = i;
                             int totalI = games.Count;
                             Avalonia.Threading.Dispatcher.UIThread.Post(() => {
@@ -2657,7 +2788,6 @@ public partial class MainWindow : Window
                                 TxtProgressDetail.Text = $"Buscando para: {game.Name} ({currentI}/{totalI})";
                             });
 
-                            // Lógica de coincidencia mejorada (bidireccional y limpieza básica)
                             var match = coverFiles.FirstOrDefault(f => {
                                 string fileName = Path.GetFileNameWithoutExtension(f);
                                 return fileName.Equals(game.Name, StringComparison.OrdinalIgnoreCase) || 
@@ -2670,12 +2800,22 @@ public partial class MainWindow : Window
                                 try 
                                 {
                                     game.Cover = File.ReadAllBytes(match);
-                                    context.Games.Update(game);
+                                    gamesToUpdate.Add(game);
                                     matchCount++;
+                                    
+                                    if (gamesToUpdate.Count >= 100)
+                                    {
+                                        _gameService.UpdateGamesBatch(gamesToUpdate);
+                                        gamesToUpdate.Clear();
+                                    }
                                 } catch { }
                             }
                         }
-                        context.SaveChanges();
+                        
+                        if (gamesToUpdate.Any())
+                        {
+                            _gameService.UpdateGamesBatch(gamesToUpdate);
+                        }
                     }
 
                     Avalonia.Threading.Dispatcher.UIThread.Post(() =>
