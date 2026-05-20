@@ -35,30 +35,40 @@ namespace GestorJuegos.Services
 
         public async Task<bool> LoginAsync(string username, string password)
         {
+            string logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "emumovies_debug.log");
             try
             {
                 LastErrorMessage = null;
-                // IMPORTANTE: La API de EmuMovies usa 'pass' en lugar de 'password'
+                // El endpoint de login de EmuMovies usa 'pass' en lugar de 'password'
                 string url = $"{ApiBaseUrl}/login.aspx?user={Uri.EscapeDataString(username)}&pass={Uri.EscapeDataString(password)}&api={_apiKey}&product={_productName}";
                 
+                // Log de la petición (ocultando password)
+                string maskedUrl = $"{ApiBaseUrl}/login.aspx?user={Uri.EscapeDataString(username)}&pass=********&api={_apiKey}&product={_productName}";
+                System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] Intentando Login: {maskedUrl}{Environment.NewLine}");
+
                 var response = await _httpClient.GetStringAsync(url);
+                System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] Respuesta RAW: {response}{Environment.NewLine}");
+
                 var xml = XDocument.Parse(response);
                 
                 var status = xml.Root?.Element("Status")?.Value;
                 if (status == "Success")
                 {
                     _sessionId = xml.Root?.Element("SessionID")?.Value;
+                    System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] Login Exitoso. SessionID obtenido.{Environment.NewLine}");
                     return true;
                 }
                 else
                 {
                     LastErrorMessage = xml.Root?.Element("Message")?.Value ?? "Login Failure";
+                    System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] Error en Login: {LastErrorMessage}{Environment.NewLine}");
                     return false;
                 }
             }
             catch (Exception ex)
             {
                 LastErrorMessage = ex.Message;
+                System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] EXCEPCIÓN: {ex.Message}{Environment.NewLine}");
                 return false;
             }
         }
