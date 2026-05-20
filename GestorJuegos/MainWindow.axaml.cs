@@ -1078,20 +1078,20 @@ public partial class MainWindow : Window
                         TxtProgressDetail.Text = $"Procesando plataforma: {platformName}...";
                     });
 
-                    Platform? platform;
-                    using (var context = new GestorJuegos.Data.AppDbContext())
-                    {
-                        platform = context.Platforms.FirstOrDefault(p => p.Name == platformName);
-                        if (platform == null)
-                        {
-                            platform = new Platform { Name = platformName };
-                            context.Platforms.Add(platform);
-                            context.SaveChanges();
-                        }
-                    }
-
                     try
                     {
+                        Platform? platform;
+                        using (var context = new GestorJuegos.Data.AppDbContext())
+                        {
+                            platform = context.Platforms.FirstOrDefault(p => p.Name == platformName);
+                            if (platform == null)
+                            {
+                                platform = new Platform { Name = platformName };
+                                context.Platforms.Add(platform);
+                                context.SaveChanges();
+                            }
+                        }
+
                         var doc = XDocument.Load(xmlFile);
                         var gamesNodes = doc.Descendants("Game").ToList();
                         var gamesToImport = new List<Game>();
@@ -1143,17 +1143,19 @@ public partial class MainWindow : Window
                                     try
                                     {
                                         // Intentar buscar carátula local en LaunchBox usando la preferencia
-                                        string imagesPlatformPath = Path.Combine(lbPath, "Images", platformName, _settings.PreferredArtType);
+                                        string imagesPlatformPath = Path.Combine(lbPath, "Images", "Platforms", platformName, _settings.PreferredArtType);
                                         if (Directory.Exists(imagesPlatformPath))
                                         {
+                                            // Buscar coincidencia exacta
                                             string imgPath = Path.Combine(imagesPlatformPath, $"{title}.jpg");
                                             if (!File.Exists(imgPath)) imgPath = Path.Combine(imagesPlatformPath, $"{title}.png");
                                             
+                                            // Si no hay exacta, buscar por prefijo (por si tiene regiones en el nombre del archivo)
                                             if (!File.Exists(imgPath))
                                             {
-                                                imgPath = Directory.GetFiles(imagesPlatformPath, $"{title}*.*")
-                                                    .FirstOrDefault(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
-                                                                        f.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) ?? "";
+                                                var files = Directory.GetFiles(imagesPlatformPath, $"{title}*.*");
+                                                imgPath = files.FirstOrDefault(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
+                                                                                   f.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) ?? "";
                                             }
 
                                             if (File.Exists(imgPath)) coverData = File.ReadAllBytes(imgPath);
@@ -1185,7 +1187,11 @@ public partial class MainWindow : Window
                             totalGamesAdded += gamesToImport.Count;
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        // Log el error pero continuar con la siguiente plataforma
+                        try { File.AppendAllText("import_error.log", $"[{DateTime.Now}] Error importando {platformName}: {ex.Message}{Environment.NewLine}"); } catch { }
+                    }
                 }
 
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -2653,7 +2659,20 @@ public partial class MainWindow : Window
                                               folderName.Equals("SNK", StringComparison.OrdinalIgnoreCase)) 
                                               && !hasGamesAtThisLevel && !contentSubfolderHasGames && sDirs.Length > 0;
 
-                        if ((hasGamesAtThisLevel || hasRegionSubdirs || looksLikePlatform || hasHighDensity || contentSubfolderHasGames) && !isCategoryOnly)
+                        // NUEVA HEURÍSTICA: Detectar si es un "Juego en Carpeta Propia" (típico de MAME o PC)
+                        // Si solo hay un archivo de juego y su nombre coincide con la carpeta, NO es una plataforma.
+                        bool isSingleGameFolder = false;
+                        if (hasGamesAtThisLevel && gamesAtThisLevel.Count == 1)
+                        {
+                            string singleGameName = Path.GetFileNameWithoutExtension(gamesAtThisLevel[0]);
+                            if (singleGameName.Equals(folderName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                isSingleGameFolder = true;
+                            }
+                        }
+
+                        if ((hasGamesAtThisLevel || hasRegionSubdirs || looksLikePlatform || hasHighDensity || contentSubfolderHasGames) 
+                             && !isCategoryOnly && !isSingleGameFolder)
                         {
                             platformDirs.Add(cleanPath);
                         }

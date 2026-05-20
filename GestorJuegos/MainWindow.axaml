@@ -467,22 +467,23 @@
                                 </Border>
                                 
                                 <Grid ColumnDefinitions="*, Auto" Margin="0,10,0,0">
-                                    <TextBlock Grid.Column="0" Text="Carátula" Foreground="#94a3b8" FontSize="12" VerticalAlignment="Bottom"/>
+                                    <TextBlock Grid.Column="0" Text="Carátula / Multimedia" Foreground="#94a3b8" FontSize="12" VerticalAlignment="Bottom"/>
                                     <ComboBox Grid.Column="1" Name="CmbArtType" SelectedIndex="0" CornerRadius="4" Background="#1e293b" BorderBrush="#334155" FontSize="11" Height="25">
                                         <ComboBoxItem Content="Box - Front" />
                                         <ComboBoxItem Content="Box - 3D" />
                                         <ComboBoxItem Content="Clear Logo" />
                                         <ComboBoxItem Content="Disc" />
+                                        <ComboBoxItem Content="Fanart" />
                                         <ComboBoxItem Content="Screenshot" />
                                     </ComboBox>
                                 </Grid>
                                 <Border BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Height="250" Background="#0f172a" ClipToBounds="True">
-                                    <Image Name="ImgCover" Stretch="Uniform"/>
+                                    <Panel>
+                                        <Image Name="ImgCover" Stretch="Uniform"/>
+                                        <Button Name="BtnSelectCover" Content="📁 Cambiar Manualmente" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,10" Background="#334155" CornerRadius="4" Padding="10,5" FontSize="11"/>
+                                    </Panel>
                                 </Border>
-                                <Grid ColumnDefinitions="*,*">
-                                    <Button Grid.Column="0" Name="BtnSelectCover" Content="Seleccionar" Margin="0,0,5,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#334155" CornerRadius="4"/>
-                                    <Button Grid.Column="1" Name="BtnClearCover" Content="Quitar" Margin="5,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#334155" CornerRadius="4"/>
-                                </Grid>
+                                <Button Name="BtnClearCover" Content="🗑️ Quitar Imagen" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#ef4444" CornerRadius="4" Padding="5"/>
                                 
                                 <Grid ColumnDefinitions="*,*" Margin="0,20,0,0">
                                     <Button Grid.Column="0" Name="BtnDelete" Content="Eliminar" Margin="0,0,5,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#ef4444" Foreground="White" FontWeight="Bold" CornerRadius="4"/>
