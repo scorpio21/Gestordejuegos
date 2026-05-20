@@ -7,8 +7,5 @@ namespace GestorJuegos.Models
         public string LaunchBoxPath { get; set; } = @"H:\LaunchBox";
         public string PreferredArtType { get; set; } = "Box - Front";
         public bool AutoImportCovers { get; set; } = true;
-        public string EmuMoviesUser { get; set; } = string.Empty;
-        public string EmuMoviesPass { get; set; } = string.Empty;
-        public string EmuMoviesApiKey { get; set; } = "6021464670697368"; // Public Key
     }
 }

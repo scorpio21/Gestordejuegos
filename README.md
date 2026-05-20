@@ -1,4 +1,4 @@
-# 🎮 Gestor de Juegos (v1.0.9.8)
+# 🎮 Gestor de Juegos (v1.0.9.9)
 
 Organizador de colecciones de videojuegos para Windows, optimizado para grandes bibliotecas y uso con mando (Gamepad).
 
@@ -14,7 +14,11 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
-### v1.0.9.8 (Actual)
+### v1.0.9.9 (Actual)
+- **Eliminación de Integración EmuMovies**: Se ha retirado el soporte para la API de EmuMovies debido a restricciones de validación del servidor. Se recomienda el uso de herramientas externas como *EmuMovies Sync* para la descarga masiva y el escaneo local del Gestor para importarlas.
+- **Limpieza de Interfaz**: Eliminados campos de credenciales y botones de búsqueda redundantes para una experiencia más limpia enfocada en Vimm's Lair y artes locales.
+
+### v1.0.9.8
 - **Optimización Crítica de Rendimiento**: Implementación de inserciones y actualizaciones por lotes (Batch Insert) en todos los importadores.
 - **Configuración Global Persistente**: Nuevo panel de configuración para gestionar rutas de LaunchBox, preferencias de arte y credenciales de EmuMovies.
 - **Integración Avanzada con LaunchBox**: Importación automática de carátulas locales (Box Front, 3D, etc.) durante el escaneo de plataformas.
