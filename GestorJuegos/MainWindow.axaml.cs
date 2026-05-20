@@ -201,6 +201,9 @@ public partial class MainWindow : Window
         };
 
         BtnCancelSettings.Click += (s, e) => OverlaySettings.IsVisible = false;
+        BtnShowEmuPass.IsCheckedChanged += (s, e) => {
+            CfgEmuPass.PasswordChar = BtnShowEmuPass.IsChecked == true ? '\0' : '*';
+        };
         BtnSaveSettings.Click += (s, e) => {
             _settings.LaunchBoxPath = CfgLbPath.Text ?? "";
             _settings.PreferredArtType = (CfgArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Box - Front";

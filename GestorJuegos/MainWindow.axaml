@@ -524,7 +524,11 @@
                                 <TextBlock Text="Usuario" Foreground="#94a3b8" FontSize="12"/>
                                 <TextBox Name="CfgEmuUser" CornerRadius="4" Background="#1e293b" BorderBrush="#334155"/>
                                 <TextBlock Text="Contraseña" Foreground="#94a3b8" FontSize="12"/>
-                                <TextBox Name="CfgEmuPass" PasswordChar="*" CornerRadius="4" Background="#1e293b" BorderBrush="#334155"/>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBox Name="CfgEmuPass" PasswordChar="*" CornerRadius="4" Background="#1e293b" BorderBrush="#334155"/>
+                                    <ToggleButton Name="BtnShowEmuPass" Grid.Column="1" Content="👁️" Margin="5,0,0,0" Background="#334155" CornerRadius="4" Width="40" HorizontalContentAlignment="Center"/>
+                                </Grid>
+
                                 <TextBlock Text="API Key (Opcional)" Foreground="#94a3b8" FontSize="12"/>
                                 <TextBox Name="CfgEmuApiKey" CornerRadius="4" Background="#1e293b" BorderBrush="#334155"/>
                                 </StackPanel>
