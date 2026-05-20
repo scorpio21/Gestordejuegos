@@ -49,28 +49,58 @@ namespace GestorJuegos.Services
             using (var context = new AppDbContext())
             using (var coversContext = new CoversDbContext())
             {
-                var gamesWithCoversInMainDb = context.Games.Where(g => g.Cover != null).ToList();
-                if (gamesWithCoversInMainDb.Count > 0)
+                // Usamos ADO.NET directo para saltarnos las restricciones de [NotMapped] de EF Core
+                var connection = context.Database.GetDbConnection();
+                bool hasOpened = false;
+                if (connection.State != System.Data.ConnectionState.Open)
                 {
-                    foreach (var game in gamesWithCoversInMainDb)
+                    connection.Open();
+                    hasOpened = true;
+                }
+
+                try
+                {
+                    using (var command = connection.CreateCommand())
                     {
-                        if (game.Cover != null)
+                        // Seleccionamos los juegos que tienen datos en la columna Cover de la DB principal
+                        command.CommandText = "SELECT Id, Cover FROM Games WHERE Cover IS NOT NULL";
+                        using (var reader = command.ExecuteReader())
                         {
-                            if (!coversContext.Covers.Any(c => c.Id == game.Id))
+                            while (reader.Read())
                             {
-                                coversContext.Covers.Add(new GameCover
+                                int id = reader.GetInt32(0);
+                                byte[]? coverData = reader[1] as byte[];
+
+                                if (coverData != null && coverData.Length > 0)
                                 {
-                                    Id = game.Id,
-                                    ImageData = game.Cover,
-                                    ThumbnailData = ImageHelper.GenerateThumbnail(game.Cover)
-                                });
+                                    if (!coversContext.Covers.Any(c => c.Id == id))
+                                    {
+                                        coversContext.Covers.Add(new GameCover
+                                        {
+                                            Id = id,
+                                            ImageData = coverData,
+                                            ThumbnailData = ImageHelper.GenerateThumbnail(coverData)
+                                        });
+                                    }
+                                }
                             }
-                            game.Cover = null;
                         }
                     }
+                    
                     coversContext.SaveChanges();
-                    context.SaveChanges();
+
+                    // Limpiar la columna Cover de la DB principal y compactar
+                    using (var updateCommand = connection.CreateCommand())
+                    {
+                        updateCommand.CommandText = "UPDATE Games SET Cover = NULL WHERE Cover IS NOT NULL";
+                        updateCommand.ExecuteNonQuery();
+                    }
+                    
                     try { context.Database.ExecuteSqlRaw("VACUUM"); } catch { }
+                }
+                finally
+                {
+                    if (hasOpened) connection.Close();
                 }
             }
         }
