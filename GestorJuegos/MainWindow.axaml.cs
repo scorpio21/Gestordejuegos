@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private Game? _selectedGame;
     private byte[]? _currentCover;
     private readonly VimmVaultService _vimmService;
+    private readonly EmuMoviesService _emuService;
     private System.Collections.Generic.List<Game> _currentPlatformGames = new System.Collections.Generic.List<Game>();
     private int _currentPage = 1;
     private const int PageSize = 100;
@@ -113,6 +114,7 @@ public partial class MainWindow : Window
 
         _gameService = new GameService();
         _vimmService = new VimmVaultService();
+        _emuService = new EmuMoviesService();
 
         LoadPlatforms();
         LoadDashboard();
@@ -194,6 +196,7 @@ public partial class MainWindow : Window
             CfgAutoImportCovers.IsChecked = _settings.AutoImportCovers;
             CfgEmuUser.Text = _settings.EmuMoviesUser;
             CfgEmuPass.Text = _settings.EmuMoviesPass;
+            CfgEmuApiKey.Text = _settings.EmuMoviesApiKey;
             OverlaySettings.IsVisible = true;
         };
 
@@ -204,6 +207,7 @@ public partial class MainWindow : Window
             _settings.AutoImportCovers = CfgAutoImportCovers.IsChecked ?? true;
             _settings.EmuMoviesUser = CfgEmuUser.Text ?? "";
             _settings.EmuMoviesPass = CfgEmuPass.Text ?? "";
+            _settings.EmuMoviesApiKey = CfgEmuApiKey.Text ?? "D4F5E6A7B8C9D0E1F2";
             SaveSettings();
             OverlaySettings.IsVisible = false;
         };
@@ -239,7 +243,86 @@ public partial class MainWindow : Window
 
         CmbArtType.SelectionChanged += CmbArtType_SelectionChanged;
 
+        BtnSearchEmuMovies.Click += BtnSearchEmuMovies_Click;
+        BtnCancelEmu.Click += (s, e) => OverlayEmuSearch.IsVisible = false;
+        BtnSelectEmu.Click += BtnSelectEmu_Click;
+
         InitVirtualKeyboard();
+    }
+
+    private async void BtnSearchEmuMovies_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null || _selectedPlatform == null) return;
+        
+        if (string.IsNullOrEmpty(_settings.EmuMoviesUser) || string.IsNullOrEmpty(_settings.EmuMoviesPass))
+        {
+            ShowMessage("Por favor, configura tu usuario y contraseña de EmuMovies en el panel de Configuración Global.");
+            return;
+        }
+
+        OverlayEmuSearch.IsVisible = true;
+        TxtEmuStatus.Text = "Iniciando sesión en EmuMovies...";
+        LstEmuResults.ItemsSource = null;
+
+        try
+        {
+            _emuService.SetCredentials(_settings.EmuMoviesApiKey, "GestorJuegos");
+            bool loggedIn = await _emuService.LoginAsync(_settings.EmuMoviesUser, _settings.EmuMoviesPass);
+            
+            if (!loggedIn)
+            {
+                TxtEmuStatus.Text = "Error: Usuario o contraseña incorrectos.";
+                return;
+            }
+
+            TxtEmuStatus.Text = $"Buscando '{_selectedGame.Name}'...";
+            
+            // Mapear nombre de plataforma al estándar de EmuMovies si es necesario
+            string system = _selectedPlatform.Name;
+            
+            var results = await _emuService.SearchMediaAsync(_selectedGame.Name, system, "Box_Front");
+            if (results.Count == 0)
+            {
+                // Reintento con búsqueda más simple si falla
+                results = await _emuService.SearchMediaAsync(_selectedGame.Name.Split('(')[0].Trim(), system, "Box_Front");
+            }
+
+            LstEmuResults.ItemsSource = results;
+            TxtEmuStatus.Text = results.Count > 0 ? $"Resultados ({results.Count})" : "No se encontraron resultados.";
+        }
+        catch (Exception ex)
+        {
+            TxtEmuStatus.Text = "Error en la búsqueda.";
+            ShowMessage($"Error EmuMovies: {ex.Message}");
+        }
+    }
+
+    private async void BtnSelectEmu_Click(object? sender, RoutedEventArgs e)
+    {
+        if (LstEmuResults.SelectedItem is EmuMediaResult result)
+        {
+            OverlayEmuSearch.IsVisible = false;
+            ShowMessage("Descargando desde EmuMovies...");
+            
+            try
+            {
+                var data = await _emuService.DownloadMediaAsync(result.DownloadUrl);
+                if (data != null && data.Length > 0)
+                {
+                    _currentCover = data;
+                    UpdateCoverImage();
+                    OverlayMessage.IsVisible = false;
+                }
+                else
+                {
+                    ShowMessage("Error al descargar el archivo.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error de descarga: {ex.Message}");
+            }
+        }
     }
 
     private void CmbArtType_SelectionChanged(object? sender, SelectionChangedEventArgs e)
