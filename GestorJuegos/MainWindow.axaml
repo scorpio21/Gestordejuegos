@@ -18,67 +18,111 @@
         <utils:RegionToFlagConverter x:Key="RegionToFlag"/>
         <SolidColorBrush x:Key="AccentBrush" Color="#10b981"/>
         <SolidColorBrush x:Key="PanelBrush" Color="#1e293b"/>
+
+        <!-- Plantilla para Items de Sidebar -->
+        <DataTemplate x:Key="SidebarItemTemplate" x:DataType="models:SidebarItem">
+            <Panel Margin="0,2">
+                <TextBlock Text="{Binding Name}" 
+                           IsVisible="{Binding IsHeader}" 
+                           FontSize="11" FontWeight="Bold" Foreground="#64748b" Margin="5,15,0,5"/>
+                
+                <Grid ColumnDefinitions="Auto, *, Auto" IsVisible="{Binding !IsHeader}" Height="32">
+                    <TextBlock Grid.Column="0" Text="{Binding Icon}" Margin="5,0,10,0" VerticalAlignment="Center" FontSize="16"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Foreground="#cbd5e1" FontSize="13"/>
+                    <Border Grid.Column="2" Background="#334155" CornerRadius="10" Padding="8,1" VerticalAlignment="Center" Margin="0,0,5,0">
+                        <TextBlock Text="{Binding Count}" FontSize="10" Foreground="#94a3b8" FontWeight="Bold"/>
+                    </Border>
+                </Grid>
+            </Panel>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
         <Image Name="ImgBackground" Stretch="UniformToFill" Opacity="0.1" IsHitTestVisible="False"/>
         
         <DockPanel>
-            <!-- BARRA SUPERIOR -->
-            <Border DockPanel.Dock="Top" Background="#1e293b" BorderBrush="#334155" BorderThickness="0,0,0,1" Height="50">
-                <DockPanel Margin="15,0">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="15">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Image Source="/img/icono.png" Width="24" Height="24"/>
-                            <TextBlock Text="GESTOR DE JUEGOS" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        
-                        <Menu Background="Transparent">
-                            <MenuItem Header="ARCHIVO" Foreground="White">
-                                <MenuItem Name="MenuExportDB" Header="Exportar Copia de Seguridad..."/>
-                                <MenuItem Name="MenuImportDB" Header="Importar Copia de Seguridad..."/>
-                                <Separator/>
-                                <MenuItem Name="MenuSettings" Header="Configuración"/>
-                            </MenuItem>
-                            <MenuItem Header="BIBLIOTECA" Foreground="White">
-                                <MenuItem Name="MenuImportFolders" Header="Importar Colección desde Carpeta..."/>
-                                <MenuItem Name="MenuImportLaunchBox" Header="Importar desde LaunchBox..."/>
-                                <Separator/>
-                                <MenuItem Name="MenuImportDat" Header="Importar lista desde DAT/XML..."/>
-                                <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales..."/>
-                                <Separator/>
-                                <MenuItem Name="MenuCleanupOrphans" Header="Limpiar Juegos Huérfanos"/>
-                                <MenuItem Name="MenuManageDross" Header="Gestionar Filtros de Importación"/>
-                                <MenuItem Name="MenuBatchScrapeVimm" Header="Descargar Carátulas (Vimm)..."/>
-                            </MenuItem>
-                            <MenuItem Name="MenuPlataformas" Header="PLATAFORMAS" Foreground="White"/>
-                            <MenuItem Header="AYUDA" Foreground="White">
-                                <MenuItem Name="MenuHelpEmulator" Header="Emuladores"/>
-                                <MenuItem Name="MenuHelpMultiDisk" Header="Multi-Disco"/>
-                                <MenuItem Name="MenuHelpDatabase" Header="Base de Datos"/>
-                                <Separator/>
-                                <MenuItem Name="MenuAbout" Header="Acerca de..."/>
-                            </MenuItem>
-                        </Menu>
+            <!-- BARRA SUPERIOR (MODERNA) -->
+            <Border DockPanel.Dock="Top" Background="#1e293b" BorderBrush="#334155" BorderThickness="0,0,0,1" Height="60">
+                <Grid ColumnDefinitions="Auto, *, Auto" Margin="15,0">
+                    <!-- Izquierda: Menu y Logo -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="15">
+                        <Button Name="BtnAppMenu" Background="Transparent" Padding="10" CornerRadius="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Image Source="/img/icono.png" Width="24" Height="24"/>
+                                <TextBlock Text="☰" Foreground="White" VerticalAlignment="Center" FontSize="18"/>
+                            </StackPanel>
+                            <Button.Flyout>
+                                <MenuFlyout>
+                                    <MenuItem Header="ARCHIVO">
+                                        <MenuItem Name="MenuExportDB" Header="Exportar Copia de Seguridad..."/>
+                                        <MenuItem Name="MenuImportDB" Header="Importar Copia de Seguridad..."/>
+                                        <Separator/>
+                                        <MenuItem Name="MenuSettings" Header="Configuración"/>
+                                    </MenuItem>
+                                    <MenuItem Header="BIBLIOTECA">
+                                        <MenuItem Name="MenuImportFolders" Header="Importar Colección desde Carpeta..."/>
+                                        <MenuItem Name="MenuImportLaunchBox" Header="Importar desde LaunchBox..."/>
+                                        <Separator/>
+                                        <MenuItem Name="MenuImportDat" Header="Importar lista desde DAT/XML..."/>
+                                        <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales..."/>
+                                        <Separator/>
+                                        <MenuItem Name="MenuCleanupOrphans" Header="Limpiar Juegos Huérfanos"/>
+                                        <MenuItem Name="MenuManageDross" Header="Gestionar Filtros de Importación"/>
+                                        <MenuItem Name="MenuBatchScrapeVimm" Header="Descargar Carátulas (Vimm)..."/>
+                                    </MenuItem>
+                                    <MenuItem Header="AYUDA">
+                                        <MenuItem Name="MenuHelpEmulator" Header="Emuladores"/>
+                                        <MenuItem Name="MenuHelpMultiDisk" Header="Multi-Disco"/>
+                                        <MenuItem Name="MenuHelpDatabase" Header="Base de Datos"/>
+                                        <Separator/>
+                                        <MenuItem Name="MenuAbout" Header="Acerca de..."/>
+                                    </MenuItem>
+                                </MenuFlyout>
+                            </Button.Flyout>
+                        </Button>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="10">
-                        <Button Name="BtnGoDashboard" Content="🏠 Dashboard" Background="Transparent" Foreground="#94a3b8" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="12,5"/>
-                        <Button Name="BtnAddGame" Content="+ Añadir Juego" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="6" Padding="12,5"/>
-                        <Button Name="BtnShowStats" Content="📊 Estadísticas" Background="#334155" Foreground="White" CornerRadius="6" Padding="12,5"/>
-                        <Button Name="BtnAddPlatform" Content="+ Plataforma" Background="#334155" Foreground="White" CornerRadius="6" Padding="12,5"/>
-                        <Button Name="BtnManagePlatforms" Content="⚙️ Gestionar" Background="#334155" Foreground="White" CornerRadius="6" Padding="12,5"/>
+                    <!-- Centro: Búsqueda -->
+                    <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#0f172a" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Width="400">
+                        <Grid ColumnDefinitions="Auto, *">
+                            <TextBlock Text="🔍" Margin="10,0" VerticalAlignment="Center" Opacity="0.5"/>
+                            <TextBox Grid.Column="1" Name="TxtSearchGame" PlaceholderText="Buscar en tu biblioteca..." Background="Transparent" BorderThickness="0" Margin="0" VerticalAlignment="Center" TextChanged="TxtSearchGame_TextChanged"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Derecha: Acciones y Vistas -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                        <Border Background="#0f172a" CornerRadius="8" Padding="2" Margin="0,0,10,0">
+                            <StackPanel Orientation="Horizontal">
+                                <ToggleButton Name="BtnViewGrid" Content="▤" ToolTip.Tip="Vista Galería" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6"/>
+                                <ToggleButton Name="BtnViewList" Content="≡" ToolTip.Tip="Vista Lista" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <Button Name="BtnAddGame" Content="+ Añadir" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="8" Padding="15,8"/>
+                        <Button Name="BtnShowStats" Content="📊" Background="#334155" Foreground="White" CornerRadius="8" Padding="12,8" ToolTip.Tip="Estadísticas"/>
+                        <Button Name="BtnManagePlatforms" Content="⚙️" Background="#334155" Foreground="White" CornerRadius="8" Padding="12,8" ToolTip.Tip="Gestionar Plataformas"/>
                     </StackPanel>
-                </DockPanel>
+                </Grid>
             </Border>
 
             <!-- CONTENIDO PRINCIPAL (3 PANELES) -->
             <Grid ColumnDefinitions="280, *, 350">
-                <!-- IZQUIERDA: Árbol -->
-                <Border Grid.Column="0" Background="#0f172a" BorderBrush="#334155" BorderThickness="0,0,1,0" Padding="10">
+                <!-- IZQUIERDA: Sidebar de Filtros Inteligente -->
+                <Border Grid.Column="0" Background="#0f172a" BorderBrush="#334155" BorderThickness="0,0,1,0" Padding="5">
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Text="PLATAFORMAS" FontSize="11" FontWeight="Bold" Foreground="#64748b" Margin="5,0,0,10"/>
-                        <ScrollViewer><TreeView Name="TreePlatforms" Background="Transparent" BorderThickness="0"/></ScrollViewer>
+                        <Button DockPanel.Dock="Bottom" Name="BtnAddPlatform" Content="+ Nueva Plataforma" Background="Transparent" Foreground="#64748b" HorizontalAlignment="Stretch" Margin="5" Padding="10"/>
+                        <ScrollViewer>
+                            <ListBox Name="LstSidebar" Background="Transparent" BorderThickness="0" ItemTemplate="{StaticResource SidebarItemTemplate}">
+                                <ListBox.Styles>
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="Padding" Value="10,2"/>
+                                        <Setter Property="CornerRadius" Value="8"/>
+                                        <Setter Property="Margin" Value="5,0"/>
+                                    </Style>
+                                </ListBox.Styles>
+                            </ListBox>
+                        </ScrollViewer>
                     </DockPanel>
                 </Border>
 

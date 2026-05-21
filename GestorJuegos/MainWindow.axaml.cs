@@ -138,7 +138,7 @@ public partial class MainWindow : Window
         LstGamesGrid.SelectionChanged += LstGames_SelectionChanged;
         
         LstPlatformsWall.SelectionChanged += LstPlatformsWall_SelectionChanged;
-        TreePlatforms.SelectionChanged += TreePlatforms_SelectionChanged;
+        LstSidebar.SelectionChanged += LstSidebar_SelectionChanged;
 
         BtnShowPlatformsWall.Click += (s, e) => LoadPlatformsWall();
 
@@ -163,92 +163,7 @@ public partial class MainWindow : Window
         LstManagePlatforms.SelectionChanged += LstManagePlatforms_SelectionChanged;
         BtnSelectEmulator.Click += BtnSelectEmulator_Click;
 
-        BtnGoDashboard.Click += BtnGoDashboard_Click;
-
-        MenuExportDB.Click += MenuExportDB_Click;
-        MenuImportDB.Click += MenuImportDB_Click;
-        MenuImportDat.Click += MenuImportDat_Click;
-        MenuBatchScrapeVimm.Click += (s, e) => RunBatchScrape("Vimm's Lair");
-
-        MenuImportFolders.Click += MenuImportFolders_Click;
-        MenuImportLaunchBox.Click += MenuImportLaunchBox_Click;
-        MenuScanLocalCovers.Click += MenuScanLocalCovers_Click;
-
-        BtnCancelExport.Click += (s, e) => OverlayExportOptions.IsVisible = false;
-        BtnConfirmExport.Click += BtnConfirmExport_Click;
-
-        BtnCloseMessage.Click += BtnCloseMessage_Click;
-        
-        BtnSearchIgdb.Click += BtnSearchIgdb_Click;
-        BtnCancelIgdb.Click += BtnCancelIgdb_Click;
-        BtnSelectIgdb.Click += BtnSelectIgdb_Click;
-
-        BtnAddRom.Click += BtnAddRom_Click;
-        BtnRemoveRom.Click += BtnRemoveRom_Click;
-        BtnSelectOverrideEmulator.Click += BtnSelectOverrideEmulator_Click;
-        MenuHelpEmulator.Click += MenuHelpEmulator_Click;
-        MenuHelpMultiDisk.Click += MenuHelpMultiDisk_Click;
-        MenuHelpDatabase.Click += MenuHelpDatabase_Click;
-        MenuAbout.Click += MenuAbout_Click;
-        BtnLaunchGame.Click += BtnLaunchGame_Click;
-
-        BtnToggleFilters.Click += BtnToggleFilters_Click;
-        BtnApplyFilters.Click += BtnApplyFilters_Click;
-        BtnClearFilters.Click += BtnClearFilters_Click;
-        
-        BtnQuickFavorite.Click += BtnQuickFavorite_Click;
-        BtnToggleGamepad.Click += BtnToggleGamepad_Click;
-
-        BtnCancelVimm.Click += (s, e) => OverlayVimmSystem.IsVisible = false;
-        BtnConfirmVimm.Click += BtnConfirmVimm_Click;
-
-        MenuCleanupOrphans.Click += MenuCleanupOrphans_Click;
-        MenuManageDross.Click += MenuManageDross_Click;
-        MenuSettings.Click += (s, e) => {
-            CfgLbPath.Text = _settings.LaunchBoxPath;
-            CfgArtType.SelectedIndex = CmbArtType.Items.Cast<ComboBoxItem>().ToList().FindIndex(i => i.Content?.ToString() == _settings.PreferredArtType);
-            if (CfgArtType.SelectedIndex < 0) CfgArtType.SelectedIndex = 0;
-            CfgAutoImportCovers.IsChecked = _settings.AutoImportCovers;
-            OverlaySettings.IsVisible = true;
-        };
-
-        BtnCancelSettings.Click += (s, e) => OverlaySettings.IsVisible = false;
-        BtnSaveSettings.Click += (s, e) => {
-            _settings.LaunchBoxPath = CfgLbPath.Text ?? "";
-            _settings.PreferredArtType = (CfgArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Box - Front";
-            _settings.AutoImportCovers = CfgAutoImportCovers.IsChecked ?? true;
-            SaveSettings();
-            OverlaySettings.IsVisible = false;
-        };
-
-        BtnBrowseLb.Click += async (s, e) => {
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel != null)
-            {
-                var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-                {
-                    Title = "Seleccionar Carpeta Raíz de LaunchBox",
-                    AllowMultiple = false
-                });
-                if (folders.Count > 0) CfgLbPath.Text = folders[0].Path.LocalPath;
-            }
-        };
-
-        BtnCancelConfirm.Click += (s, e) => OverlayConfirm.IsVisible = false;
-        BtnAcceptConfirm.Click += (s, e) => {
-            OverlayConfirm.IsVisible = false;
-            _onConfirmAction?.Invoke();
-        };
-
-        BtnBackFromSearch.Click += (s, e) => {
-            PnlGlobalSearch.IsVisible = false;
-            PnlDashboard.IsVisible = true;
-        };
-        LstGlobalSearchResults.SelectionChanged += LstGlobalSearchResults_SelectionChanged;
-
-        CmbArtType.SelectionChanged += CmbArtType_SelectionChanged;
-
-        InitVirtualKeyboard();
+        BtnAppMenu.Click += (s, e) => { /* El Flyout se abre solo */ };
     }
 
     private string GetLaunchBoxFolderName(string friendlyName)
@@ -1288,100 +1203,105 @@ public partial class MainWindow : Window
 
     private void LoadPlatforms()
     {
-        var platforms = _gameService.GetPlatforms();
-        MenuPlataformas.Items.Clear();
+        var sidebarItems = new List<SidebarItem>();
 
-        bool hasPlatforms = platforms.Count > 0;
-        
-        // Disable requested UI elements when there are no platforms
-        MenuPlataformas.IsEnabled = hasPlatforms;
-        BtnManagePlatforms.IsEnabled = hasPlatforms;
-        BtnAddGame.IsEnabled = hasPlatforms;
-        BtnViewList.IsEnabled = hasPlatforms;
-        BtnViewGrid.IsEnabled = hasPlatforms;
-        MenuExportDB.IsEnabled = hasPlatforms;
+        using var context = new GestorJuegos.Data.AppDbContext();
+        int totalGames = context.Games.Count();
+        int favoritesCount = context.Games.Count(g => g.IsFavorite);
 
-        foreach (var platform in platforms)
+        // --- SECCIÓN: BIBLIOTECA ---
+        sidebarItems.Add(new SidebarItem { Name = "BIBLIOTECA", IsHeader = true });
+        sidebarItems.Add(new SidebarItem { Name = "Todos los Juegos", Icon = "🏠", Count = totalGames, Tag = "ALL" });
+        sidebarItems.Add(new SidebarItem { Name = "Favoritos", Icon = "⭐", Count = favoritesCount, Tag = "FAVORITES" });
+
+        // --- SECCIÓN: PLATAFORMAS ---
+        var platformStats = _gameService.GetGamesCountByPlatform();
+        if (platformStats.Any())
         {
-            var menuItem = new MenuItem { Header = platform.Name, Tag = platform };
-            menuItem.Click += PlatformMenuItem_Click;
-            MenuPlataformas.Items.Add(menuItem);
+            sidebarItems.Add(new SidebarItem { Name = "PLATAFORMAS", IsHeader = true });
+            foreach (var p in platformStats.OrderBy(x => x.Key))
+            {
+                sidebarItems.Add(new SidebarItem { Name = p.Key, Icon = "🎮", Count = p.Value, Tag = ("PLATFORM", p.Key) });
+            }
         }
 
-        LoadPlatformsTree(platforms);
-    }
-
-    private void LoadPlatformsTree(List<Platform> platforms)
-    {
-        TreePlatforms.Items.Clear();
-
-        // Categoría: Todo
-        var allItem = new TreeViewItem { Header = "Todo", Tag = "ALL" };
-        TreePlatforms.Items.Add(allItem);
-
-        // Agrupar por Categoría
-        var categories = platforms.GroupBy(p => p.Category).OrderBy(g => g.Key);
-
-        foreach (var group in categories)
+        // --- SECCIÓN: GÉNEROS ---
+        var genreStats = _gameService.GetGenresWithCount();
+        if (genreStats.Any())
         {
-            var catItem = new TreeViewItem { Header = group.Key, IsExpanded = true };
-            foreach (var p in group.OrderBy(x => x.Name))
+            sidebarItems.Add(new SidebarItem { Name = "GÉNEROS", IsHeader = true });
+            foreach (var g in genreStats.OrderByDescending(x => x.Value).Take(15)) // Top 15 géneros
             {
-                // Intentar cargar logo para el icono
-                Bitmap? icon = null;
-                string lbPath = _settings.LaunchBoxPath;
-                if (Directory.Exists(lbPath))
-                {
-                    string logoPath = Path.Combine(lbPath, "Images", "Platforms", p.Name, "Clear Logo", $"{p.Name}.png");
-                    if (File.Exists(logoPath))
-                    {
-                        try { icon = new Bitmap(logoPath); } catch { }
-                    }
-                }
-
-                var pItem = new TreeViewItem 
-                { 
-                    Header = new StackPanel 
-                    { 
-                        Orientation = Avalonia.Layout.Orientation.Horizontal, 
-                        Spacing = 8,
-                        Children = 
-                        {
-                            new Image { Source = icon, Width = 20, Height = 20, Stretch = Avalonia.Media.Stretch.Uniform },
-                            new TextBlock { Text = p.Name, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center }
-                        }
-                    }, 
-                    Tag = p 
-                };
-                catItem.Items.Add(pItem);
+                sidebarItems.Add(new SidebarItem { Name = g.Key, Icon = "📁", Count = g.Value, Tag = ("GENRE", g.Key) });
             }
-            TreePlatforms.Items.Add(catItem);
         }
+
+        // --- SECCIÓN: REGIONES ---
+        var regionStats = _gameService.GetRegionsWithCount();
+        if (regionStats.Any())
+        {
+            sidebarItems.Add(new SidebarItem { Name = "REGIONES", IsHeader = true });
+            foreach (var r in regionStats.OrderByDescending(x => x.Value))
+            {
+                sidebarItems.Add(new SidebarItem { Name = r.Key, Icon = "🌎", Count = r.Value, Tag = ("REGION", r.Key) });
+            }
+        }
+
+        LstSidebar.ItemsSource = sidebarItems;
     }
 
-    private void TreePlatforms_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private void LstSidebar_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (TreePlatforms.SelectedItem is TreeViewItem tvi)
+        if (LstSidebar.SelectedItem is SidebarItem item)
         {
-            if (tvi.Tag is Platform p)
+            if (item.IsHeader)
             {
-                _selectedPlatform = p;
-                TxtSelectedPlatform.Text = $"Plataforma: {p.Name}";
-                PnlDashboard.IsVisible = false;
-                PnlHeaderToggles.IsVisible = true;
-                PnlPagination.IsVisible = true;
-                
-                // Forzar vista de rejilla por defecto
-                BtnViewGrid_Click(null, new RoutedEventArgs());
-                
-                LoadGames();
-                PnlGameDetails.IsVisible = false;
+                LstSidebar.SelectedItem = null;
+                return;
             }
-            else if (tvi.Tag?.ToString() == "ALL")
+
+            _currentPage = 1;
+            PnlDashboard.IsVisible = false;
+            PnlHeaderToggles.IsVisible = true;
+            PnlPagination.IsVisible = true;
+            PnlGameDetails.IsVisible = false;
+            
+            // Forzar vista de rejilla por defecto
+            BtnViewGrid_Click(null, new RoutedEventArgs());
+
+            using var context = new GestorJuegos.Data.AppDbContext();
+            var query = context.Games.Include(g => g.Platform).AsQueryable();
+
+            if (item.Tag is string simpleTag)
             {
-                _selectedPlatform = null;
+                if (simpleTag == "ALL") { /* No filter */ }
+                else if (simpleTag == "FAVORITES") { query = query.Where(g => g.IsFavorite); }
+            }
+            else if (item.Tag is ValueTuple<string, string> filter)
+            {
+                if (filter.Item1 == "PLATFORM") { query = query.Where(g => g.Platform.Name == filter.Item2); }
+                else if (filter.Item1 == "GENRE") { query = query.Where(g => g.Genre.Contains(filter.Item2)); }
+                else if (filter.Item1 == "REGION") { query = query.Where(g => g.Region == filter.Item2); }
+            }
+
+            _currentPlatformGames = query.ToList();
+            
+            // Si no hay juegos, mostrar dashboard o mensaje
+            if (_currentPlatformGames.Count == 0)
+            {
+                ShowMessage($"No hay juegos en la categoría '{item.Name}'.");
                 LoadDashboard();
             }
+            else
+            {
+                ApplySearchFilter();
+            }
+
+            // Sync platform ref for additions/edits
+            if (item.Tag is ValueTuple<string, string> f && f.Item1 == "PLATFORM")
+                _selectedPlatform = context.Platforms.FirstOrDefault(p => p.Name == f.Item2);
+            else
+                _selectedPlatform = _currentPlatformGames.FirstOrDefault()?.Platform;
         }
     }
 
@@ -1389,26 +1309,10 @@ public partial class MainWindow : Window
     {
         if (sender is MenuItem menuItem && menuItem.Tag is Platform platform)
         {
-            _selectedPlatform = platform;
-            TxtSelectedPlatform.Text = $"Plataforma: {platform.Name}";
-            PnlDashboard.IsVisible = false;
-            PnlHeaderToggles.IsVisible = true;
-            PnlPagination.IsVisible = true;
-            
-            // Restore proper view based on selection
-            if (BtnViewList.Background != null && BtnViewList.Background.ToString() == "#ff444444")
-            {
-                LstGames.IsVisible = true;
-                LstGamesGrid.IsVisible = false;
-            }
-            else
-            {
-                LstGames.IsVisible = false;
-                LstGamesGrid.IsVisible = true;
-            }
-
-            LoadGames();
-            PnlGameDetails.IsVisible = false;
+            // Buscar el item en la sidebar y seleccionarlo
+            var sidebarItems = LstSidebar.ItemsSource as IEnumerable<SidebarItem>;
+            var item = sidebarItems?.FirstOrDefault(i => i.Tag is ValueTuple<string, string> f && f.Item1 == "PLATFORM" && f.Item2 == platform.Name);
+            if (item != null) LstSidebar.SelectedItem = item;
         }
     }
 
@@ -1427,28 +1331,19 @@ public partial class MainWindow : Window
     private void BtnGoDashboard_Click(object? sender, RoutedEventArgs e)
     {
         _selectedPlatform = null;
-        LoadPlatformsWall();
+        LoadDashboard();
     }
 
     private void LstPlatformsWall_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (LstPlatformsWall.SelectedItem is Platform platform)
         {
-            _selectedPlatform = platform;
-            TxtSelectedPlatform.Text = $"Plataforma: {platform.Name}";
+            // Buscar en la sidebar
+            var sidebarItems = LstSidebar.ItemsSource as IEnumerable<SidebarItem>;
+            var item = sidebarItems?.FirstOrDefault(i => i.Tag is ValueTuple<string, string> f && f.Item1 == "PLATFORM" && f.Item2 == platform.Name);
+            if (item != null) LstSidebar.SelectedItem = item;
             
             OverlayPlatformsWall.IsVisible = false;
-            PnlDashboard.IsVisible = false;
-            PnlHeaderToggles.IsVisible = true;
-            PnlPagination.IsVisible = true;
-            
-            // Forzar vista de rejilla por defecto al entrar
-            BtnViewGrid_Click(null, new RoutedEventArgs());
-            
-            LoadGames();
-            PnlGameDetails.IsVisible = false;
-            
-            // Limpiar selección para que se pueda volver a seleccionar
             LstPlatformsWall.SelectedItem = null;
         }
     }
@@ -1512,6 +1407,8 @@ public partial class MainWindow : Window
         LstGamesGrid.IsVisible = false;
         PnlGameDetails.IsVisible = false;
         
+        LoadPlatforms();
+
         using var context = new GestorJuegos.Data.AppDbContext();
         context.Database.EnsureCreated();
     }

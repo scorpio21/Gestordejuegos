@@ -310,5 +310,27 @@ namespace GestorJuegos.Services
                 .Select(p => new { p.Name, Count = p.Games.Count })
                 .ToDictionary(x => x.Name, x => x.Count);
         }
+
+        public Dictionary<string, int> GetGenresWithCount()
+        {
+            using var context = new AppDbContext();
+            return context.Games
+                .Where(g => !string.IsNullOrEmpty(g.Genre))
+                .AsEnumerable()
+                .SelectMany(g => g.Genre.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                .GroupBy(g => g)
+                .OrderBy(g => g.Key)
+                .ToDictionary(g => g.Key, g => g.Count());
+        }
+
+        public Dictionary<string, int> GetRegionsWithCount()
+        {
+            using var context = new AppDbContext();
+            return context.Games
+                .Where(g => !string.IsNullOrEmpty(g.Region))
+                .GroupBy(g => g.Region)
+                .OrderBy(g => g.Key)
+                .ToDictionary(g => g.Key, g => g.Count());
+        }
     }
 }
