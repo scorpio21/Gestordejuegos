@@ -121,10 +121,12 @@
                     </StackPanel>
 
                     <!-- Centro: Búsqueda -->
-                    <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#0f172a" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Width="400">
-                        <Grid ColumnDefinitions="Auto, *">
+                    <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#0f172a" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Width="550">
+                        <Grid ColumnDefinitions="Auto, *, Auto, Auto">
                             <TextBlock Text="🔍" Margin="10,0" VerticalAlignment="Center" Opacity="0.5"/>
                             <TextBox Grid.Column="1" Name="TxtSearchGame" PlaceholderText="Buscar en tu biblioteca..." Background="Transparent" BorderThickness="0" Margin="0" VerticalAlignment="Center" TextChanged="TxtSearchGame_TextChanged"/>
+                            <ToggleButton Grid.Column="2" Name="BtnQuickFavorite" Content="⭐" Background="Transparent" BorderThickness="0" ToolTip.Tip="Solo Favoritos" Click="BtnQuickFavorite_Click"/>
+                            <ToggleButton Grid.Column="3" Name="BtnToggleGamepad" Content="🎮" Background="Transparent" BorderThickness="0" ToolTip.Tip="Modo Mando (ON/OFF)" IsChecked="True"/>
                         </Grid>
                     </Border>
 
@@ -167,27 +169,22 @@
                 <!-- CENTRO: Juegos -->
                 <Border Grid.Column="1" Padding="15">
                     <DockPanel>
-                        <StackPanel Name="PnlHeaderToggles" DockPanel.Dock="Top" Margin="0,0,0,15" IsVisible="False">
-                            <DockPanel>
-                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
-                                    <Button Name="BtnViewList" Content="≡ Lista"/><Button Name="BtnViewGrid" Content="▤ Galería"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBox Name="TxtSearchGame" PlaceholderText="Buscar juego..." Width="200" TextChanged="TxtSearchGame_TextChanged"/>
-                                    <ToggleButton Name="BtnQuickFavorite" Content="⭐"/><ToggleButton Name="BtnToggleGamepad" Content="🎮" IsChecked="True"/>
-                                    <Button Name="BtnToggleFilters" Content="▼ Filtros"/>
-                                </StackPanel>
-                            </DockPanel>
-                            <Border Name="PnlFilters" IsVisible="False" Background="#0f172a" CornerRadius="8" Padding="15" Margin="0,15,0,0">
-                                <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="Región:" Margin="0,0,10,0"/><ComboBox Name="CmbFilterRegion" SelectedIndex="0" Margin="0,0,20,0"><ComboBoxItem Content="Todas"/><ComboBoxItem Content="🇺🇸 US"/><ComboBoxItem Content="🇪🇺 EU"/><ComboBoxItem Content="🇪🇸 ES"/><ComboBoxItem Content="🇯🇵 JP"/></ComboBox>
-                                    <TextBlock Text="Año:" Margin="0,0,10,0"/><NumericUpDown Name="NumFilterYear" Minimum="0" Maximum="2100" Width="100" Margin="0,0,20,0"/>
-                                    <TextBlock Text="Orden:" Margin="0,0,10,0"/><ComboBox Name="CmbSortOrder" SelectedIndex="0"><ComboBoxItem Content="Nombre (A-Z)"/><ComboBoxItem Content="Año (Asc)"/><ComboBoxItem Content="Recién añadidos"/></ComboBox>
-                                    <Button Name="BtnApplyFilters" Content="Aplicar" Margin="10,0,0,0"/><Button Name="BtnClearFilters" Content="Limpiar" Margin="5,0,0,0"/>
-                                </WrapPanel>
-                            </Border>
-                            <TextBlock Name="TxtSelectedPlatform" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,15,0,0"/>
-                        </StackPanel>
+                        <Panel DockPanel.Dock="Top">
+                            <TextBlock Name="TxtSelectedPlatform" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+                            
+                            <!-- Filtros Avanzados (Opcional, ahora desplegable si se desea) -->
+                            <Button Name="BtnToggleFilters" Content="▼ Filtros" HorizontalAlignment="Right" VerticalAlignment="Center" Background="Transparent" BorderThickness="0"/>
+                        </Panel>
+
+                        <Border Name="PnlFilters" DockPanel.Dock="Top" IsVisible="False" Background="#1e293b" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Región:" Margin="0,0,10,0" VerticalAlignment="Center"/><ComboBox Name="CmbFilterRegion" SelectedIndex="0" Margin="0,0,20,0"><ComboBoxItem Content="Todas"/><ComboBoxItem Content="🇺🇸 US"/><ComboBoxItem Content="🇪🇺 EU"/><ComboBoxItem Content="🇪🇸 ES"/><ComboBoxItem Content="🇯🇵 JP"/></ComboBox>
+                                <TextBlock Text="Año:" Margin="0,0,10,0" VerticalAlignment="Center"/><NumericUpDown Name="NumFilterYear" Minimum="0" Maximum="2100" Width="100" Margin="0,0,20,0"/>
+                                <TextBlock Text="Orden:" Margin="0,0,10,0" VerticalAlignment="Center"/><ComboBox Name="CmbSortOrder" SelectedIndex="0"><ComboBoxItem Content="Nombre (A-Z)"/><ComboBoxItem Content="Año (Asc)"/><ComboBoxItem Content="Recién añadidos"/></ComboBox>
+                                <Button Name="BtnApplyFilters" Content="Aplicar" Margin="20,0,5,0" Background="{StaticResource AccentBrush}" Foreground="White"/>
+                                <Button Name="BtnClearFilters" Content="Limpiar" Background="#334155" Foreground="White"/>
+                            </WrapPanel>
+                        </Border>
 
                         <StackPanel Name="PnlPagination" DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20" Margin="0,15,0,0" IsVisible="False">
                             <Button Name="BtnPrevPage" Content="⬅ Anterior"/><TextBlock Name="TxtPageInfo" Text="Página 1" VerticalAlignment="Center"/><Button Name="BtnNextPage" Content="Siguiente ➡"/>
@@ -274,29 +271,103 @@
                     </DockPanel>
                 </Border>
 
-                <!-- DERECHA: Info -->
-                <Border Grid.Column="2" Background="#0f172a" BorderBrush="#334155" BorderThickness="1,0,0,0" Padding="20">
+                <!-- DERECHA: Info (Premium) -->
+                <Border Grid.Column="2" Background="#0f172a" BorderBrush="#334155" BorderThickness="1,0,0,0">
                     <ScrollViewer>
                         <Panel>
-                            <StackPanel Name="PnlGameDetails" IsVisible="False" Spacing="15">
-                                <Border BorderBrush="#334155" BorderThickness="1" CornerRadius="12" Height="350" Background="#1e293b" ClipToBounds="True"><Image Name="ImgCover" Stretch="Uniform"/></Border>
-                                <TextBlock Name="TxtInfoName" FontSize="20" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
-                                <StackPanel Orientation="Horizontal" Spacing="10"><Image Name="ImgInfoRegion" Width="24"/><TextBlock Name="TxtInfoYear"/><TextBlock Name="TxtInfoGenre"/></StackPanel>
-                                <Separator Background="#334155"/>
-                                <TextBlock Text="IDIOMAS" FontSize="11" Foreground="#64748b"/><TextBlock Name="TxtInfoLanguages" Foreground="#cbd5e1"/>
-                                <TextBlock Text="ARCHIVOS" FontSize="11" Foreground="#64748b"/>
-                                <ItemsControl Name="LstInfoRoms">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding}" Foreground="#cbd5e1" TextWrapping="Wrap" Margin="0,2"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl><StackPanel Name="PnlInfoEmulator" IsVisible="False"><TextBlock Text="EMULADOR"/><TextBlock Name="TxtInfoEmulator"/></StackPanel>
-                                <ComboBox Name="CmbArtType" SelectedIndex="1" HorizontalAlignment="Stretch"><ComboBoxItem Content="Boxes"/><ComboBoxItem Content="3D Boxes"/><ComboBoxItem Content="Cart"/><ComboBoxItem Content="Clear Logo"/></ComboBox>
-                                <Button Name="BtnLaunchGame" Content="▶ JUGAR" Background="#10b981" Foreground="White" FontWeight="Bold" HorizontalAlignment="Stretch" Padding="15"/>
-                                <Grid ColumnDefinitions="*,*"><Button Grid.Column="0" Name="BtnEditGame" Content="✏️ Editar" Margin="0,0,5,0" HorizontalAlignment="Stretch"/><Button Grid.Column="1" Name="BtnDelete" Content="🗑️ Eliminar" Margin="5,0,0,0" Background="#ef4444" HorizontalAlignment="Stretch"/></Grid>
+                            <StackPanel Name="PnlGameDetails" IsVisible="False" Spacing="0">
+                                <!-- Banner Superior (Sutil) -->
+                                <Border Height="150" Background="#1e293b">
+                                    <Panel>
+                                        <Image Source="{Binding #ImgCover.Source}" Stretch="UniformToFill" Opacity="0.3"/>
+                                        <Border Background="{StaticResource PanelBrush}" Margin="20,80,20,-40" CornerRadius="12" BoxShadow="0 4 10 0 #55000000">
+                                            <Image Name="ImgDetailLogo" Stretch="Uniform" Margin="15"/>
+                                        </Border>
+                                    </Panel>
+                                </Border>
+
+                                <Border Padding="20" Margin="0,30,0,0">
+                                    <StackPanel Spacing="20">
+                                        <!-- Cabecera Informativa -->
+                                        <StackPanel Spacing="5">
+                                            <TextBlock Name="TxtInfoName" FontSize="24" FontWeight="ExtraBold" Foreground="White" TextWrapping="Wrap"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="10" Opacity="0.7">
+                                                <Image Name="ImgInfoRegion" Width="20"/>
+                                                <TextBlock Name="TxtInfoYear" VerticalAlignment="Center"/>
+                                                <TextBlock Text="•" VerticalAlignment="Center"/>
+                                                <TextBlock Name="TxtInfoGenre" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Botón Principal -->
+                                        <Button Name="BtnLaunchGame" Background="#10b981" Foreground="White" Height="60" CornerRadius="12" HorizontalAlignment="Stretch" Padding="0">
+                                            <Grid ColumnDefinitions="Auto, *">
+                                                <Border Grid.Column="0" Background="#20000000" Width="60" CornerRadius="12,0,0,12">
+                                                    <TextBlock Text="▶" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <TextBlock Grid.Column="1" Text="JUGAR" FontSize="20" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,60,0"/>
+                                            </Grid>
+                                        </Button>
+
+                                        <!-- Acciones Rápidas -->
+                                        <Grid ColumnDefinitions="*, *, *">
+                                            <Button Name="BtnEditGame" Grid.Column="0" ToolTip.Tip="Editar Juego" Background="#334155" Margin="0,0,5,0" Height="45" CornerRadius="8">
+                                                <TextBlock Text="✏️" HorizontalAlignment="Center"/>
+                                            </Button>
+                                            <Button Name="BtnOpenFolder" Grid.Column="1" ToolTip.Tip="Abrir Carpeta" Background="#334155" Margin="5,0,5,0" Height="45" CornerRadius="8">
+                                                <TextBlock Text="📁" HorizontalAlignment="Center"/>
+                                            </Button>
+                                            <Button Name="BtnDelete" Grid.Column="2" ToolTip.Tip="Eliminar Juego" Background="#334155" Margin="5,0,0,0" Height="45" CornerRadius="8">
+                                                <TextBlock Text="🗑️" Foreground="#ef4444" HorizontalAlignment="Center"/>
+                                            </Button>
+                                        </Grid>
+
+                                        <Separator Background="#334155"/>
+
+                                        <!-- Multimedia / Galería -->
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="GALERÍA" FontSize="11" FontWeight="Bold" Foreground="#64748b"/>
+                                            <Border Background="#1e293b" CornerRadius="12" Height="180" ClipToBounds="True">
+                                                <Image Name="ImgCover" Stretch="UniformToFill"/>
+                                            </Border>
+                                            <ComboBox Name="CmbArtType" SelectedIndex="1" HorizontalAlignment="Stretch" Background="#0f172a" BorderBrush="#334155">
+                                                <ComboBoxItem Content="Boxes"/><ComboBoxItem Content="3D Boxes"/><ComboBoxItem Content="Cart"/><ComboBoxItem Content="Clear Logo"/>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <!-- Datos Técnicos -->
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="DETALLES TÉCNICOS" FontSize="11" FontWeight="Bold" Foreground="#64748b"/>
+                                            <Border Background="#1e293b" Padding="15" CornerRadius="12">
+                                                <StackPanel Spacing="10">
+                                                    <DockPanel>
+                                                        <TextBlock Text="Idiomas" Foreground="#64748b" FontSize="12"/>
+                                                        <TextBlock Name="TxtInfoLanguages" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
+                                                    </DockPanel>
+                                                    <StackPanel Spacing="5">
+                                                        <TextBlock Text="Archivos / Discos" Foreground="#64748b" FontSize="12"/>
+                                                        <ItemsControl Name="LstInfoRoms">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding}" Foreground="#cbd5e1" FontSize="11" TextWrapping="Wrap" Margin="0,2"/>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                    <StackPanel Name="PnlInfoEmulator" IsVisible="False" Spacing="2">
+                                                        <TextBlock Text="Emulador Custom" Foreground="#64748b" FontSize="12"/>
+                                                        <TextBlock Name="TxtInfoEmulator" Foreground="#10b981" FontSize="11" TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
-                            <StackPanel Name="PnlNoGameSelected" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="0.2"><TextBlock Text="🎮" FontSize="60" HorizontalAlignment="Center"/><TextBlock Text="Selecciona un juego"/></StackPanel>
+                            <StackPanel Name="PnlNoGameSelected" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="0.2">
+                                <TextBlock Text="🎮" FontSize="60" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Selecciona un juego"/>
+                            </StackPanel>
                         </Panel>
                     </ScrollViewer>
                 </Border>

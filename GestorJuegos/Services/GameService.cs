@@ -328,6 +328,7 @@ namespace GestorJuegos.Services
             using var context = new AppDbContext();
             return context.Games
                 .Where(g => !string.IsNullOrEmpty(g.Region))
+                .AsEnumerable() // Forzar evaluación en el cliente
                 .GroupBy(g => g.Region)
                 .OrderBy(g => g.Key)
                 .ToDictionary(g => g.Key, g => g.Count());

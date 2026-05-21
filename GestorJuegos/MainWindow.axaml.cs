@@ -163,6 +163,14 @@ public partial class MainWindow : Window
         LstManagePlatforms.SelectionChanged += LstManagePlatforms_SelectionChanged;
         BtnSelectEmulator.Click += BtnSelectEmulator_Click;
 
+        BtnOpenFolder.Click += (s, e) => {
+            if (_selectedGame != null && !string.IsNullOrEmpty(_selectedGame.RomPath))
+            {
+                string? dir = Path.GetDirectoryName(_selectedGame.RomPath);
+                if (Directory.Exists(dir)) Process.Start(new ProcessStartInfo(dir) { UseShellExecute = true });
+            }
+        };
+
         BtnAppMenu.Click += (s, e) => { /* El Flyout se abre solo */ };
     }
 
@@ -230,7 +238,7 @@ public partial class MainWindow : Window
             _selectedPlatform = game.Platform;
             PnlGlobalSearch.IsVisible = false;
             PnlDashboard.IsVisible = false;
-            PnlHeaderToggles.IsVisible = true;
+            // PnlHeaderToggles.IsVisible = true; (Eliminado)
             PnlPagination.IsVisible = true;
             
             TxtSelectedPlatform.Text = $"Plataforma: {_selectedPlatform.Name}";
@@ -1262,7 +1270,7 @@ public partial class MainWindow : Window
 
             _currentPage = 1;
             PnlDashboard.IsVisible = false;
-            PnlHeaderToggles.IsVisible = true;
+            // PnlHeaderToggles.IsVisible = true; (Eliminado)
             PnlPagination.IsVisible = true;
             PnlGameDetails.IsVisible = false;
             
@@ -1401,7 +1409,7 @@ public partial class MainWindow : Window
     private void LoadDashboard()
     {
         PnlDashboard.IsVisible = true;
-        PnlHeaderToggles.IsVisible = false;
+        // PnlHeaderToggles.IsVisible = false; (Eliminado)
         PnlPagination.IsVisible = false;
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = false;
@@ -2103,6 +2111,33 @@ public partial class MainWindow : Window
 
             _currentCover = _gameService.GetGameFullCover(game.Id);
             UpdateCoverImage();
+
+            // --- CARGAR LOGO PARA DETALLES ---
+            try
+            {
+                string lbPath = _settings.LaunchBoxPath;
+                if (Directory.Exists(lbPath))
+                {
+                    using var context = new GestorJuegos.Data.AppDbContext();
+                    var platform = context.Platforms.FirstOrDefault(p => p.Id == game.PlatformId);
+                    if (platform != null)
+                    {
+                        string logoPath = Path.Combine(lbPath, "Images", platform.Name, "Clear Logo", $"{game.Name}.png");
+                        if (File.Exists(logoPath))
+                        {
+                            using var fs = new FileStream(logoPath, FileMode.Open, FileAccess.Read);
+                            ImgDetailLogo.Source = new Bitmap(fs);
+                            ImgDetailLogo.IsVisible = true;
+                        }
+                        else
+                        {
+                            ImgDetailLogo.Source = null;
+                            ImgDetailLogo.IsVisible = false;
+                        }
+                    }
+                }
+            }
+            catch { ImgDetailLogo.IsVisible = false; }
 
             // Visibilidad de Paneles
             if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = false;
@@ -2993,7 +3028,7 @@ public partial class MainWindow : Window
     {
         PnlDashboard.IsVisible = false;
         PnlGlobalSearch.IsVisible = true;
-        PnlHeaderToggles.IsVisible = false;
+        // PnlHeaderToggles.IsVisible = false; (Eliminado)
         PnlPagination.IsVisible = false;
         PnlGameDetails.IsVisible = false;
 
