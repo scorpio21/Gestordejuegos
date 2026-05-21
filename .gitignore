@@ -678,3 +678,6 @@ $RECYCLE.BIN/
 
 *.db
 appsettings.json
+
+# Locales
+/paratuinfo/
