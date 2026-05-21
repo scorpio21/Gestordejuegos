@@ -35,6 +35,9 @@ namespace GestorJuegos.Services
                 using (var coversContext = new CoversDbContext())
                 {
                     coversContext.Database.EnsureCreated();
+                    try { coversContext.Database.ExecuteSqlRaw("ALTER TABLE Covers ADD COLUMN ImageType TEXT NOT NULL DEFAULT 'Box - Front'"); } catch { }
+                    try { coversContext.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS Images (Id INTEGER PRIMARY KEY AUTOINCREMENT, GameId INTEGER NOT NULL, ImageType TEXT NOT NULL, ImageData BLOB);"); } catch { }
+                    try { coversContext.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_Images_GameId_ImageType ON Images (GameId, ImageType);"); } catch { }
                 }
 
                 // Migrar portadas si es necesario
@@ -42,6 +45,56 @@ namespace GestorJuegos.Services
                 
                 _schemaUpdated = true;
             }
+        }
+
+        public byte[]? GetGameExtraImage(int gameId, string type)
+        {
+            using var context = new CoversDbContext();
+            
+            // 1. Buscar en la tabla de imágenes adicionales
+            var extra = context.Images
+                .Where(i => i.GameId == gameId && i.ImageType == type)
+                .Select(i => i.ImageData)
+                .FirstOrDefault();
+
+            if (extra != null) return extra;
+
+            // 2. Buscar en la tabla de carátulas principales, verificando el tipo
+            var cover = context.Covers.Find(gameId);
+            if (cover != null && cover.ImageType == type)
+            {
+                return cover.ImageData;
+            }
+
+            return null;
+        }
+
+        public void SaveGameImage(int gameId, string type, byte[] data)
+        {
+            using var context = new CoversDbContext();
+            var existing = context.Images.FirstOrDefault(i => i.GameId == gameId && i.ImageType == type);
+            if (existing != null)
+            {
+                existing.ImageData = data;
+                context.Images.Update(existing);
+            }
+            else
+            {
+                context.Images.Add(new GameImage { GameId = gameId, ImageType = type, ImageData = data });
+            }
+            context.SaveChanges();
+        }
+
+        public void SaveGameImagesBatch(List<GameImage> images)
+        {
+            using var context = new CoversDbContext();
+            foreach (var img in images)
+            {
+                var existing = context.Images.FirstOrDefault(i => i.GameId == img.GameId && i.ImageType == img.ImageType);
+                if (existing != null) existing.ImageData = img.ImageData;
+                else context.Images.Add(img);
+            }
+            context.SaveChanges();
         }
 
         private void MigrateCoversToNewDb()
@@ -105,9 +158,30 @@ namespace GestorJuegos.Services
             }
         }
 
-        public byte[]? GetGameThumbnail(int gameId)
+        public byte[]? GetGameThumbnail(int gameId, string? artType = null)
         {
             using var coversContext = new CoversDbContext();
+
+            // Si se especifica un tipo, intentar buscarlo primero
+            if (!string.IsNullOrEmpty(artType))
+            {
+                // 1. Buscar en la tabla de imágenes adicionales
+                var extraThumb = coversContext.Images
+                    .Where(i => i.GameId == gameId && i.ImageType == artType)
+                    .Select(i => i.ImageData) // Las imágenes extra no suelen tener thumbnail separado, usamos el original
+                    .FirstOrDefault();
+
+                if (extraThumb != null) return extraThumb;
+
+                // 2. Buscar en carátulas principales si el tipo coincide
+                var cover = coversContext.Covers.Find(gameId);
+                if (cover != null && cover.ImageType == artType)
+                {
+                    return cover.ThumbnailData ?? cover.ImageData;
+                }
+            }
+
+            // Fallback al thumbnail por defecto
             return coversContext.Covers.Where(c => c.Id == gameId).Select(c => c.ThumbnailData).FirstOrDefault();
         }
 
@@ -115,6 +189,12 @@ namespace GestorJuegos.Services
         {
             using var coversContext = new CoversDbContext();
             return coversContext.Covers.Where(c => c.Id == gameId).Select(c => c.ImageData).FirstOrDefault();
+        }
+
+        public GameCover? GetGameCover(int gameId)
+        {
+            using var coversContext = new CoversDbContext();
+            return coversContext.Covers.Find(gameId);
         }
 
         public List<Platform> GetPlatforms()
@@ -177,34 +257,47 @@ namespace GestorJuegos.Services
             {
                 var batch = games.Skip(i).Take(batchSize).ToList();
                 
-                // Guardar copias de los datos de carátula antes de limpiarlos del objeto Game
-                var coversToProcess = batch
-                    .Where(g => g.Cover != null && g.Cover.Length > 0)
-                    .Select(g => new { Game = g, Data = g.Cover })
-                    .ToList();
-
-                // Limpiar carátulas de los modelos de juego para que no se guarden en la DB principal
-                foreach (var g in batch) g.Cover = null;
-
+                // 1. Guardar primero en la DB principal para generar los IDs
                 using (var context = new AppDbContext())
                 {
                     context.Games.AddRange(batch);
-                    context.SaveChanges(); // Genera los IDs
+                    context.SaveChanges(); 
                 }
 
-                if (coversToProcess.Any())
+                // 2. Ahora que tenemos IDs, guardar las carátulas e imágenes extra en GestorCovers.db
+                using (var coversContext = new CoversDbContext())
                 {
-                    using (var coversContext = new CoversDbContext())
+                    foreach (var g in batch)
                     {
-                        var coversToAdd = coversToProcess.Select(cp => new GameCover
+                        // Portada principal
+                        if (g.Cover != null && g.Cover.Length > 0)
                         {
-                            Id = cp.Game.Id,
-                            ImageData = cp.Data!,
-                            ThumbnailData = ImageHelper.GenerateThumbnail(cp.Data!)
-                        }).ToList();
+                            coversContext.Covers.Add(new GameCover
+                            {
+                                Id = g.Id,
+                                ImageType = g.CoverType,
+                                ImageData = g.Cover,
+                                ThumbnailData = ImageHelper.GenerateThumbnail(g.Cover)
+                            });
+                        }
 
-                        coversContext.Covers.AddRange(coversToAdd);
-                        coversContext.SaveChanges();
+                        // Imágenes extra
+                        if (g.ExtraImages != null && g.ExtraImages.Any())
+                        {
+                            foreach (var extra in g.ExtraImages)
+                            {
+                                extra.GameId = g.Id;
+                                coversContext.Images.Add(extra);
+                            }
+                        }
+                    }
+                    coversContext.SaveChanges();
+
+                    // Limpiar datos de memoria para optimizar
+                    foreach (var g in batch)
+                    {
+                        g.Cover = null;
+                        if (g.ExtraImages != null) g.ExtraImages.Clear();
                     }
                 }
             }
@@ -224,10 +317,15 @@ namespace GestorJuegos.Services
             {
                 var batch = games.Skip(i).Take(batchSize).ToList();
 
-                // Extraer carátulas para procesarlas en la DB secundaria
+                // Extraer carátulas e imágenes extra para procesarlas en la DB secundaria
                 var coversToUpdate = batch
                     .Where(g => g.Cover != null && g.Cover.Length > 0)
-                    .Select(g => new { GameId = g.Id, Data = g.Cover })
+                    .Select(g => new { GameId = g.Id, Data = g.Cover, Type = g.CoverType })
+                    .ToList();
+
+                var extraImagesToUpdate = batch
+                    .Where(g => g.ExtraImages != null && g.ExtraImages.Any())
+                    .Select(g => new { GameId = g.Id, Images = g.ExtraImages })
                     .ToList();
 
                 using (var context = new AppDbContext())
@@ -236,7 +334,7 @@ namespace GestorJuegos.Services
                     context.SaveChanges();
                 }
 
-                if (coversToUpdate.Any())
+                if (coversToUpdate.Any() || extraImagesToUpdate.Any())
                 {
                     using (var coversContext = new CoversDbContext())
                     {
@@ -248,15 +346,38 @@ namespace GestorJuegos.Services
                                 coversContext.Covers.Add(new GameCover
                                 {
                                     Id = cu.GameId,
+                                    ImageType = cu.Type,
                                     ImageData = cu.Data!,
                                     ThumbnailData = ImageHelper.GenerateThumbnail(cu.Data!)
                                 });
                             }
                             else
                             {
+                                existingCover.ImageType = cu.Type;
                                 existingCover.ImageData = cu.Data!;
                                 existingCover.ThumbnailData = ImageHelper.GenerateThumbnail(cu.Data!);
                                 coversContext.Covers.Update(existingCover);
+                            }
+                        }
+
+                        foreach (var extra in extraImagesToUpdate)
+                        {
+                            // Para imágenes extra, podemos optar por reemplazar todas las de ese juego
+                            // o intentar mezclarlas. Por simplicidad en la edición, si se pasan imágenes,
+                            // asumimos que son el nuevo set completo para esos tipos.
+                            foreach (var img in extra.Images)
+                            {
+                                var existing = coversContext.Images.FirstOrDefault(i => i.GameId == extra.GameId && i.ImageType == img.ImageType);
+                                if (existing != null)
+                                {
+                                    existing.ImageData = img.ImageData;
+                                    coversContext.Images.Update(existing);
+                                }
+                                else
+                                {
+                                    img.GameId = extra.GameId;
+                                    coversContext.Images.Add(img);
+                                }
                             }
                         }
                         coversContext.SaveChanges();

@@ -13,6 +13,52 @@
         WindowState="Maximized"
         Icon="/img/iconoventana.png">
 
+    <Window.Styles>
+        <!-- Estilos para TabControl Moderno -->
+        <Style Selector="TabControl.Modern">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="TabControl.Modern TabItem">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#94a3b8"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="Margin" Value="0,0,5,0"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+        </Style>
+        <Style Selector="TabControl.Modern TabItem:selected">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#10b981"/>
+        </Style>
+        <Style Selector="TabControl.Modern TabItem:pointerover">
+            <Setter Property="Foreground" Value="#cbd5e1"/>
+        </Style>
+
+        <!-- Estilos Globales para Inputs -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#0f172a"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,8"/>
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#10b981"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#0f172a"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+
+        <Style Selector="NumericUpDown">
+            <Setter Property="Background" Value="#0f172a"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+    </Window.Styles>
+
     <Window.Resources>
         <utils:ByteArrayToBitmapConverter x:Key="ByteToBitmap"/>
         <utils:RegionToFlagConverter x:Key="RegionToFlag"/>
@@ -92,26 +138,26 @@
                             <Button.Flyout>
                                 <MenuFlyout>
                                     <MenuItem Header="ARCHIVO">
-                                        <MenuItem Name="MenuExportDB" Header="Exportar Copia de Seguridad..."/>
-                                        <MenuItem Name="MenuImportDB" Header="Importar Copia de Seguridad..."/>
+                                        <MenuItem Name="MenuExportDB" Header="Exportar Copia de Seguridad..." Click="MenuExportDB_Click"/>
+                                        <MenuItem Name="MenuImportDB" Header="Importar Copia de Seguridad..." Click="MenuImportDB_Click"/>
                                         <Separator/>
-                                        <MenuItem Name="MenuSettings" Header="Configuración"/>
+                                        <MenuItem Name="MenuSettings" Header="Configuración" Click="MenuSettings_Click"/>
                                     </MenuItem>
                                     <MenuItem Header="BIBLIOTECA">
-                                        <MenuItem Name="MenuImportFolders" Header="Importar Colección desde Carpeta..."/>
-                                        <MenuItem Name="MenuImportLaunchBox" Header="Importar desde LaunchBox..."/>
+                                        <MenuItem Name="MenuImportFolders" Header="Importar Colección desde Carpeta..." Click="MenuImportFolders_Click"/>
+                                        <MenuItem Name="MenuImportLaunchBox" Header="Importar desde LaunchBox..." Click="MenuImportLaunchBox_Click"/>
                                         <Separator/>
-                                        <MenuItem Name="MenuImportDat" Header="Importar lista desde DAT/XML..."/>
-                                        <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales..."/>
+                                        <MenuItem Name="MenuImportDat" Header="Importar lista desde DAT/XML..." Click="MenuImportDat_Click"/>
+                                        <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales..." Click="MenuScanLocalCovers_Click"/>
                                         <Separator/>
-                                        <MenuItem Name="MenuCleanupOrphans" Header="Limpiar Juegos Huérfanos"/>
-                                        <MenuItem Name="MenuManageDross" Header="Gestionar Filtros de Importación"/>
-                                        <MenuItem Name="MenuBatchScrapeVimm" Header="Descargar Carátulas (Vimm)..."/>
+                                        <MenuItem Name="MenuCleanupOrphans" Header="Limpiar Juegos Huérfanos" Click="MenuCleanupOrphans_Click"/>
+                                        <MenuItem Name="MenuManageDross" Header="Gestionar Filtros de Importación" Click="MenuManageDross_Click"/>
+                                        <MenuItem Name="MenuBatchScrapeVimm" Header="Descargar Carátulas (Vimm)..." Click="MenuBatchScrapeVimm_Click"/>
                                     </MenuItem>
                                     <MenuItem Header="AYUDA">
-                                        <MenuItem Name="MenuHelpEmulator" Header="Emuladores"/>
-                                        <MenuItem Name="MenuHelpMultiDisk" Header="Multi-Disco"/>
-                                        <MenuItem Name="MenuHelpDatabase" Header="Base de Datos"/>
+                                        <MenuItem Name="MenuHelpEmulator" Header="Emuladores" Click="MenuHelpEmulator_Click"/>
+                                        <MenuItem Name="MenuHelpMultiDisk" Header="Multi-Disco" Click="MenuHelpMultiDisk_Click"/>
+                                        <MenuItem Name="MenuHelpDatabase" Header="Base de Datos" Click="MenuHelpDatabase_Click"/>
                                         <Separator/>
                                         <MenuItem Name="MenuAbout" Header="Acerca de..."/>
                                     </MenuItem>
@@ -276,22 +322,28 @@
                     <ScrollViewer>
                         <Panel>
                             <StackPanel Name="PnlGameDetails" IsVisible="False" Spacing="0">
-                                <!-- Banner Superior (Sutil) -->
-                                <Border Height="150" Background="#1e293b">
-                                    <Panel>
-                                        <Image Source="{Binding #ImgCover.Source}" Stretch="UniformToFill" Opacity="0.3"/>
-                                        <Border Background="{StaticResource PanelBrush}" Margin="20,80,20,-40" CornerRadius="12" BoxShadow="0 4 10 0 #55000000">
-                                            <Image Name="ImgDetailLogo" Stretch="Uniform" Margin="15"/>
-                                        </Border>
-                                    </Panel>
-                                </Border>
+                                <!-- Banner Superior Mejorado -->
+                                <Panel Height="220">
+                                    <Border Background="#1e293b" ClipToBounds="True">
+                                        <Image Name="ImgDetailBackground" Stretch="UniformToFill" Opacity="0.4"/>
+                                    </Border>
+                                    <!-- Contenedor del Logo (Ahora dinámico) -->
+                                    <Border Name="BrdDetailLogo" 
+                                            Background="Transparent" 
+                                            VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                                            Margin="0,0,0,10" 
+                                            Height="120" Width="300"
+                                            ZIndex="10">
+                                        <Image Name="ImgDetailLogo" Stretch="Uniform"/>
+                                    </Border>
+                                </Panel>
 
-                                <Border Padding="20" Margin="0,30,0,0">
-                                    <StackPanel Spacing="20">
+                                <Border Padding="20" Margin="0,10,0,0">
+                                    <StackPanel Spacing="25">
                                         <!-- Cabecera Informativa -->
                                         <StackPanel Spacing="5">
-                                            <TextBlock Name="TxtInfoName" FontSize="24" FontWeight="ExtraBold" Foreground="White" TextWrapping="Wrap"/>
-                                            <StackPanel Orientation="Horizontal" Spacing="10" Opacity="0.7">
+                                            <TextBlock Name="TxtInfoName" FontSize="26" FontWeight="Black" Foreground="White" TextWrapping="Wrap" TextAlignment="Center"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="10" Opacity="0.7" HorizontalAlignment="Center">
                                                 <Image Name="ImgInfoRegion" Width="20"/>
                                                 <TextBlock Name="TxtInfoYear" VerticalAlignment="Center"/>
                                                 <TextBlock Text="•" VerticalAlignment="Center"/>
@@ -326,14 +378,24 @@
 
                                         <!-- Multimedia / Galería -->
                                         <StackPanel Spacing="10">
-                                            <TextBlock Text="GALERÍA" FontSize="11" FontWeight="Bold" Foreground="#64748b"/>
-                                            <Border Background="#1e293b" CornerRadius="12" Height="180" ClipToBounds="True">
-                                                <Image Name="ImgCover" Stretch="UniformToFill"/>
+                                            <TextBlock Text="CARÁTULA / MULTIMEDIA" FontSize="11" FontWeight="Bold" Foreground="#64748b"/>
+                                            <Border Background="#1e293b" CornerRadius="12" MinHeight="250" MaxHeight="450" ClipToBounds="True">
+                                                <Image Name="ImgCover" Stretch="Uniform" Margin="10"/>
                                             </Border>
-                                            <ComboBox Name="CmbArtType" SelectedIndex="1" HorizontalAlignment="Stretch" Background="#0f172a" BorderBrush="#334155">
-                                                <ComboBoxItem Content="Boxes"/><ComboBoxItem Content="3D Boxes"/><ComboBoxItem Content="Cart"/><ComboBoxItem Content="Clear Logo"/>
-                                            </ComboBox>
-                                        </StackPanel>
+                                            <ComboBox Name="CmbArtType" SelectedIndex="3" HorizontalAlignment="Stretch" Background="#0f172a" BorderBrush="#334155" SelectionChanged="CmbArtType_SelectionChanged">
+                                                <ComboBoxItem Content="Advert"/>
+                                                <ComboBoxItem Content="Artwork Preview"/>
+                                                <ComboBoxItem Content="Background"/>
+                                                <ComboBoxItem Content="Box"/>
+                                                <ComboBoxItem Content="Box 2.5D"/>
+                                                <ComboBoxItem Content="Box 3D"/>
+                                                <ComboBoxItem Content="Cabinet"/>
+                                                <ComboBoxItem Content="Logos"/>
+                                                <ComboBoxItem Content="Marquee"/>
+                                                <ComboBoxItem Content="Snap"/>
+                                                <ComboBoxItem Content="System Logo"/>
+                                                <ComboBoxItem Content="Title"/>
+                                            </ComboBox>                                        </StackPanel>
 
                                         <!-- Datos Técnicos -->
                                         <StackPanel Spacing="10">
@@ -376,48 +438,118 @@
 
         <!-- OVERLAYS (Necesarios para el .cs) -->
         <Border Name="OverlayEditGame" Background="#AA000000" IsVisible="False" ZIndex="150">
-            <Border Background="#1e293b" Width="550" CornerRadius="12" Padding="30" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Background="#1e293b" Width="700" Height="550" CornerRadius="12" Padding="25" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 10 30 0 #AA000000">
                 <DockPanel>
-                    <TextBlock Name="TxtEditGameTitle" Text="Editar Juego" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,20,0"/>
-                    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,*" Margin="0,20,0,0"><Button Name="BtnCancelEditGame" Grid.Column="0" Content="CANCELAR" Margin="0,0,10,0" HorizontalAlignment="Stretch"/><Button Name="BtnSave" Grid.Column="1" Content="GUARDAR" Background="#10b981" HorizontalAlignment="Stretch"/></Grid>
-                    <ScrollViewer Height="400">
-                        <StackPanel Spacing="10">
-                            <TextBox Name="TxtName" PlaceholderText="Nombre"/>
-                            <Button Name="BtnSearchIgdb" Content="Buscar" HorizontalAlignment="Stretch"/>
-                            <NumericUpDown Name="NumYear" Minimum="1900" Maximum="2100"/>
-                            <ComboBox Name="CmbRegion" HorizontalAlignment="Stretch">
-                                <ComboBoxItem Content="🇺🇸 US"/><ComboBoxItem Content="🇪🇺 EU"/><ComboBoxItem Content="🇪🇸 ES"/><ComboBoxItem Content="🇯🇵 JP"/><ComboBoxItem Content="🌎 World"/>
-                            </ComboBox>
-                            <TextBox Name="TxtGenre" PlaceholderText="Género"/>
-                            <TextBox Name="TxtLanguages" PlaceholderText="Idiomas"/>
-                            <TextBlock Text="Roms Adicionales" FontSize="11" Foreground="#64748b" Margin="0,10,0,0"/>
-                            <ListBox Name="LstRoms" Height="100" Background="#0f172a" CornerRadius="8" BorderThickness="0">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding}" Foreground="White" FontSize="12"/>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                            <StackPanel Orientation="Horizontal" Spacing="5">
-                                <Button Name="BtnAddRom" Content="+ ROM" HorizontalAlignment="Stretch" Width="100"/>
-                                <Button Name="BtnRemoveRom" Content="- ROM" HorizontalAlignment="Stretch" Width="100"/>
-                            </StackPanel>
-                            <Button Name="BtnSelectCover" Content="Cambiar Imagen..." HorizontalAlignment="Stretch"/>
-                            <Button Name="BtnClearCover" Content="Limpiar Imagen" HorizontalAlignment="Stretch"/>
-                            <CheckBox Name="ChkIsFavorite" Content="Marcar como Favorito"/>
-                            <Expander Header="Avanzado" Background="Transparent" BorderBrush="#334155">
-                                <StackPanel Spacing="10">
-                                    <TextBlock Text="Emulador personalizado:" FontSize="11" Foreground="#64748b"/>
-                                    <DockPanel>
-                                        <Button Name="BtnSelectOverrideEmulator" Content="..." DockPanel.Dock="Right"/>
-                                        <TextBox Name="TxtOverrideEmulator"/>
-                                    </DockPanel>
-                                    <TextBlock Text="Argumentos personalizados:" FontSize="11" Foreground="#64748b"/>
-                                    <TextBox Name="TxtOverrideArgs"/>
+                    <!-- Header del Overlay -->
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*, Auto" Margin="0,0,0,15">
+                        <TextBlock Name="TxtEditGameTitle" Text="Editar Juego" FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                        <Button Name="BtnCancelEditGameTop" Grid.Column="1" Content="✕" Background="Transparent" Foreground="#ef4444" FontSize="18" Padding="5" Click="BtnCancelEditGame_Click"/>
+                    </Grid>
+
+                    <!-- Botones de Acción (Pie) -->
+                    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,*" Margin="0,20,0,0">
+                        <Button Name="BtnCancelEditGame" Grid.Column="0" Content="CANCELAR" Margin="0,0,10,0" HorizontalAlignment="Stretch" Click="BtnCancelEditGame_Click"/>
+                        <Button Name="BtnSave" Grid.Column="1" Content="GUARDAR CAMBIOS" Background="#10b981" Foreground="White" FontWeight="Bold" HorizontalAlignment="Stretch" Click="BtnSave_Click"/>
+                    </Grid>
+
+                    <!-- Contenido en Pestañas -->
+                    <TabControl Classes="Modern" Margin="0,5">
+                        <!-- PESTAÑA 1: GENERAL -->
+                        <TabItem Header="General">
+                            <ScrollViewer>
+                                <StackPanel Spacing="15" Margin="0,15,10,0">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <StackPanel Spacing="5" Margin="0,0,10,0">
+                                            <TextBlock Text="Nombre del Juego" FontSize="11" Foreground="#64748b"/>
+                                            <TextBox Name="TxtName" PlaceholderText="Ej: Super Mario World"/>
+                                        </StackPanel>
+                                        <Button Name="BtnSearchIgdb" Grid.Column="1" Content="🔍 Buscar en Vimm" VerticalAlignment="Bottom" Height="34" Click="BtnSearchIgdb_Click"/>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="*, *">
+                                        <StackPanel Spacing="5" Margin="0,0,10,0">
+                                            <TextBlock Text="Año de Lanzamiento" FontSize="11" Foreground="#64748b"/>
+                                            <NumericUpDown Name="NumYear" Minimum="1900" Maximum="2100" FormatString="0"/>
+                                        </StackPanel>
+                                        <StackPanel Spacing="5" Margin="10,0,0,0">
+                                            <TextBlock Text="Región" FontSize="11" Foreground="#64748b"/>
+                                            <ComboBox Name="CmbRegion" HorizontalAlignment="Stretch">
+                                                <ComboBoxItem Content="🇺🇸 US"/><ComboBoxItem Content="🇪🇺 EU"/><ComboBoxItem Content="🇪🇸 ES"/><ComboBoxItem Content="🇯🇵 JP"/><ComboBoxItem Content="🌎 World"/>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Género(s)" FontSize="11" Foreground="#64748b"/>
+                                        <TextBox Name="TxtGenre" PlaceholderText="Ej: Platform, Adventure"/>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Idiomas" FontSize="11" Foreground="#64748b"/>
+                                        <TextBox Name="TxtLanguages" PlaceholderText="Ej: English, Spanish"/>
+                                    </StackPanel>
+
+                                    <CheckBox Name="ChkIsFavorite" Content="Marcar como Favorito (⭐)" FontSize="13" Margin="0,5,0,0"/>
                                 </StackPanel>
-                            </Expander>
-                        </StackPanel>
-                    </ScrollViewer>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- PESTAÑA 2: ARCHIVOS Y MEDIA -->
+                        <TabItem Header="Archivos y Multimedia">
+                            <ScrollViewer>
+                                <StackPanel Spacing="15" Margin="0,15,10,0">
+                                    <TextBlock Text="Rutas de ROM / Ejecutables" FontSize="11" Foreground="#64748b"/>
+                                    <ListBox Name="LstRoms" Height="120" Background="#0f172a" CornerRadius="8" BorderThickness="1" BorderBrush="#334155">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" Foreground="#cbd5e1" FontSize="12" Padding="5"/>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <Grid ColumnDefinitions="*, *">
+                                        <Button Name="BtnAddRom" Grid.Column="0" Content="+ Añadir Disco/ROM" HorizontalAlignment="Stretch" Margin="0,0,5,0" Click="BtnAddRom_Click"/>
+                                        <Button Name="BtnRemoveRom" Grid.Column="1" Content="- Quitar Seleccionado" HorizontalAlignment="Stretch" Margin="5,0,0,0" Foreground="#ef4444" Click="BtnRemoveRom_Click"/>
+                                    </Grid>
+
+                                    <Separator Background="#334155" Margin="0,5"/>
+
+                                    <TextBlock Text="Gestión de Carátula" FontSize="11" Foreground="#64748b"/>
+                                    <Grid ColumnDefinitions="*, *, *">
+                                        <Button Name="BtnSelectCover" Grid.Column="0" Content="📁 Seleccionar..." HorizontalAlignment="Stretch" Margin="0,0,5,0" Click="BtnSelectCover_Click"/>
+                                        <Button Name="BtnClearCover" Grid.Column="1" Content="🗑️ Limpiar" HorizontalAlignment="Stretch" Margin="5,0,5,0" Click="BtnClearCover_Click"/>
+                                        <Border Grid.Column="2" Background="#0f172a" Height="100" CornerRadius="8" BorderThickness="1" BorderBrush="#334155" Margin="5,0,0,0">
+                                            <Image Name="ImgEditCover" Stretch="Uniform" Margin="5"/>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- PESTAÑA 3: AVANZADO -->
+                        <TabItem Header="Avanzado">
+                            <ScrollViewer>
+                                <StackPanel Spacing="15" Margin="0,15,10,0">
+                                    <Border Background="#ef4444" Opacity="0.1" CornerRadius="8" Padding="10">
+                                        <TextBlock Text="⚠️ Estos ajustes sobrescriben la configuración global de la plataforma." Foreground="#ef4444" FontSize="11" TextWrapping="Wrap" HorizontalAlignment="Center"/>
+                                    </Border>
+
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Emulador personalizado (Override)" FontSize="11" Foreground="#64748b"/>
+                                        <DockPanel>
+                                            <Button Name="BtnSelectOverrideEmulator" Content="Buscar..." DockPanel.Dock="Right" Margin="5,0,0,0" Click="BtnSelectOverrideEmulator_Click"/>
+                                            <TextBox Name="TxtOverrideEmulator" PlaceholderText="Ruta al ejecutable .exe"/>
+                                        </DockPanel>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Argumentos personalizados" FontSize="11" Foreground="#64748b"/>
+                                        <TextBox Name="TxtOverrideArgs" PlaceholderText="Ej: -L cores\snes9x_libretro.dll '{0}'"/>
+                                        <TextBlock Text="Usa {0} como marcador de posición para la ruta de la ROM." FontSize="10" Foreground="#94a3b8" FontStyle="Italic"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
                 </DockPanel>
             </Border>
         </Border>
@@ -493,23 +625,77 @@
         </Border>
 
         <Border Name="OverlayMessage" Background="#AA000000" IsVisible="False" ZIndex="300">
-            <Border Background="#1e293b" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center"><StackPanel Spacing="20"><TextBlock Name="TxtMessageContent" TextWrapping="Wrap"/><Button Name="BtnCloseMessage" Content="ACEPTAR" Background="#10b981" HorizontalAlignment="Center"/></StackPanel></Border>
+            <Border Background="#1e293b" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="20">
+                    <TextBlock Name="TxtMessageContent" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    <Button Name="BtnCloseMessage" Content="ACEPTAR" Background="#10b981" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" Padding="30,10" Click="BtnCloseMessage_Click"/>
+                </StackPanel>
+            </Border>
         </Border>
 
         <Border Name="OverlayConfirm" Background="#AA000000" IsVisible="False" ZIndex="350">
-            <Border Background="#1e293b" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center"><StackPanel Spacing="20"><TextBlock Name="TxtConfirmTitle"/><TextBlock Name="TxtConfirmContent" TextWrapping="Wrap"/><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15"><Button Name="BtnCancelConfirm" Content="CANCELAR"/><Button Name="BtnAcceptConfirm" Content="ACEPTAR" Background="#ef4444"/></StackPanel></StackPanel></Border>
+            <Border Background="#1e293b" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="20">
+                    <TextBlock Name="TxtConfirmTitle" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center"/>
+                    <TextBlock Name="TxtConfirmContent" TextWrapping="Wrap" TextAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
+                        <Button Name="BtnCancelConfirm" Content="CANCELAR" Click="BtnCancelConfirm_Click"/>
+                        <Button Name="BtnAcceptConfirm" Content="ACEPTAR" Background="#ef4444" Foreground="White" Click="BtnAcceptConfirm_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
         </Border>
 
         <Border Name="OverlayExportOptions" Background="#AA000000" IsVisible="False" ZIndex="100">
-            <Border Background="#1e293b" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center"><StackPanel Spacing="15"><CheckBox Name="ChkExportGames" Content="Juegos"/><CheckBox Name="ChkExportCovers" Content="Carátulas"/><Button Name="BtnCancelExport" Content="CANCELAR"/><Button Name="BtnConfirmExport" Content="EXPORTAR"/></StackPanel></Border>
+            <Border Background="#1e293b" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Opciones de Exportación" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
+                    <CheckBox Name="ChkExportGames" Content="Juegos (Base de Datos Principal)"/>
+                    <CheckBox Name="ChkExportCovers" Content="Carátulas (Base de Datos Multimedia)"/>
+                    <Grid ColumnDefinitions="*,*" Margin="0,10,0,0">
+                        <Button Name="BtnCancelExport" Content="CANCELAR" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,5,0" Click="BtnCancelExport_Click"/>
+                        <Button Name="BtnConfirmExport" Content="EXPORTAR" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,0,0,0" Background="#3b82f6" Foreground="White" Click="BtnConfirmExport_Click"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
         </Border>
 
         <Border Name="OverlayVimmSystem" Background="#AA000000" IsVisible="False" ZIndex="100">
-            <Border Background="#1e293b" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center"><StackPanel Spacing="15"><ComboBox Name="CmbVimmSystem" HorizontalAlignment="Stretch"/><Button Name="BtnCancelVimm" Content="CANCELAR"/><Button Name="BtnConfirmVimm" Content="CONFIRMAR"/></StackPanel></Border>
+            <Border Background="#1e293b" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Seleccionar Sistema en Vimm's Lair" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
+                    <ComboBox Name="CmbVimmSystem" HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:CompileBindings="False">
+                                <TextBlock Text="{Binding Key}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Grid ColumnDefinitions="*,*" Margin="0,10,0,0">
+                        <Button Name="BtnCancelVimm" Content="CANCELAR" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,5,0" Click="BtnCancelVimm_Click"/>
+                        <Button Name="BtnConfirmVimm" Content="CONFIRMAR" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,0,0,0" Background="#10b981" Foreground="White" Click="BtnConfirmVimm_Click"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
         </Border>
 
         <Border Name="OverlayAddPlatform" Background="#AA000000" IsVisible="False" ZIndex="100">
-            <Border Background="#1e293b" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center"><StackPanel Spacing="15"><TextBox Name="TxtNewPlatformName"/><ComboBox Name="CmbNewPlatformCategory" HorizontalAlignment="Stretch"><ComboBoxItem Content="Consoles"/><ComboBoxItem Content="Handhelds"/><ComboBoxItem Content="Computers"/><ComboBoxItem Content="Arcade"/></ComboBox><Button Name="BtnCancelPlatform" Content="CANCELAR"/><Button Name="BtnSavePlatform" Content="GUARDAR"/></StackPanel></Border>
+            <Border Background="#1e293b" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Nueva Plataforma" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center"/>
+                    <TextBox Name="TxtNewPlatformName" PlaceholderText="Nombre de la consola"/>
+                    <ComboBox Name="CmbNewPlatformCategory" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Consoles"/>
+                        <ComboBoxItem Content="Handhelds"/>
+                        <ComboBoxItem Content="Computers"/>
+                        <ComboBoxItem Content="Arcade"/>
+                    </ComboBox>
+                    <Grid ColumnDefinitions="*,*" Margin="0,10,0,0">
+                        <Button Name="BtnCancelPlatform" Content="CANCELAR" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,5,0" Click="BtnCancelPlatform_Click"/>
+                        <Button Name="BtnSavePlatform" Content="GUARDAR" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,0,0,0" Background="#10b981" Foreground="White" Click="BtnSavePlatform_Click"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
         </Border>
 
         <Border Name="OverlayManagePlatforms" Background="#AA000000" IsVisible="False" ZIndex="100">
@@ -549,9 +735,39 @@
         </Border>
 
         <Border Name="OverlaySettings" Background="#AA000000" IsVisible="False" ZIndex="100">
-            <Border Background="#1e293b" Width="500" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center"><StackPanel Spacing="15"><TextBox Name="CfgLbPath"/><Button Name="BtnBrowseLb" Content="..."/><ComboBox Name="CfgArtType" HorizontalAlignment="Stretch"><ComboBoxItem Content="Boxes"/></ComboBox><CheckBox Name="CfgAutoImportCovers"/><Button Name="BtnCancelSettings" Content="CANCELAR"/><Button Name="BtnSaveSettings" Content="GUARDAR"/></StackPanel></Border>
-        </Border>
+            <Border Background="#1e293b" Width="500" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Ruta de LaunchBox" Foreground="#64748b" FontSize="12"/>
+                    <DockPanel>
+                        <Button Name="BtnBrowseLb" Content="..." DockPanel.Dock="Right" Click="BtnBrowseLb_Click"/>
+                        <TextBox Name="CfgLbPath" Text="{Binding #CfgLbPath.Text}"/>
+                    </DockPanel>
 
+                    <TextBlock Text="Tipo de Arte Preferido" Foreground="#64748b" FontSize="12"/>
+                    <ComboBox Name="CfgArtType" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Advert"/>
+                        <ComboBoxItem Content="Artwork Preview"/>
+                        <ComboBoxItem Content="Background"/>
+                        <ComboBoxItem Content="Box"/>
+                        <ComboBoxItem Content="Box 2.5D"/>
+                        <ComboBoxItem Content="Box 3D"/>
+                        <ComboBoxItem Content="Cabinet"/>
+                        <ComboBoxItem Content="Logos"/>
+                        <ComboBoxItem Content="Marquee"/>
+                        <ComboBoxItem Content="Snap"/>
+                        <ComboBoxItem Content="System Logo"/>
+                        <ComboBoxItem Content="Title"/>
+                    </ComboBox>
+
+                    <CheckBox Name="CfgAutoImportCovers" Content="Importar carátulas automáticamente"/>
+
+                    <Grid ColumnDefinitions="*,*" Margin="0,10,0,0">
+                        <Button Name="BtnCancelSettings" Content="CANCELAR" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,5,0" Click="BtnCancelSettings_Click"/>
+                        <Button Name="BtnSaveSettings" Content="GUARDAR" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,0,0,0" Background="#10b981" Click="BtnSaveSettings_Click"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Border>
         <Border Name="OverlayKeyboard" Background="#AA000000" IsVisible="False" ZIndex="500">
             <Border Background="#0f172a" Width="800" Padding="20" CornerRadius="15"><StackPanel Spacing="20"><TextBox Name="TxtKeyboardInput"/><Grid Name="GridKeyboard"/></StackPanel></Border>
         </Border>

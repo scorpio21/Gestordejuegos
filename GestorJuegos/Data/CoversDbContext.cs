@@ -8,6 +8,7 @@ namespace GestorJuegos.Data
     public class CoversDbContext : DbContext
     {
         public DbSet<GameCover> Covers { get; set; }
+        public DbSet<GameImage> Images { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -18,6 +19,8 @@ namespace GestorJuegos.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GameCover>().HasKey(c => c.Id);
+            modelBuilder.Entity<GameImage>().HasKey(i => i.Id);
+            modelBuilder.Entity<GameImage>().HasIndex(i => new { i.GameId, i.ImageType });
         }
     }
 }

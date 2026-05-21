@@ -178,16 +178,19 @@ public partial class MainWindow : Window
     {
         return friendlyName switch
         {
-            "Background" => "Fanart - Background",
-            "Boxes" => "Box - Front",
-            "3D Boxes" => "Box - 3D",
-            "Cart" => "Cart - Front",
-            "3D Cart" => "Cart - 3D",
-            "Clear Logo" => "Clear Logo",
-            "Marquee" => "Arcade - Marquee",
-            "ScreenShots" => "Screenshot - Gameplay",
-            "Steam Banner" => "Steam Banner",
-            _ => "Box - Front" // Por defecto
+            "Advert" => "Advert",
+            "Artwork Preview" => "Artwork_Preview",
+            "Background" => "Background",
+            "Box" => "Box",
+            "Box 2.5D" => "Box_25D",
+            "Box 3D" => "Box_3D",
+            "Cabinet" => "Cabinet",
+            "Logos" => "Logos",
+            "Marquee" => "Marquee",
+            "Snap" => "Snap",
+            "System Logo" => "System_Logo",
+            "Title" => "Title",
+            _ => "Box" // Por defecto
         };
     }
 
@@ -195,39 +198,25 @@ public partial class MainWindow : Window
     {
         if (_selectedGame == null || _selectedPlatform == null) return;
         
-        // Si el usuario cambia el tipo de arte, intentamos ver si existe en LaunchBox localmente
-        string lbPath = _settings.LaunchBoxPath;
-        if (Directory.Exists(lbPath))
-        {
-            string friendlyName = (CmbArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Boxes";
-            string artFolderName = GetLaunchBoxFolderName(friendlyName);
-            
-            string imagesPlatformPath = Path.Combine(lbPath, "Images", _selectedPlatform.Name, artFolderName);
-            
-            if (Directory.Exists(imagesPlatformPath))
-            {
-                string title = _selectedGame.Name;
-                string imgPath = Path.Combine(imagesPlatformPath, $"{title}.jpg");
-                if (!File.Exists(imgPath)) imgPath = Path.Combine(imagesPlatformPath, $"{title}.png");
-                
-                if (!File.Exists(imgPath))
-                {
-                    imgPath = Directory.GetFiles(imagesPlatformPath, $"{title}*.*")
-                        .FirstOrDefault(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
-                                            f.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) ?? "";
-                }
+        string friendlyName = (CmbArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Box";
+        string artFolderName = GetLaunchBoxFolderName(friendlyName);
 
-                if (File.Exists(imgPath))
-                {
-                    try
-                    {
-                        _currentCover = File.ReadAllBytes(imgPath);
-                        UpdateCoverImage();
-                    }
-                    catch { }
-                }
-            }
+        LogDebug($"--- Cambio de ArtType: {friendlyName} (Carpeta: {artFolderName}) ---");
+
+        // 1. Intentar cargar desde la DB local
+        byte[]? dbImage = _gameService.GetGameExtraImage(_selectedGame.Id, artFolderName);
+        if (dbImage != null && dbImage.Length > 0)
+        {
+            LogDebug($"Imagen encontrada en DB para GameId: {_selectedGame.Id}");
+            _currentCover = dbImage;
+            _selectedGame.Cover = dbImage; // Actualizar también en el objeto para que el listado central lo refleje
+            UpdateCoverImage();
+            return;
         }
+
+        LogDebug($"Imagen NO encontrada en DB para el tipo: {artFolderName}.");
+        _currentCover = null;
+        UpdateCoverImage();
     }
 
     private void LstGlobalSearchResults_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -1053,22 +1042,29 @@ public partial class MainWindow : Window
                                 bool isFavorite = (node.Element("Favorite")?.Value ?? "").Equals("true", StringComparison.OrdinalIgnoreCase);
 
                                 byte[]? coverData = null;
+                                var extraImages = new List<GameImage>();
+
                                 if (_settings.AutoImportCovers)
                                 {
                                     try
                                     {
-                                        // Intentar buscar carátula local en LaunchBox usando la preferencia
-                                        // Para JUEGOS, la ruta es LaunchBox\Images\NombrePlataforma\TipoArte
-                                        string artFolderName = GetLaunchBoxFolderName(_settings.PreferredArtType);
-                                        string imagesPlatformPath = Path.Combine(lbPath, "Images", platformName, artFolderName);
+                                        string[] artTypes = { 
+                                            "Box", "Box_3D", "Box_25D", "Logos", "Background", "Snap", 
+                                            "Title", "Marquee", "Cabinet", "Advert", "Artwork_Preview", "System_Logo",
+                                            "Box - Front", "Box - 3D", "Box - Back", "Box - Spine", "Box - Full",
+                                            "Cart - Front", "Cart - 3D", "Cart - Back",
+                                            "Clear Logo", "Fanart - Background", "Screenshot - Gameplay", 
+                                            "Screenshot - Game Title", "Arcade - Marquee", "Disc", "Steam Banner" 
+                                        };
                                         
-                                        if (Directory.Exists(imagesPlatformPath))
+                                        foreach (var type in artTypes)
                                         {
-                                            // Buscar coincidencia exacta
+                                            string imagesPlatformPath = Path.Combine(lbPath, "Images", platformName, type);
+                                            if (!Directory.Exists(imagesPlatformPath)) continue;
+
                                             string imgPath = Path.Combine(imagesPlatformPath, $"{title}.jpg");
                                             if (!File.Exists(imgPath)) imgPath = Path.Combine(imagesPlatformPath, $"{title}.png");
                                             
-                                            // Si no hay exacta, buscar por prefijo (por si tiene regiones en el nombre del archivo)
                                             if (!File.Exists(imgPath))
                                             {
                                                 var files = Directory.GetFiles(imagesPlatformPath, $"{title}*.*");
@@ -1076,7 +1072,19 @@ public partial class MainWindow : Window
                                                                                    f.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) ?? "";
                                             }
 
-                                            if (File.Exists(imgPath)) coverData = File.ReadAllBytes(imgPath);
+                                            if (File.Exists(imgPath))
+                                            {
+                                                byte[] data = File.ReadAllBytes(imgPath);
+                                                // Si es el tipo preferido, va a la carátula principal
+                                                if (type == GetLaunchBoxFolderName(_settings.PreferredArtType))
+                                                {
+                                                    coverData = data;
+                                                }
+                                                else
+                                                {
+                                                    extraImages.Add(new GameImage { ImageType = type, ImageData = data });
+                                                }
+                                            }
                                         }
                                     }
                                     catch { }
@@ -1092,7 +1100,9 @@ public partial class MainWindow : Window
                                     RomPath = appPath,
                                     IsFavorite = isFavorite,
                                     DateAdded = DateTime.Now,
-                                    Cover = coverData
+                                    Cover = coverData,
+                                    CoverType = GetLaunchBoxFolderName(_settings.PreferredArtType),
+                                    ExtraImages = extraImages
                                 });
                                 
                                 existingGameKeys.Add(uniqueKey);
@@ -1973,9 +1983,10 @@ public partial class MainWindow : Window
         LstGamesGrid.ItemsSource = null;
 
         // Cargar miniaturas para la página actual
+        string preferredArtFolder = GetLaunchBoxFolderName(_settings.PreferredArtType);
         foreach (var game in paginated)
         {
-            game.Cover = _gameService.GetGameThumbnail(game.Id);
+            game.Cover = _gameService.GetGameThumbnail(game.Id, preferredArtFolder);
         }
 
         LstGames.ItemsSource = paginated;
@@ -2109,35 +2120,48 @@ public partial class MainWindow : Window
             if (regionItem != null) CmbRegion.SelectedItem = regionItem;
             else CmbRegion.SelectedIndex = 0;
 
-            _currentCover = _gameService.GetGameFullCover(game.Id);
+            var coverObj = _gameService.GetGameCover(game.Id);
+            _currentCover = coverObj?.ImageData;
+            _selectedGame.CoverType = coverObj?.ImageType ?? "Box - Front";
             UpdateCoverImage();
 
-            // --- CARGAR LOGO PARA DETALLES ---
-            try
+            // Sincronizar el selector de tipo de arte con la preferencia del usuario
+            if (CmbArtType != null)
             {
-                string lbPath = _settings.LaunchBoxPath;
-                if (Directory.Exists(lbPath))
+                foreach (ComboBoxItem item in CmbArtType.Items)
                 {
-                    using var context = new GestorJuegos.Data.AppDbContext();
-                    var platform = context.Platforms.FirstOrDefault(p => p.Id == game.PlatformId);
-                    if (platform != null)
+                    if (item.Content?.ToString() == _settings.PreferredArtType)
                     {
-                        string logoPath = Path.Combine(lbPath, "Images", platform.Name, "Clear Logo", $"{game.Name}.png");
-                        if (File.Exists(logoPath))
-                        {
-                            using var fs = new FileStream(logoPath, FileMode.Open, FileAccess.Read);
-                            ImgDetailLogo.Source = new Bitmap(fs);
-                            ImgDetailLogo.IsVisible = true;
-                        }
-                        else
-                        {
-                            ImgDetailLogo.Source = null;
-                            ImgDetailLogo.IsVisible = false;
-                        }
+                        CmbArtType.SelectedItem = item;
+                        break;
                     }
                 }
             }
-            catch { ImgDetailLogo.IsVisible = false; }
+
+            // --- CARGAR LOGO PARA DETALLES ---
+            bool hasLogo = false;
+            try
+            {
+                BrdDetailLogo.IsVisible = false; // Ocultar por defecto
+
+                // Intentar cargar "Clear Logo" o "Logos" (según tu nueva estructura)
+                byte[]? logoData = _gameService.GetGameExtraImage(game.Id, "Logos") ?? 
+                                  _gameService.GetGameExtraImage(game.Id, "Clear Logo");
+
+                if (logoData != null && logoData.Length > 0)
+                {
+                    using (var ms = new MemoryStream(logoData))
+                    {
+                        ImgDetailLogo.Source = new Bitmap(ms);
+                        BrdDetailLogo.IsVisible = true;
+                        hasLogo = true;
+                    }
+                }
+            }
+            catch { BrdDetailLogo.IsVisible = false; }
+
+            // Si hay logo, ocultamos el fondo del banner para que el logo destaque limpio arriba
+            ImgDetailBackground.IsVisible = !hasLogo;
 
             // Visibilidad de Paneles
             if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = false;
@@ -2149,47 +2173,38 @@ public partial class MainWindow : Window
     {
         try
         {
-            string lbPath = _settings.LaunchBoxPath;
-            if (Directory.Exists(lbPath))
+            // Intentar Fanart primero, luego captura desde la DB
+            string[] types = { "Fanart - Background", "Screenshot - Gameplay", "Background" };
+            byte[]? bgData = null;
+
+            foreach (var type in types)
             {
-                using var context = new GestorJuegos.Data.AppDbContext();
-                var platform = context.Platforms.FirstOrDefault(p => p.Id == game.PlatformId);
-                if (platform != null)
+                bgData = _gameService.GetGameExtraImage(game.Id, type);
+                if (bgData != null && bgData.Length > 0) break;
+            }
+
+            if (bgData != null && bgData.Length > 0)
+            {
+                using (var ms = new MemoryStream(bgData))
                 {
-                    // Intentar Fanart primero, luego captura
-                    string[] folders = { "Fanart - Background", "Screenshot - Gameplay" };
-                    string bgPath = "";
-                    
-                    foreach (var folder in folders)
-                    {
-                        string path = Path.Combine(lbPath, "Images", platform.Name, folder, $"{game.Name}.jpg");
-                        if (!File.Exists(path)) path = Path.Combine(lbPath, "Images", platform.Name, folder, $"{game.Name}.png");
-                        
-                        if (!File.Exists(path))
-                        {
-                            path = Directory.GetFiles(Path.Combine(lbPath, "Images", platform.Name, folder), $"{game.Name}*.*")
-                                .FirstOrDefault(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
-                                                    f.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) ?? "";
-                        }
-
-                        if (File.Exists(path)) { bgPath = path; break; }
-                    }
-
-                    if (File.Exists(bgPath))
-                    {
-                        using var fs = new FileStream(bgPath, FileMode.Open, FileAccess.Read);
-                        ImgBackground.Source = new Bitmap(fs);
-                        ImgBackground.Opacity = 0.3;
-                        return;
-                    }
+                    var bitmap = new Bitmap(ms);
+                    ImgBackground.Source = bitmap;
+                    ImgBackground.Opacity = 0.3;
+                    ImgDetailBackground.Source = bitmap;
+                    return;
                 }
             }
             
-            // Si no hay imagen, fondo sutil basado en la carátula o transparente
+            // Si no hay imagen, limpiar fondos
             ImgBackground.Source = null;
             ImgBackground.Opacity = 0;
+            ImgDetailBackground.Source = null;
         }
-        catch { ImgBackground.Source = null; ImgBackground.Opacity = 0; }
+        catch { 
+            ImgBackground.Source = null; 
+            ImgBackground.Opacity = 0; 
+            ImgDetailBackground.Source = null;
+        }
     }
     private void BtnAddGame_Click(object? sender, RoutedEventArgs e)
     {
@@ -2256,6 +2271,7 @@ public partial class MainWindow : Window
         _selectedGame.IsFavorite = ChkIsFavorite.IsChecked ?? false;
         _selectedGame.Region = (CmbRegion.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "🇺🇸 US";
         _selectedGame.Cover = _currentCover;
+        _selectedGame.CoverType = GetLaunchBoxFolderName((CmbArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? _settings.PreferredArtType);
 
         if (_selectedGame.Id == 0)
         {
@@ -2325,16 +2341,20 @@ public partial class MainWindow : Window
             try
             {
                 using var ms = new MemoryStream(_currentCover);
-                ImgCover.Source = new Bitmap(ms);
+                var bitmap = new Bitmap(ms);
+                ImgCover.Source = bitmap;
+                ImgEditCover.Source = bitmap;
             }
             catch
             {
                 ImgCover.Source = null;
+                ImgEditCover.Source = null;
             }
         }
         else
         {
             ImgCover.Source = null;
+            ImgEditCover.Source = null;
         }
     }
 
@@ -2925,11 +2945,35 @@ public partial class MainWindow : Window
 
                 await System.Threading.Tasks.Task.Run(async () =>
                 {
-                    var coverFiles = Directory.GetFiles(coverPath, "*.*", SearchOption.AllDirectories)
-                                             .Where(f => f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || 
-                                                         f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
-                                                         f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
-                                             .ToList();
+                    var extensions = new[] { ".png", ".jpg", ".jpeg" };
+                    var coverFiles = new List<(string Path, string Type)>();
+                    
+                    // Búsqueda recursiva segura (evita UnauthorizedAccessException)
+                    var stack = new Stack<string>();
+                    stack.Push(coverPath);
+                    
+                    while (stack.Count > 0)
+                    {
+                        string currentPath = stack.Pop();
+                        try
+                        {
+                            string folderName = Path.GetFileName(currentPath);
+                            // Intentar mapear el nombre de la carpeta a un tipo conocido
+                            // Si la carpeta es la raíz seleccionada, por defecto es Box
+                            string detectedType = folderName.Equals(Path.GetFileName(coverPath), StringComparison.OrdinalIgnoreCase) 
+                                ? "Box" 
+                                : folderName;
+
+                            foreach (var f in Directory.GetFiles(currentPath))
+                            {
+                                if (extensions.Contains(Path.GetExtension(f).ToLower()))
+                                    coverFiles.Add((f, detectedType));
+                            }
+                            foreach (var d in Directory.GetDirectories(currentPath))
+                                stack.Push(d);
+                        }
+                        catch { } // Ignorar carpetas inaccesibles
+                    }
 
                     int matchCount = 0;
                     bool cancelled = false;
@@ -2945,9 +2989,6 @@ public partial class MainWindow : Window
                             
                             var game = games[i];
                             
-                            // Solo buscar si no tiene carátula en la DB secundaria
-                            if (_gameService.GetGameThumbnail(game.Id) != null) continue;
-
                             int currentI = i;
                             int totalI = games.Count;
                             Avalonia.Threading.Dispatcher.UIThread.Post(() => {
@@ -2955,22 +2996,37 @@ public partial class MainWindow : Window
                                 TxtProgressDetail.Text = $"Buscando para: {game.Name} ({currentI}/{totalI})";
                             });
 
-                            var match = coverFiles.FirstOrDefault(f => {
-                                string fileName = Path.GetFileNameWithoutExtension(f);
-                                return fileName.Equals(game.Name, StringComparison.OrdinalIgnoreCase) || 
-                                       fileName.Contains(game.Name, StringComparison.OrdinalIgnoreCase) ||
-                                       game.Name.Contains(fileName, StringComparison.OrdinalIgnoreCase);
-                            });
+                            // Normalizar nombre del juego para búsqueda
+                            string cleanGameName = Regex.Replace(game.Name, @"[^a-zA-Z0-9]", "").ToLower();
 
-                            if (match != null)
+                            // Buscar TODAS las imágenes que coincidan con este juego
+                            var matches = coverFiles.Where(f => {
+                                string fileName = Path.GetFileNameWithoutExtension(f.Path);
+                                string cleanFileName = Regex.Replace(fileName, @"[^a-zA-Z0-9]", "").ToLower();
+                                return cleanFileName == cleanGameName || cleanFileName.Contains(cleanGameName) || cleanGameName.Contains(cleanFileName);
+                            }).ToList();
+
+                            if (matches.Any())
                             {
                                 try 
                                 {
-                                    game.Cover = File.ReadAllBytes(match);
+                                    // 1. La primera imagen (o la que esté en una carpeta tipo "Box") será la carátula principal
+                                    var mainMatch = matches.FirstOrDefault(m => m.Type.Contains("Box", StringComparison.OrdinalIgnoreCase));
+                                    if (mainMatch.Path == null) mainMatch = matches.First();
+
+                                    game.Cover = File.ReadAllBytes(mainMatch.Path);
+                                    game.CoverType = mainMatch.Type;
+
+                                    // 2. El resto de imágenes se añaden como ExtraImages
+                                    game.ExtraImages = matches
+                                        .Where(m => m != mainMatch)
+                                        .Select(m => new GameImage { ImageType = m.Type, ImageData = File.ReadAllBytes(m.Path) })
+                                        .ToList();
+
                                     gamesToUpdate.Add(game);
                                     matchCount++;
                                     
-                                    if (gamesToUpdate.Count >= 100)
+                                    if (gamesToUpdate.Count >= 50) // Lotes más pequeños por el peso de las imágenes
                                     {
                                         _gameService.UpdateGamesBatch(gamesToUpdate);
                                         gamesToUpdate.Clear();
@@ -3078,5 +3134,101 @@ public partial class MainWindow : Window
         {
             ShowMessage("No se pudo abrir el archivo de filtros automáticamente. Puedes encontrarlo y editarlo en: " + drossPath);
         }
+    }
+
+    // --- CONFIGURACIÓN ---
+    private void MenuSettings_Click(object? sender, RoutedEventArgs e)
+    {
+        CfgLbPath.Text = _settings.LaunchBoxPath;
+        CfgAutoImportCovers.IsChecked = _settings.AutoImportCovers;
+        
+        // Seleccionar el tipo de arte en el combo
+        foreach (ComboBoxItem item in CfgArtType.Items)
+        {
+            if (item.Content?.ToString() == _settings.PreferredArtType)
+            {
+                CfgArtType.SelectedItem = item;
+                break;
+            }
+        }
+        if (CfgArtType.SelectedItem == null && CfgArtType.Items.Count > 0) CfgArtType.SelectedIndex = 0;
+
+        OverlaySettings.IsVisible = true;
+    }
+
+    private async void BtnBrowseLb_Click(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Seleccionar Carpeta de LaunchBox",
+            AllowMultiple = false
+        });
+
+        if (folders.Count > 0)
+        {
+            CfgLbPath.Text = folders[0].Path.LocalPath;
+        }
+    }
+
+    private void BtnCancelSettings_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlaySettings.IsVisible = false;
+    }
+
+    private void BtnSaveSettings_Click(object? sender, RoutedEventArgs e)
+    {
+        _settings.LaunchBoxPath = CfgLbPath.Text ?? "";
+        _settings.AutoImportCovers = CfgAutoImportCovers.IsChecked ?? false;
+        _settings.PreferredArtType = (CfgArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Boxes";
+        
+        SaveSettings();
+        OverlaySettings.IsVisible = false;
+        ApplySearchFilter(); // Refrescar el listado con el nuevo tipo de arte preferido
+        ShowMessage("Configuración guardada correctamente.");
+    }
+
+    private void MenuBatchScrapeVimm_Click(object? sender, RoutedEventArgs e)
+    {
+        // Abrir el selector de sistema de Vimm
+        var platforms = VimmVaultService.GetSupportedPlatforms();
+        CmbVimmSystem.ItemsSource = platforms;
+        
+        // Intentar pre-seleccionar si hay plataforma seleccionada
+        if (_selectedPlatform != null)
+        {
+            var bestMatch = platforms.FirstOrDefault(p => p.Key.Contains(_selectedPlatform.Name, StringComparison.OrdinalIgnoreCase) || 
+                                                        _selectedPlatform.Name.Contains(p.Key, StringComparison.OrdinalIgnoreCase));
+            if (bestMatch.Key != null) CmbVimmSystem.SelectedItem = bestMatch;
+            else CmbVimmSystem.SelectedIndex = 0;
+        }
+        else CmbVimmSystem.SelectedIndex = 0;
+
+        OverlayVimmSystem.IsVisible = true;
+    }
+
+    private void BtnCancelVimm_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayVimmSystem.IsVisible = false;
+    }
+
+    private void BtnCancelExport_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayExportOptions.IsVisible = false;
+    }
+
+    private void BtnAcceptConfirm_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayConfirm.IsVisible = false;
+        _onConfirmAction?.Invoke();
+        _onConfirmAction = null;
+    }
+
+    private void BtnCancelConfirm_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayConfirm.IsVisible = false;
+        _onConfirmAction = null;
     }
 }

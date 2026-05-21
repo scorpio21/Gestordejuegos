@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
@@ -25,6 +26,12 @@ namespace GestorJuegos.Models
                 OnPropertyChanged(); 
             } 
         }
+
+        [NotMapped]
+        public string CoverType { get; set; } = "Box - Front";
+
+        [NotMapped]
+        public List<GameImage> ExtraImages { get; set; } = new();
         
         public string RomPath { get; set; } = string.Empty;
         public string AdditionalRoms { get; set; } = string.Empty;

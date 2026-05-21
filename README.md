@@ -1,4 +1,4 @@
-# 🎮 Gestor de Juegos (v1.1.0.8)
+# 🎮 Gestor de Juegos (v1.1.1.0-Dev)
 
 Organizador de colecciones de videojuegos para Windows, optimizado para grandes bibliotecas y uso con mando (Gamepad).
 
@@ -6,15 +6,21 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 🚀 Características Principales
 
+- **Centralización Total Multimedia**: Todas las imágenes (carátulas, logotipos, fanarts y capturas) se almacenan en la base de datos local (`GestorCovers.db`), permitiendo una autonomía completa sin depender de LaunchBox.
 - **Muro de Plataformas Profesional**: Navegación visual moderna con logos oficiales de consolas y diseño de cuadrícula.
-- **Grupos de Imagen LaunchBox**: Soporte total para categorías (3D Boxes, Cart Art, Clear Logos, etc.).
+- **Grupos de Imagen LaunchBox**: Soporte total para categorías (3D Boxes, Cart Art, Clear Logos, etc.) integradas en la DB.
 - **Dashboard Dinámico**: Estadísticas rápidas, juegos recientes y acceso directo a sistemas.
-- **Estadísticas Detalladas**: Desglose por regiones, plataformas y géneros con banderas visuales.
 - **Modo Mando**: Navegación completa optimizada para mandos mediante XInput.
 
 ## 📅 Historial de Versiones
 
-### v1.1.0.8 (Actual)
+### v1.1.1.0-Dev (Actual)
+*   **Autonomía de Multimedia**: Migración completa de la visualización de imágenes a la base de datos local. La aplicación ya no requiere acceso a la carpeta de LaunchBox para mostrar logotipos o fondos de juegos ya importados.
+*   **Gestión de ExtraImages**: `GameService` actualizado para soportar el almacenamiento y actualización de múltiples tipos de arte por juego (Clear Logo, Fanart, Screenshot, etc.).
+*   **Importador LaunchBox Potenciado**: Ahora captura automáticamente hasta 15 tipos diferentes de arte multimedia durante la importación inicial.
+*   **Corrección de Estabilidad**: Solucionados errores de compilación relacionados con directivas de espacio de nombres y propiedades de XAML no compatibles.
+
+### v1.1.0.8
 *   **Corrección Visual Total**: Implementación de `ItemTemplate` en todas las listas del sistema, eliminando la aparición de nombres de clase técnicos.
 *   **Muro de Plataformas Rediseñado**: Nueva cuadrícula estética con logos y tipografía mejorada para una selección de sistemas más intuitiva.
 *   **Overlays Pulidos**: Mejora visual en los paneles de edición de juegos, gestión de plataformas y búsqueda IGDB/Vimm.
