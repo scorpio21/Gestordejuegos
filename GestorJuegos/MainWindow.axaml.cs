@@ -2059,6 +2059,9 @@ public partial class MainWindow : Window
 
             _selectedGame = game;
 
+            // --- FONDO DINÁMICO (Fase B) ---
+            UpdateDynamicBackground(game);
+
             // --- Llenar Panel Informativo (Derecha) ---
             TxtInfoName.Text = game.Name;
             TxtInfoYear.Text = game.Year.ToString();
@@ -2070,13 +2073,6 @@ public partial class MainWindow : Window
             {
                 var regionConverter = new Utils.RegionToFlagConverter();
                 ImgInfoRegion.Source = regionConverter.Convert(game.Region, null, null, null) as Avalonia.Media.Imaging.Bitmap;
-            }
-
-            // Emulador Info
-            if (PnlInfoEmulator != null)
-            {
-                PnlInfoEmulator.IsVisible = !string.IsNullOrEmpty(game.OverrideEmulatorPath);
-                TxtInfoEmulator.Text = game.OverrideEmulatorPath;
             }
 
             // --- Preparar Formulario de Edición (Overlay) ---
@@ -2112,6 +2108,53 @@ public partial class MainWindow : Window
             if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = false;
             PnlGameDetails.IsVisible = true;
         }
+    }
+
+    private void UpdateDynamicBackground(Game game)
+    {
+        try
+        {
+            string lbPath = _settings.LaunchBoxPath;
+            if (Directory.Exists(lbPath))
+            {
+                using var context = new GestorJuegos.Data.AppDbContext();
+                var platform = context.Platforms.FirstOrDefault(p => p.Id == game.PlatformId);
+                if (platform != null)
+                {
+                    // Intentar Fanart primero, luego captura
+                    string[] folders = { "Fanart - Background", "Screenshot - Gameplay" };
+                    string bgPath = "";
+                    
+                    foreach (var folder in folders)
+                    {
+                        string path = Path.Combine(lbPath, "Images", platform.Name, folder, $"{game.Name}.jpg");
+                        if (!File.Exists(path)) path = Path.Combine(lbPath, "Images", platform.Name, folder, $"{game.Name}.png");
+                        
+                        if (!File.Exists(path))
+                        {
+                            path = Directory.GetFiles(Path.Combine(lbPath, "Images", platform.Name, folder), $"{game.Name}*.*")
+                                .FirstOrDefault(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || 
+                                                    f.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) ?? "";
+                        }
+
+                        if (File.Exists(path)) { bgPath = path; break; }
+                    }
+
+                    if (File.Exists(bgPath))
+                    {
+                        using var fs = new FileStream(bgPath, FileMode.Open, FileAccess.Read);
+                        ImgBackground.Source = new Bitmap(fs);
+                        ImgBackground.Opacity = 0.3;
+                        return;
+                    }
+                }
+            }
+            
+            // Si no hay imagen, fondo sutil basado en la carátula o transparente
+            ImgBackground.Source = null;
+            ImgBackground.Opacity = 0;
+        }
+        catch { ImgBackground.Source = null; ImgBackground.Opacity = 0; }
     }
     private void BtnAddGame_Click(object? sender, RoutedEventArgs e)
     {

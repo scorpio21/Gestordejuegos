@@ -35,10 +35,48 @@
                 </Grid>
             </Panel>
         </DataTemplate>
+        <!-- Plantilla para Rejilla de Juegos (Premium) -->
+        <DataTemplate x:Key="GameGridTemplate" x:DataType="models:Game">
+            <Border Name="RootBorder" Margin="8" CornerRadius="12" ClipToBounds="True" Background="#1e293b" BoxShadow="0 4 15 0 #AA000000">
+                <Panel>
+                    <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill" Height="220" Width="160"/>
+                    
+                    <!-- Overlay de información (Sutil) -->
+                    <Border VerticalAlignment="Bottom" Height="80">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0" Color="Transparent"/>
+                                <GradientStop Offset="1" Color="#EE0f172a"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <StackPanel Margin="10,0,10,8" VerticalAlignment="Bottom">
+                            <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold" FontSize="12" TextWrapping="Wrap" MaxLines="2"/>
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,0">
+                                <TextBlock Grid.Column="0" Text="{Binding Year}" Foreground="#94a3b8" FontSize="10"/>
+                                <Image Grid.Column="1" Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="16"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Indicador de Favorito -->
+                    <TextBlock Text="⭐" IsVisible="{Binding IsFavorite}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" FontSize="14"/>
+                </Panel>
+            </Border>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
-        <Image Name="ImgBackground" Stretch="UniformToFill" Opacity="0.1" IsHitTestVisible="False"/>
+        <!-- FONDO DINÁMICO (Inmersivo) -->
+        <Panel Name="PnlBackground" IsHitTestVisible="False">
+            <Image Name="ImgBackground" Stretch="UniformToFill" Opacity="0.2">
+                <Image.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
+                    </Transitions>
+                </Image.Transitions>
+            </Image>
+            <Border Background="#0f172a" Opacity="0.6"/> <!-- Capa de tinte oscuro para legibilidad -->
+        </Panel>
         
         <DockPanel>
             <!-- BARRA SUPERIOR (MODERNA) -->
@@ -171,8 +209,46 @@
                             </ScrollViewer>
 
                             <!-- Listas -->
-                            <ListBox Name="LstGames" IsVisible="False" Background="Transparent" BorderThickness="0"><ListBox.ItemTemplate><DataTemplate x:DataType="models:Game"><Border Background="#1e293b" Margin="0,0,0,5" Padding="10"><Grid ColumnDefinitions="Auto, *, Auto"><Image Grid.Column="0" Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="40" Height="60" Margin="0,0,10,0"/><TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="White" VerticalAlignment="Center"/><Image Grid.Column="2" Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="24" VerticalAlignment="Center"/></Grid></Border></DataTemplate></ListBox.ItemTemplate></ListBox>
-                            <ListBox Name="LstGamesGrid" IsVisible="False" Background="Transparent" BorderThickness="0"><ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel ItemWidth="160"/></ItemsPanelTemplate></ListBox.ItemsPanel><ListBox.ItemTemplate><DataTemplate x:DataType="models:Game"><Border Background="#1e293b" Margin="5" Padding="10" CornerRadius="10"><StackPanel><Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Height="180" Stretch="Uniform"/><TextBlock Text="{Binding Name}" Foreground="White" TextAlignment="Center" MaxLines="2" TextTrimming="CharacterEllipsis" Margin="0,5,0,0"/></StackPanel></Border></DataTemplate></ListBox.ItemTemplate></ListBox>
+                            <ListBox Name="LstGames" IsVisible="False" Background="Transparent" BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Game">
+                                        <Border Background="#1e293b" Margin="0,0,0,5" Padding="10" CornerRadius="8">
+                                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                                <Image Grid.Column="0" Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="40" Height="60" Margin="0,0,10,0"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="White" VerticalAlignment="Center" FontWeight="Bold"/>
+                                                <Image Grid.Column="2" Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="24" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <ListBox Name="LstGamesGrid" IsVisible="False" Background="Transparent" BorderThickness="0" ItemTemplate="{StaticResource GameGridTemplate}">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel ItemWidth="180"/>
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.Styles>
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Transitions">
+                                            <Transitions>
+                                                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/>
+                                            </Transitions>
+                                        </Setter>
+                                    </Style>
+                                    <Style Selector="ListBoxItem:pointerover">
+                                        <Setter Property="RenderTransform" Value="scale(1.05)"/>
+                                        <Setter Property="ZIndex" Value="1"/>
+                                    </Style>
+                                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                    </Style>
+                                </ListBox.Styles>
+                            </ListBox>
                             
                             <DockPanel Name="PnlGlobalSearch" IsVisible="False">
                                 <Button Name="BtnBackFromSearch" DockPanel.Dock="Top" Content="⬅ Volver" Margin="0,0,0,10"/>
