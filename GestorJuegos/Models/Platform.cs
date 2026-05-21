@@ -7,6 +7,7 @@ namespace GestorJuegos.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Category { get; set; } = "Consoles"; // Valor por defecto
         public string EmulatorPath { get; set; } = string.Empty;
         public string LaunchArguments { get; set; } = "\"{0}\"";
         public DateTime? LastScanDate { get; set; }

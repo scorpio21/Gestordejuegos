@@ -1,4 +1,4 @@
-# 🎮 Gestor de Juegos (v1.1.0.0)
+# 🎮 Gestor de Juegos (v1.1.0.8)
 
 Organizador de colecciones de videojuegos para Windows, optimizado para grandes bibliotecas y uso con mando (Gamepad).
 
@@ -6,18 +6,56 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 🚀 Características Principales
 
-- **Muro de Plataformas**: Navegación visual moderna con logos oficiales de consolas.
+- **Muro de Plataformas Profesional**: Navegación visual moderna con logos oficiales de consolas y diseño de cuadrícula.
+- **Grupos de Imagen LaunchBox**: Soporte total para categorías (3D Boxes, Cart Art, Clear Logos, etc.).
 - **Dashboard Dinámico**: Estadísticas rápidas, juegos recientes y acceso directo a sistemas.
 - **Estadísticas Detalladas**: Desglose por regiones, plataformas y géneros con banderas visuales.
 - **Modo Mando**: Navegación completa optimizada para mandos mediante XInput.
-- **Optimización Crítica**: Inserciones por lotes y miniaturas pre-generadas para fluidez máxima.
 
 ## 📅 Historial de Versiones
 
-### v1.1.0.0 (Actual)
-- **Rediseño Estilo LaunchBox**: Implementación de un muro visual de plataformas que carga artes locales.
-- **Centro de Estadísticas**: Nueva vista detallada con gráficas de distribución y recuentos de colección.
-- **Actualización de Navegación**: Flujo de usuario mejorado centrado en la selección visual de sistemas.
+### v1.1.0.8 (Actual)
+*   **Corrección Visual Total**: Implementación de `ItemTemplate` en todas las listas del sistema, eliminando la aparición de nombres de clase técnicos.
+*   **Muro de Plataformas Rediseñado**: Nueva cuadrícula estética con logos y tipografía mejorada para una selección de sistemas más intuitiva.
+*   **Overlays Pulidos**: Mejora visual en los paneles de edición de juegos, gestión de plataformas y búsqueda IGDB/Vimm.
+*   **Búsqueda Global Mejorada**: Los resultados ahora muestran la plataforma y mantienen la coherencia visual con la biblioteca.
+
+### v1.1.0.7
+*   **Limpieza de Dashboard**: Se ha simplificado el panel central para que sea una pantalla de bienvenida limpia, moviendo toda la lógica de datos a overlays.
+*   **Overlay de Estadísticas Profesional**: Implementación de plantillas visuales en `OverlayFullStats`. Ahora muestra banderas, iconos de plataforma y contadores estilizados.
+*   **Consolidación de C#**: Limpieza de métodos y eventos obsoletos vinculados a controles eliminados del Dashboard.
+
+### v1.1.0.5
+*   **Rediseño de Interfaz (3 Paneles)**:
+    - Izquierda: Explorador de plataformas mejorado.
+    - Centro: Rejilla dedicada exclusivamente a la visualización de carátulas.
+    - Derecha: Panel de información detallada (informativo, no intrusivo).
+*   **Barra Superior de Acciones**: Los botones "Añadir Juego", "Estadísticas" y "Gestionar" se han movido a la barra superior para liberar espacio.
+*   **Ventanas Modales (Overlays)**: Las estadísticas y la creación/edición de juegos ahora se gestionan mediante overlays centralizados.
+*   **Corrección de Errores**: Solucionado el crash crítico de recursos al navegar por consolas (`Static resource ByteToBitmap not found`).
+*   **Estabilidad**: Limpieza de referencias obsoletas y optimización del arranque.
+
+### v1.1.0.4
+*   **Corrección Crítica de Carátulas**: Implementación de `INotifyPropertyChanged` en el modelo `Game` para asegurar el refresco de miniaturas al navegar por el árbol.
+*   **Gestión de Categorías**: 
+    - Selector de categorías (Consolas, Portátiles, Ordenadores, Arcade) en diálogos de creación y gestión.
+    - Motor de detección automática de categorías basado en nombres de plataforma.
+    - Integración total en importaciones de LaunchBox, Drag & Drop y escaneo de carpetas.
+*   **Migración de DB**: Sistema de auto-parche para asegurar la columna `Category` en instalaciones existentes.
+
+### v1.1.0.3
+*   **Layout Desktop (estilo LaunchBox)**: Nueva rejilla central de 3 columnas con árbol lateral y panel de detalles.
+*   **Categorización de Plataformas**: Las plataformas ahora se agrupan por categorías (Computers, Consoles, Handhelds) en el árbol lateral.
+*   **Migración de DB Automática**: Script de emergencia para añadir la columna `Category` a la tabla `Platforms`.
+
+### v1.1.0.2
+- **Grupos de Imagen LaunchBox**: Implementado el sistema de organización de imágenes idéntico a LaunchBox (Background, 3D Boxes, Marquee, etc.).
+- **Búsqueda Inteligente de Multimedia**: El sistema mapea automáticamente los nombres amigables a las carpetas físicas de LaunchBox.
+- **Mejoras en Importación**: Corregidas las rutas de escaneo para carátulas de juegos, asegurando que se encuentren en la estructura estándar de LaunchBox.
+
+### v1.1.0.1
+- **Selector de Tipo de Arte**: Añadido menú desplegable para alternar carátulas en tiempo real.
+- **Búsqueda Flexible**: Soporte para encontrar carátulas por prefijo (ej: "Sonic (USA)" coincide con "Sonic").
 
 ### v1.0.9.9
 - **Eliminación de Integración EmuMovies**: Retirada del soporte para la API de EmuMovies para favorecer el uso de artes locales y herramientas externas.

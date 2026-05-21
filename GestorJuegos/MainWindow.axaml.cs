@@ -93,6 +93,11 @@ public partial class MainWindow : Window
                         command.CommandText = "ALTER TABLE Platforms ADD COLUMN LastScanDate TEXT;";
                         try { command.ExecuteNonQuery(); } catch { }
                     }
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "ALTER TABLE Platforms ADD COLUMN Category TEXT DEFAULT 'Consoles';";
+                        try { command.ExecuteNonQuery(); } catch { }
+                    }
                 }
             }
         }
@@ -108,7 +113,7 @@ public partial class MainWindow : Window
         var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         if (version != null)
         {
-            Title = $"Gestor de Juegos v1.1.0.0";
+            Title = $"Gestor de Juegos v1.1.0.2";
         }
 
         _gameService = new GameService();
@@ -120,6 +125,8 @@ public partial class MainWindow : Window
         AddHandler(DragDrop.DropEvent, Window_Drop);
 
         BtnAddGame.Click += BtnAddGame_Click;
+        BtnEditGame.Click += BtnEditGame_Click;
+        BtnCancelEditGame.Click += BtnCancelEditGame_Click;
         BtnSave.Click += BtnSave_Click;
         BtnDelete.Click += BtnDelete_Click;
         BtnSelectCover.Click += BtnSelectCover_Click;
@@ -131,7 +138,10 @@ public partial class MainWindow : Window
         LstGamesGrid.SelectionChanged += LstGames_SelectionChanged;
         
         LstPlatformsWall.SelectionChanged += LstPlatformsWall_SelectionChanged;
+        TreePlatforms.SelectionChanged += TreePlatforms_SelectionChanged;
+
         BtnShowPlatformsWall.Click += (s, e) => LoadPlatformsWall();
+
         BtnClosePlatformsWall.Click += (s, e) => OverlayPlatformsWall.IsVisible = false;
         
         BtnShowStats.Click += (s, e) => ShowFullStats();
@@ -230,11 +240,7 @@ public partial class MainWindow : Window
             _onConfirmAction?.Invoke();
         };
 
-        TxtGlobalSearch.TextChanged += TxtGlobalSearch_TextChanged;
-        BtnClearGlobalSearch.Click += (s, e) => TxtGlobalSearch.Text = string.Empty;
-        BtnCheckDuplicates.Click += BtnCheckDuplicates_Click;
         BtnBackFromSearch.Click += (s, e) => {
-            TxtGlobalSearch.Text = string.Empty;
             PnlGlobalSearch.IsVisible = false;
             PnlDashboard.IsVisible = true;
         };
@@ -245,6 +251,23 @@ public partial class MainWindow : Window
         InitVirtualKeyboard();
     }
 
+    private string GetLaunchBoxFolderName(string friendlyName)
+    {
+        return friendlyName switch
+        {
+            "Background" => "Fanart - Background",
+            "Boxes" => "Box - Front",
+            "3D Boxes" => "Box - 3D",
+            "Cart" => "Cart - Front",
+            "3D Cart" => "Cart - 3D",
+            "Clear Logo" => "Clear Logo",
+            "Marquee" => "Arcade - Marquee",
+            "ScreenShots" => "Screenshot - Gameplay",
+            "Steam Banner" => "Steam Banner",
+            _ => "Box - Front" // Por defecto
+        };
+    }
+
     private void CmbArtType_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_selectedGame == null || _selectedPlatform == null) return;
@@ -253,8 +276,10 @@ public partial class MainWindow : Window
         string lbPath = _settings.LaunchBoxPath;
         if (Directory.Exists(lbPath))
         {
-            string artType = (CmbArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Box - Front";
-            string imagesPlatformPath = Path.Combine(lbPath, "Images", _selectedPlatform.Name, artType);
+            string friendlyName = (CmbArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Boxes";
+            string artFolderName = GetLaunchBoxFolderName(friendlyName);
+            
+            string imagesPlatformPath = Path.Combine(lbPath, "Images", _selectedPlatform.Name, artFolderName);
             
             if (Directory.Exists(imagesPlatformPath))
             {
@@ -280,39 +305,6 @@ public partial class MainWindow : Window
                 }
             }
         }
-    }
-
-    private void TxtGlobalSearch_TextChanged(object? sender, TextChangedEventArgs e)
-    {
-        string query = TxtGlobalSearch.Text?.Trim().ToLower() ?? "";
-        if (string.IsNullOrEmpty(query))
-        {
-            if (PnlGlobalSearch.IsVisible)
-            {
-                PnlGlobalSearch.IsVisible = false;
-                PnlDashboard.IsVisible = true;
-            }
-            return;
-        }
-
-        PnlDashboard.IsVisible = false;
-        PnlGlobalSearch.IsVisible = true;
-        PnlHeaderToggles.IsVisible = false;
-        PnlPagination.IsVisible = false;
-        PnlGameDetails.IsVisible = false;
-
-        using var context = new GestorJuegos.Data.AppDbContext();
-        var results = context.Games
-            .Include(g => g.Platform)
-            .Where(g => g.Name.ToLower().Contains(query) || (g.Genre != null && g.Genre.ToLower().Contains(query)))
-            .OrderBy(g => g.Name)
-            .Take(50) // Límite para rendimiento
-            .ToList();
-
-        LstGlobalSearchResults.ItemsSource = results;
-        TxtSearchStatus.Text = results.Count > 0 
-            ? $"Resultados para '{query}' ({results.Count})" 
-            : $"No hay resultados para '{query}'";
     }
 
     private void LstGlobalSearchResults_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -875,7 +867,7 @@ public partial class MainWindow : Window
                     targetPlatform = context.Platforms.FirstOrDefault(p => p.Name == platformName);
                     if (targetPlatform == null)
                     {
-                        targetPlatform = new Platform { Name = platformName };
+                        targetPlatform = new Platform { Name = platformName, Category = DetectCategory(platformName) };
                         context.Platforms.Add(targetPlatform);
                         context.SaveChanges();
                     }
@@ -1086,7 +1078,7 @@ public partial class MainWindow : Window
                             platform = context.Platforms.FirstOrDefault(p => p.Name == platformName);
                             if (platform == null)
                             {
-                                platform = new Platform { Name = platformName };
+                                platform = new Platform { Name = platformName, Category = DetectCategory(platformName) };
                                 context.Platforms.Add(platform);
                                 context.SaveChanges();
                             }
@@ -1143,7 +1135,10 @@ public partial class MainWindow : Window
                                     try
                                     {
                                         // Intentar buscar carátula local en LaunchBox usando la preferencia
-                                        string imagesPlatformPath = Path.Combine(lbPath, "Images", "Platforms", platformName, _settings.PreferredArtType);
+                                        // Para JUEGOS, la ruta es LaunchBox\Images\NombrePlataforma\TipoArte
+                                        string artFolderName = GetLaunchBoxFolderName(_settings.PreferredArtType);
+                                        string imagesPlatformPath = Path.Combine(lbPath, "Images", platformName, artFolderName);
+                                        
                                         if (Directory.Exists(imagesPlatformPath))
                                         {
                                             // Buscar coincidencia exacta
@@ -1225,6 +1220,7 @@ public partial class MainWindow : Window
     private void BtnAddPlatform_Click(object? sender, RoutedEventArgs e)
     {
         TxtNewPlatformName.Text = string.Empty;
+        CmbNewPlatformCategory.SelectedIndex = 0; // Default to Consoles
         OverlayAddPlatform.IsVisible = true;
     }
 
@@ -1233,12 +1229,42 @@ public partial class MainWindow : Window
         OverlayAddPlatform.IsVisible = false;
     }
 
+    private string DetectCategory(string platformName)
+    {
+        string name = platformName.ToLower();
+        
+        // Portátiles
+        if (name.Contains("game boy") || name.Contains("gameboy") || name.Contains("psp") || 
+            name.Contains("nintendo ds") || name.Contains("nintendo 3ds") || name.Contains("game gear") || 
+            name.Contains("lynx") || name.Contains("vita") || name.Contains("wonderswan") || name.Contains("ngp") ||
+            name.Contains("pocket"))
+            return "Handhelds";
+
+        // Ordenadores
+        if (name.Contains("amiga") || name.Contains("commodore") || name.Contains("msx") || 
+            name.Contains("amstrad") || name.Contains("spectrum") || name.Contains("atari st") || 
+            name.Contains("dos") || name.Contains("windows") || name.Contains("mac") || 
+            name.Contains("pc") || name.Contains("apple") || name.Contains("sharp x68000") ||
+            name.Contains("nec pc") || name.Contains("scummvm"))
+            return "Computers";
+
+        // Arcade
+        if (name.Contains("arcade") || name.Contains("mame") || name.Contains("neogeo") || 
+            name.Contains("cps") || name.Contains("finalburn") || name.Contains("taito") || name.Contains("sega model") ||
+            name.Contains("naomi") || name.Contains("atomiswave"))
+            return "Arcade";
+
+        // Por defecto Consolas
+        return "Consoles";
+    }
+
     private void BtnSavePlatform_Click(object? sender, RoutedEventArgs e)
     {
         var platformName = TxtNewPlatformName.Text?.Trim();
         if (!string.IsNullOrEmpty(platformName))
         {
-            _gameService.AddPlatform(new Platform { Name = platformName });
+            string category = (CmbNewPlatformCategory.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Consoles";
+            _gameService.AddPlatform(new Platform { Name = platformName, Category = category });
             LoadPlatforms();
         }
         OverlayAddPlatform.IsVisible = false;
@@ -1274,13 +1300,88 @@ public partial class MainWindow : Window
         BtnViewList.IsEnabled = hasPlatforms;
         BtnViewGrid.IsEnabled = hasPlatforms;
         MenuExportDB.IsEnabled = hasPlatforms;
-        // Note: MenuImportDB is NOT disabled, so the user can import a backup even if the DB is empty.
 
         foreach (var platform in platforms)
         {
             var menuItem = new MenuItem { Header = platform.Name, Tag = platform };
             menuItem.Click += PlatformMenuItem_Click;
             MenuPlataformas.Items.Add(menuItem);
+        }
+
+        LoadPlatformsTree(platforms);
+    }
+
+    private void LoadPlatformsTree(List<Platform> platforms)
+    {
+        TreePlatforms.Items.Clear();
+
+        // Categoría: Todo
+        var allItem = new TreeViewItem { Header = "Todo", Tag = "ALL" };
+        TreePlatforms.Items.Add(allItem);
+
+        // Agrupar por Categoría
+        var categories = platforms.GroupBy(p => p.Category).OrderBy(g => g.Key);
+
+        foreach (var group in categories)
+        {
+            var catItem = new TreeViewItem { Header = group.Key, IsExpanded = true };
+            foreach (var p in group.OrderBy(x => x.Name))
+            {
+                // Intentar cargar logo para el icono
+                Bitmap? icon = null;
+                string lbPath = _settings.LaunchBoxPath;
+                if (Directory.Exists(lbPath))
+                {
+                    string logoPath = Path.Combine(lbPath, "Images", "Platforms", p.Name, "Clear Logo", $"{p.Name}.png");
+                    if (File.Exists(logoPath))
+                    {
+                        try { icon = new Bitmap(logoPath); } catch { }
+                    }
+                }
+
+                var pItem = new TreeViewItem 
+                { 
+                    Header = new StackPanel 
+                    { 
+                        Orientation = Avalonia.Layout.Orientation.Horizontal, 
+                        Spacing = 8,
+                        Children = 
+                        {
+                            new Image { Source = icon, Width = 20, Height = 20, Stretch = Avalonia.Media.Stretch.Uniform },
+                            new TextBlock { Text = p.Name, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center }
+                        }
+                    }, 
+                    Tag = p 
+                };
+                catItem.Items.Add(pItem);
+            }
+            TreePlatforms.Items.Add(catItem);
+        }
+    }
+
+    private void TreePlatforms_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (TreePlatforms.SelectedItem is TreeViewItem tvi)
+        {
+            if (tvi.Tag is Platform p)
+            {
+                _selectedPlatform = p;
+                TxtSelectedPlatform.Text = $"Plataforma: {p.Name}";
+                PnlDashboard.IsVisible = false;
+                PnlHeaderToggles.IsVisible = true;
+                PnlPagination.IsVisible = true;
+                
+                // Forzar vista de rejilla por defecto
+                BtnViewGrid_Click(null, new RoutedEventArgs());
+                
+                LoadGames();
+                PnlGameDetails.IsVisible = false;
+            }
+            else if (tvi.Tag?.ToString() == "ALL")
+            {
+                _selectedPlatform = null;
+                LoadDashboard();
+            }
         }
     }
 
@@ -1413,60 +1514,6 @@ public partial class MainWindow : Window
         
         using var context = new GestorJuegos.Data.AppDbContext();
         context.Database.EnsureCreated();
-
-        int totalGames = context.Games.Count();
-        int totalPlatforms = context.Platforms.Count();
-        
-        DashTotalGames.Text = totalGames.ToString();
-        DashTotalPlatforms.Text = totalPlatforms.ToString();
-
-        // Género favorito
-        var topGenre = context.Games
-            .Where(g => !string.IsNullOrEmpty(g.Genre))
-            .GroupBy(g => g.Genre)
-            .OrderByDescending(g => g.Count())
-            .Select(g => g.Key)
-            .FirstOrDefault() ?? "Ninguno";
-        
-        DashTopGenre.Text = topGenre;
-
-        // Estadísticas de Carátulas
-        using var coversContext = new GestorJuegos.Data.CoversDbContext();
-        int gamesWithCover = coversContext.Covers.Count();
-        double coverPercent = totalGames > 0 ? (gamesWithCover * 100.0) / totalGames : 0;
-        DashCoverProgress.Value = coverPercent;
-        DashCoverPercent.Text = $"{coverPercent:F1}% ({gamesWithCover}/{totalGames})";
-
-        // Estadísticas de Regiones
-        var regionStats = context.Games
-            .Where(g => !string.IsNullOrEmpty(g.Region))
-            .GroupBy(g => g.Region)
-            .OrderByDescending(g => g.Count())
-            .Take(5)
-            .Select(g => new { Key = g.Key, Value = g.Count() })
-            .ToList();
-        DashRegionStats.ItemsSource = regionStats;
-
-        // Distribución
-        var platformStats = _gameService.GetGamesCountByPlatform()
-            .Select(p => new { Key = p.Key, Value = p.Value })
-            .OrderByDescending(p => p.Value)
-            .ToList();
-        DashPlatformStats.ItemsSource = platformStats;
-
-        // Recientes (últimos 10 agregados)
-        var recentGames = context.Games
-            .Include(g => g.Platform)
-            .OrderByDescending(g => g.Id)
-            .Take(10)
-            .ToList();
-        
-        // Cargar miniaturas para los recientes
-        foreach(var rg in recentGames)
-        {
-            rg.Cover = _gameService.GetGameThumbnail(rg.Id);
-        }
-        DashRecentGames.ItemsSource = recentGames;
     }
 
     private void MenuExportDB_Click(object? sender, RoutedEventArgs e)
@@ -1874,6 +1921,13 @@ public partial class MainWindow : Window
             TxtEditPlatformName.Text = platform.Name;
             TxtEmulatorPath.Text = platform.EmulatorPath;
             TxtLaunchArgs.Text = platform.LaunchArguments;
+            
+            // Seleccionar la categoría actual
+            var categoryItem = CmbEditPlatformCategory.Items.Cast<ComboBoxItem>()
+                .FirstOrDefault(i => i.Content?.ToString() == platform.Category);
+            if (categoryItem != null) CmbEditPlatformCategory.SelectedItem = categoryItem;
+            else CmbEditPlatformCategory.SelectedIndex = 0;
+
             PnlEditPlatform.IsVisible = true;
         }
     }
@@ -1888,6 +1942,8 @@ public partial class MainWindow : Window
                 platform.Name = newName;
                 platform.EmulatorPath = TxtEmulatorPath.Text?.Trim() ?? "";
                 platform.LaunchArguments = TxtLaunchArgs.Text?.Trim() ?? "";
+                platform.Category = (CmbEditPlatformCategory.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Consoles";
+                
                 _gameService.UpdatePlatform(platform);
                 LoadPlatforms();
                 LstManagePlatforms.ItemsSource = _gameService.GetPlatforms();
@@ -2007,6 +2063,10 @@ public partial class MainWindow : Window
 
         var paginated = filteredList.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
 
+        // Limpiar para forzar refresco total
+        LstGames.ItemsSource = null;
+        LstGamesGrid.ItemsSource = null;
+
         // Cargar miniaturas para la página actual
         foreach (var game in paginated)
         {
@@ -2101,11 +2161,33 @@ public partial class MainWindow : Window
                 LstGames.SelectedItem = game;
 
             _selectedGame = game;
+
+            // --- Llenar Panel Informativo (Derecha) ---
+            TxtInfoName.Text = game.Name;
+            TxtInfoYear.Text = game.Year.ToString();
+            TxtInfoGenre.Text = string.IsNullOrEmpty(game.Genre) ? "Género Desconocido" : game.Genre;
+            TxtInfoLanguages.Text = string.IsNullOrEmpty(game.Languages) ? "No especificado" : game.Languages;
+
+            // Región Flag Info
+            if (ImgInfoRegion != null)
+            {
+                var regionConverter = new Utils.RegionToFlagConverter();
+                ImgInfoRegion.Source = regionConverter.Convert(game.Region, null, null, null) as Avalonia.Media.Imaging.Bitmap;
+            }
+
+            // Emulador Info
+            if (PnlInfoEmulator != null)
+            {
+                PnlInfoEmulator.IsVisible = !string.IsNullOrEmpty(game.OverrideEmulatorPath);
+                TxtInfoEmulator.Text = game.OverrideEmulatorPath;
+            }
+
+            // --- Preparar Formulario de Edición (Overlay) ---
             TxtName.Text = game.Name;
             NumYear.Value = game.Year;
             TxtGenre.Text = game.Genre;
             TxtLanguages.Text = game.Languages;
-            
+
             _currentRoms.Clear();
             if (!string.IsNullOrEmpty(game.RomPath)) _currentRoms.Add(game.RomPath);
             if (!string.IsNullOrEmpty(game.AdditionalRoms))
@@ -2116,29 +2198,24 @@ public partial class MainWindow : Window
                 }
             }
             LstRoms.ItemsSource = _currentRoms;
+            LstInfoRoms.ItemsSource = _currentRoms;
+
             TxtOverrideEmulator.Text = game.OverrideEmulatorPath;
             TxtOverrideArgs.Text = game.OverrideLaunchArguments;
             ChkIsFavorite.IsChecked = game.IsFavorite;
-            
-            // Set the selected region in the ComboBox
+
             var regionItem = CmbRegion.Items.Cast<ComboBoxItem>().FirstOrDefault(i => i.Content?.ToString() == game.Region);
-            if (regionItem != null)
-            {
-                CmbRegion.SelectedItem = regionItem;
-            }
-            else
-            {
-                CmbRegion.SelectedIndex = 0;
-            }
+            if (regionItem != null) CmbRegion.SelectedItem = regionItem;
+            else CmbRegion.SelectedIndex = 0;
 
             _currentCover = _gameService.GetGameFullCover(game.Id);
             UpdateCoverImage();
 
-            BtnDelete.IsVisible = true;
+            // Visibilidad de Paneles
+            if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = false;
             PnlGameDetails.IsVisible = true;
         }
     }
-
     private void BtnAddGame_Click(object? sender, RoutedEventArgs e)
     {
         if (_selectedPlatform == null)
@@ -2148,6 +2225,8 @@ public partial class MainWindow : Window
         }
 
         _selectedGame = new Game { PlatformId = _selectedPlatform.Id, Year = DateTime.Now.Year };
+        TxtEditGameTitle.Text = "Añadir Nuevo Juego";
+        
         TxtName.Text = string.Empty;
         NumYear.Value = _selectedGame.Year;
         TxtGenre.Text = string.Empty;
@@ -2159,12 +2238,20 @@ public partial class MainWindow : Window
         ChkIsFavorite.IsChecked = false;
         CmbRegion.SelectedIndex = 0;
         _currentCover = null;
-        UpdateCoverImage();
 
-        LstGames.SelectedItem = null;
-        LstGamesGrid.SelectedItem = null;
-        BtnDelete.IsVisible = false;
-        PnlGameDetails.IsVisible = true;
+        OverlayEditGame.IsVisible = true;
+    }
+
+    private void BtnEditGame_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null) return;
+        TxtEditGameTitle.Text = "Editar Juego";
+        OverlayEditGame.IsVisible = true;
+    }
+
+    private void BtnCancelEditGame_Click(object? sender, RoutedEventArgs e)
+    {
+        OverlayEditGame.IsVisible = false;
     }
 
     private void BtnSave_Click(object? sender, RoutedEventArgs e)
@@ -2204,8 +2291,18 @@ public partial class MainWindow : Window
             _gameService.UpdateGame(_selectedGame);
         }
 
+        OverlayEditGame.IsVisible = false;
         LoadGames();
-        PnlGameDetails.IsVisible = false;
+        
+        // Refrescar selección en panel derecho tras guardar
+        var updatedGame = _currentPlatformGames.FirstOrDefault(g => g.Id == _selectedGame.Id);
+        if (updatedGame != null)
+        {
+            if (LstGames.IsVisible) LstGames.SelectedItem = updatedGame;
+            else LstGamesGrid.SelectedItem = updatedGame;
+            
+            LstGames_SelectionChanged(null, new SelectionChangedEventArgs(null, new List<object>(), new List<object>()));
+        }
     }
 
     private void BtnDelete_Click(object? sender, RoutedEventArgs e)
@@ -2699,10 +2796,10 @@ public partial class MainWindow : Window
                                 TxtProgressDetail.Text = $"Importando: {pName}...";
                             });
 
-                            var platform = context.Platforms.FirstOrDefault(p => p.Name == pName);
+                            Platform? platform = context.Platforms.FirstOrDefault(p => p.Name == pName);
                             if (platform == null)
                             {
-                                platform = new Platform { Name = pName };
+                                platform = new Platform { Name = pName, Category = DetectCategory(pName) };
                                 context.Platforms.Add(platform);
                                 context.SaveChanges();
                             }
