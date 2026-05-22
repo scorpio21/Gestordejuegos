@@ -15,6 +15,10 @@ namespace GestorJuegos.Models
         public string Developer { get; set; } = string.Empty;
         public string Publisher { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public int Rating { get; set; } = 0;
+        public string PlayStatus { get; set; } = "Pendiente";
+        public string Version { get; set; } = string.Empty;
+        public int PlayCount { get; set; } = 0;
         public string Region { get; set; } = "🇺🇸 US"; // Default to US or none
         public string Languages { get; set; } = string.Empty;
         

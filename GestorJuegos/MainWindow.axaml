@@ -527,19 +527,26 @@
                                             <TextBlock Text="Nombre del Juego" FontSize="11" Foreground="#64748b"/>
                                             <TextBox Name="TxtName" PlaceholderText="Ej: Super Mario World"/>
                                         </StackPanel>
-                                        <Button Name="BtnSearchIgdb" Grid.Column="1" Content="🔍 Buscar en Vimm" VerticalAlignment="Bottom" Height="34" Click="BtnSearchIgdb_Click"/>
+                                        <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5" VerticalAlignment="Bottom">
+                                            <Button Name="BtnSyncLaunchBox" Content="🔄 Sincronizar LaunchBox" Background="#3b82f6" Foreground="White" Click="BtnSyncLaunchBox_Click"/>
+                                            <Button Name="BtnSearchIgdb" Content="🔍 Buscar Vimm" Click="BtnSearchIgdb_Click"/>
+                                        </StackPanel>
                                     </Grid>
 
-                                    <Grid ColumnDefinitions="*, *">
+                                    <Grid ColumnDefinitions="*, *, *">
                                         <StackPanel Spacing="5" Margin="0,0,10,0">
-                                            <TextBlock Text="Año de Lanzamiento" FontSize="11" Foreground="#64748b"/>
+                                            <TextBlock Text="Año" FontSize="11" Foreground="#64748b"/>
                                             <NumericUpDown Name="NumYear" Minimum="1900" Maximum="2100" FormatString="0"/>
                                         </StackPanel>
-                                        <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,0,0">
+                                        <StackPanel Grid.Column="1" Spacing="5" Margin="5,0,5,0">
                                             <TextBlock Text="Región" FontSize="11" Foreground="#64748b"/>
                                             <ComboBox Name="CmbRegion" HorizontalAlignment="Stretch">
                                                 <ComboBoxItem Content="🇺🇸 US"/><ComboBoxItem Content="🇪🇺 EU"/><ComboBoxItem Content="🇪🇸 ES"/><ComboBoxItem Content="🇯🇵 JP"/><ComboBoxItem Content="🌎 World"/>
                                             </ComboBox>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,0,0">
+                                            <TextBlock Text="Versión" FontSize="11" Foreground="#64748b"/>
+                                            <TextBox Name="TxtVersion" PlaceholderText="v1.0"/>
                                         </StackPanel>
                                     </Grid>
 
@@ -570,7 +577,45 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <!-- PESTAÑA 2: ARCHIVOS -->
+                        <!-- PESTAÑA 2: ESTADO Y VALORACIÓN (NUEVA PARA TU INFO) -->
+                        <TabItem Header="Estado">
+                            <ScrollViewer>
+                                <StackPanel Spacing="20" Margin="0,15,10,0">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="Estado del Juego" Classes="Header"/>
+                                        <ComboBox Name="CmbPlayStatus" HorizontalAlignment="Stretch">
+                                            <ComboBoxItem Content="Pendiente"/>
+                                            <ComboBoxItem Content="Jugando"/>
+                                            <ComboBoxItem Content="Completado"/>
+                                            <ComboBoxItem Content="Abandonado"/>
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="Valoración (0-100)" Classes="Header"/>
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <Slider Name="SldRating" Minimum="0" Maximum="100" Value="0" TickFrequency="1" IsSnapToTickEnabled="True"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding #SldRating.Value, StringFormat='\{0:0\}'}" VerticalAlignment="Center" Margin="15,0,0,0" FontSize="20" FontWeight="Bold" Foreground="#10b981"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <Border Background="#0f172a" Padding="15" CornerRadius="8">
+                                        <Grid ColumnDefinitions="*, *">
+                                            <StackPanel Spacing="5">
+                                                <TextBlock Text="VECES JUGADO" FontSize="10" Foreground="#64748b"/>
+                                                <TextBlock Name="TxtPlayCount" Text="0" FontSize="24" FontWeight="Bold"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Spacing="5" HorizontalAlignment="Right">
+                                                <TextBlock Text="AÑADIDO EL" FontSize="10" Foreground="#64748b" HorizontalAlignment="Right"/>
+                                                <TextBlock Name="TxtDateAdded" Text="--" FontSize="14" HorizontalAlignment="Right"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- PESTAÑA 3: ARCHIVOS -->
                         <TabItem Header="Archivos">
                             <ScrollViewer>
                                 <StackPanel Spacing="15" Margin="0,15,10,0">
@@ -608,7 +653,7 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <!-- PESTAÑA 3: MULTIMEDIA -->
+                        <!-- PESTAÑA 4: MULTIMEDIA -->
                         <TabItem Header="Multimedia">
                             <ScrollViewer>
                                 <StackPanel Spacing="15" Margin="0,15,10,0">
@@ -651,13 +696,13 @@
                             </ScrollViewer>
                         </TabItem>
                         
-                        <!-- PESTAÑA 4: DESCRIPCIÓN -->
+                        <!-- PESTAÑA 5: DESCRIPCIÓN -->
                         <TabItem Header="Descripción">
                             <ScrollViewer>
                                 <StackPanel Spacing="10" Margin="0,15,10,0">
                                     <TextBlock Text="Descripción del Juego" FontSize="11" Foreground="#64748b"/>
                                     <TextBox Name="TxtDescription" AcceptsReturn="True" TextWrapping="Wrap" Height="300" 
-                                             Watermark="Escribe aquí la historia o detalles del juego..."
+                                             PlaceholderText="Escribe aquí la historia o detalles del juego..."
                                              Background="#0f172a" BorderBrush="#334155" Foreground="White" Padding="10"/>
                                 </StackPanel>
                             </ScrollViewer>

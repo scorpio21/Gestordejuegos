@@ -2359,7 +2359,7 @@ public partial class MainWindow : Window
         }
 
         GestorJuegos.Utils.SoundHelper.PlaySelect();
-        _selectedGame = new Game { PlatformId = _selectedPlatform.Id, Year = DateTime.Now.Year };
+        _selectedGame = new Game { PlatformId = _selectedPlatform.Id, Year = DateTime.Now.Year, DateAdded = DateTime.Now };
         TxtEditGameTitle.Text = "Añadir Nuevo Juego";
         
         TxtName.Text = string.Empty;
@@ -2369,6 +2369,12 @@ public partial class MainWindow : Window
         TxtPublisher.Text = string.Empty;
         TxtDescription.Text = string.Empty;
         TxtLanguages.Text = string.Empty;
+        TxtVersion.Text = string.Empty;
+        CmbPlayStatus.SelectedIndex = 0;
+        SldRating.Value = 0;
+        TxtPlayCount.Text = "0";
+        TxtDateAdded.Text = DateTime.Now.ToString("dd/MM/yyyy");
+
         _currentRoms.Clear();
         LstRoms.ItemsSource = _currentRoms;
         TxtOverrideEmulator.Text = string.Empty;
@@ -2376,6 +2382,7 @@ public partial class MainWindow : Window
         ChkIsFavorite.IsChecked = false;
         CmbRegion.SelectedIndex = 0;
         _currentCover = null;
+        ImgEditCover.Source = null;
 
         OverlayEditGame.IsVisible = true;
     }
@@ -2385,6 +2392,58 @@ public partial class MainWindow : Window
         if (_selectedGame == null) return;
         GestorJuegos.Utils.SoundHelper.PlaySelect();
         TxtEditGameTitle.Text = "Editar Juego";
+
+        // Cargar datos actuales
+        TxtName.Text = _selectedGame.Name;
+        NumYear.Value = _selectedGame.Year;
+        TxtGenre.Text = _selectedGame.Genre;
+        TxtDeveloper.Text = _selectedGame.Developer;
+        TxtPublisher.Text = _selectedGame.Publisher;
+        TxtDescription.Text = _selectedGame.Description;
+        TxtLanguages.Text = _selectedGame.Languages;
+        TxtVersion.Text = _selectedGame.Version;
+        
+        // Estado
+        foreach (ComboBoxItem item in CmbPlayStatus.Items)
+        {
+            if (item.Content?.ToString() == _selectedGame.PlayStatus)
+            {
+                CmbPlayStatus.SelectedItem = item;
+                break;
+            }
+        }
+        if (CmbPlayStatus.SelectedItem == null) CmbPlayStatus.SelectedIndex = 0;
+
+        SldRating.Value = _selectedGame.Rating;
+        TxtPlayCount.Text = _selectedGame.PlayCount.ToString();
+        TxtDateAdded.Text = _selectedGame.DateAdded?.ToString("dd/MM/yyyy") ?? "--";
+
+        _currentRoms.Clear();
+        if (!string.IsNullOrEmpty(_selectedGame.RomPath)) _currentRoms.Add(_selectedGame.RomPath);
+        if (!string.IsNullOrEmpty(_selectedGame.AdditionalRoms))
+        {
+            foreach (var r in _selectedGame.AdditionalRoms.Split('|')) _currentRoms.Add(r);
+        }
+        LstRoms.ItemsSource = _currentRoms;
+
+        TxtOverrideEmulator.Text = _selectedGame.OverrideEmulatorPath;
+        TxtOverrideArgs.Text = _selectedGame.OverrideLaunchArguments;
+        ChkIsFavorite.IsChecked = _selectedGame.IsFavorite;
+
+        // Región
+        foreach (ComboBoxItem item in CmbRegion.Items)
+        {
+            if (item.Content?.ToString() == _selectedGame.Region)
+            {
+                CmbRegion.SelectedItem = item;
+                break;
+            }
+        }
+        if (CmbRegion.SelectedItem == null) CmbRegion.SelectedIndex = 0;
+
+        _currentCover = _selectedGame.Cover;
+        UpdateCoverImage();
+
         OverlayEditGame.IsVisible = true;
     }
 
@@ -2406,6 +2465,9 @@ public partial class MainWindow : Window
         _selectedGame.Publisher = TxtPublisher.Text ?? string.Empty;
         _selectedGame.Description = TxtDescription.Text ?? string.Empty;
         _selectedGame.Languages = TxtLanguages.Text ?? string.Empty;
+        _selectedGame.Version = TxtVersion.Text ?? string.Empty;
+        _selectedGame.PlayStatus = (CmbPlayStatus.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Pendiente";
+        _selectedGame.Rating = (int)SldRating.Value;
         
         if (_currentRoms.Count > 0)
         {
@@ -2452,6 +2514,67 @@ public partial class MainWindow : Window
             else LstGamesGrid.SelectedItem = updatedGame;
             
             LstGames_SelectionChanged(null, new SelectionChangedEventArgs(null, new List<object>(), new List<object>()));
+        }
+    }
+
+    private void BtnSyncLaunchBox_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null || _selectedPlatform == null) return;
+        
+        GestorJuegos.Utils.SoundHelper.PlaySelect();
+        
+        // Buscar en el XML de LaunchBox
+        string lbPath = _settings.LaunchBoxPath;
+        if (!Directory.Exists(lbPath))
+        {
+            ShowMessage("Configura primero la ruta de LaunchBox en Ajustes.");
+            return;
+        }
+
+        string xmlPath = Path.Combine(lbPath, "Data", "Platforms", $"{_selectedPlatform.Name}.xml");
+        if (!File.Exists(xmlPath))
+        {
+            ShowMessage($"No se encontró el XML de metadatos para la plataforma: {_selectedPlatform.Name}");
+            return;
+        }
+
+        try
+        {
+            var xdoc = System.Xml.Linq.XDocument.Load(xmlPath);
+            var gameElement = xdoc.Descendants("Game")
+                .FirstOrDefault(x => x.Element("Title")?.Value?.Equals(_selectedGame.Name, StringComparison.OrdinalIgnoreCase) == true);
+
+            if (gameElement != null)
+            {
+                // Extraer metadatos
+                TxtGenre.Text = gameElement.Element("Genre")?.Value ?? TxtGenre.Text;
+                TxtDeveloper.Text = gameElement.Element("Developer")?.Value ?? TxtDeveloper.Text;
+                TxtPublisher.Text = gameElement.Element("Publisher")?.Value ?? TxtPublisher.Text;
+                TxtDescription.Text = gameElement.Element("Notes")?.Value ?? TxtDescription.Text;
+                TxtVersion.Text = gameElement.Element("Version")?.Value ?? TxtVersion.Text;
+                
+                string releaseYear = gameElement.Element("ReleaseDate")?.Value;
+                if (!string.IsNullOrEmpty(releaseYear) && DateTime.TryParse(releaseYear, out var dt))
+                {
+                    NumYear.Value = dt.Year;
+                }
+
+                string ratingStr = gameElement.Element("StarRating")?.Value;
+                if (float.TryParse(ratingStr, out var rating))
+                {
+                    SldRating.Value = (int)(rating * 20); // De 0-5 a 0-100
+                }
+
+                ShowMessage("Metadatos sincronizados desde LaunchBox correctamente.");
+            }
+            else
+            {
+                ShowMessage("No se encontró información exacta para este título en LaunchBox.");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Error al leer el XML: {ex.Message}");
         }
     }
 
