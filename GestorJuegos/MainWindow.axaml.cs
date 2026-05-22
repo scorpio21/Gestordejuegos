@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
+using GestorJuegos.Utils;
 
 namespace GestorJuegos;
 
@@ -143,10 +144,10 @@ public partial class MainWindow : Window
 
         BtnShowPlatformsWall.Click += (s, e) => LoadPlatformsWall();
 
-        BtnClosePlatformsWall.Click += (s, e) => OverlayPlatformsWall.IsVisible = false;
+        BtnClosePlatformsWall.Click += (s, e) => { GestorJuegos.Utils.SoundHelper.PlayBack(); OverlayPlatformsWall.IsVisible = false; };
         
-        BtnShowStats.Click += (s, e) => ShowFullStats();
-        BtnCloseFullStats.Click += (s, e) => OverlayFullStats.IsVisible = false;
+        BtnShowStats.Click += (s, e) => { GestorJuegos.Utils.SoundHelper.PlaySelect(); ShowFullStats(); };
+        BtnCloseFullStats.Click += (s, e) => { GestorJuegos.Utils.SoundHelper.PlayBack(); OverlayFullStats.IsVisible = false; };
         
         BtnViewList.Click += BtnViewList_Click;
         BtnViewGrid.Click += BtnViewGrid_Click;
@@ -158,7 +159,7 @@ public partial class MainWindow : Window
         BtnSavePlatform.Click += BtnSavePlatform_Click;
         
         BtnManagePlatforms.Click += BtnManagePlatforms_Click;
-        BtnCloseManagePlatforms.Click += BtnCloseManagePlatforms_Click;
+        BtnCloseManagePlatforms.Click += (s, e) => { GestorJuegos.Utils.SoundHelper.PlayBack(); OverlayManagePlatforms.IsVisible = false; };
         BtnSaveEditPlatform.Click += BtnSaveEditPlatform_Click;
         BtnDeletePlatform.Click += BtnDeletePlatform_Click;
         LstManagePlatforms.SelectionChanged += LstManagePlatforms_SelectionChanged;
@@ -211,6 +212,10 @@ public partial class MainWindow : Window
         string dbTypeName = GetLaunchBoxFolderName(friendlyName);
         LogDebug($"Buscando arte en DB: {friendlyName} (Tipo: {dbTypeName})");
 
+        // Efecto Fade Out
+        ImgCover.Opacity = 0;
+        ImgEditCover.Opacity = 0;
+
         // 1. Intentar cargar el tipo específico de la base de datos (extra images)
         byte[]? dbImage = _gameService.GetGameExtraImage(_selectedGame.Id, dbTypeName);
         
@@ -225,6 +230,10 @@ public partial class MainWindow : Window
             _currentCover = _gameService.GetGameFullCover(_selectedGame.Id);
         }
         UpdateCoverImage();
+
+        // Fade In
+        ImgCover.Opacity = 1;
+        ImgEditCover.Opacity = 1;
     }
 
     private void CmbArtType_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -314,6 +323,7 @@ public partial class MainWindow : Window
 
     private async void BtnConfirmVimm_Click(object? sender, RoutedEventArgs e)
     {
+        SoundHelper.PlaySelect();
         if (CmbVimmSystem.SelectedItem is KeyValuePair<string, string> selected)
         {
             // Validar existencia rápida antes de empezar el lote
@@ -984,6 +994,7 @@ public partial class MainWindow : Window
 
     private async void MenuImportLaunchBox_Click(object? sender, RoutedEventArgs e)
     {
+        SoundHelper.PlaySelect();
         string lbPath = _settings.LaunchBoxPath;
         
         if (!Directory.Exists(lbPath) || !Directory.Exists(Path.Combine(lbPath, "Data", "Platforms")))
@@ -1269,6 +1280,7 @@ public partial class MainWindow : Window
 
     private void BtnViewList_Click(object? sender, RoutedEventArgs e)
     {
+        GestorJuegos.Utils.SoundHelper.PlayNavigation();
         LstGames.IsVisible = true;
         LstGamesGrid.IsVisible = false;
         BtnViewList.Background = Avalonia.Media.Brush.Parse("#444444");
@@ -1277,6 +1289,7 @@ public partial class MainWindow : Window
 
     private void BtnViewGrid_Click(object? sender, RoutedEventArgs e)
     {
+        GestorJuegos.Utils.SoundHelper.PlayNavigation();
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = true;
         BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
@@ -1342,6 +1355,7 @@ public partial class MainWindow : Window
                 return;
             }
 
+            GestorJuegos.Utils.SoundHelper.PlaySelect();
             _currentPage = 1;
             PnlDashboard.IsVisible = false;
             // PnlHeaderToggles.IsVisible = true; (Eliminado)
@@ -1502,6 +1516,7 @@ public partial class MainWindow : Window
 
     private async void BtnConfirmExport_Click(object? sender, RoutedEventArgs e)
     {
+        SoundHelper.PlaySelect();
         OverlayExportOptions.IsVisible = false;
         
         var topLevel = TopLevel.GetTopLevel(this);
@@ -1827,6 +1842,8 @@ public partial class MainWindow : Window
             return;
         }
 
+        GestorJuegos.Utils.SoundHelper.PlaySelect();
+
         if (_selectedPlatform == null)
         {
             ShowMessage("Por favor, selecciona primero la plataforma principal.");
@@ -2105,6 +2122,7 @@ public partial class MainWindow : Window
     {
         if (_currentPage > 1)
         {
+            GestorJuegos.Utils.SoundHelper.PlayNavigation();
             _currentPage--;
             ApplySearchFilter();
             
@@ -2119,6 +2137,7 @@ public partial class MainWindow : Window
 
     private void BtnNextPage_Click(object? sender, RoutedEventArgs e)
     {
+        GestorJuegos.Utils.SoundHelper.PlayNavigation();
         _currentPage++;
         ApplySearchFilter();
         
@@ -2140,6 +2159,17 @@ public partial class MainWindow : Window
                 LstGamesGrid.SelectedItem = game;
             else if (sender == LstGamesGrid && LstGames.SelectedItem != game)
                 LstGames.SelectedItem = game;
+
+            // Visibilidad de Paneles con Fade
+            if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = false;
+            
+            // Efecto Fade
+            PnlGameDetails.Opacity = 0;
+            PnlGameDetails.IsVisible = true;
+            PnlGameDetails.Opacity = 1;
+
+            // SONIDO: Navegación
+            GestorJuegos.Utils.SoundHelper.PlayNavigation();
 
             _selectedGame = game;
             _isSelectingGame = true; // Evitar disparar eventos de guardado durante la carga
@@ -2295,6 +2325,7 @@ public partial class MainWindow : Window
             return;
         }
 
+        GestorJuegos.Utils.SoundHelper.PlaySelect();
         _selectedGame = new Game { PlatformId = _selectedPlatform.Id, Year = DateTime.Now.Year };
         TxtEditGameTitle.Text = "Añadir Nuevo Juego";
         
@@ -2319,12 +2350,14 @@ public partial class MainWindow : Window
     private void BtnEditGame_Click(object? sender, RoutedEventArgs e)
     {
         if (_selectedGame == null) return;
+        GestorJuegos.Utils.SoundHelper.PlaySelect();
         TxtEditGameTitle.Text = "Editar Juego";
         OverlayEditGame.IsVisible = true;
     }
 
     private void BtnCancelEditGame_Click(object? sender, RoutedEventArgs e)
     {
+        GestorJuegos.Utils.SoundHelper.PlayBack();
         OverlayEditGame.IsVisible = false;
     }
 
@@ -2332,6 +2365,7 @@ public partial class MainWindow : Window
     {
         if (_selectedGame == null || _selectedPlatform == null) return;
 
+        GestorJuegos.Utils.SoundHelper.PlaySelect();
         _selectedGame.Name = TxtName.Text ?? string.Empty;
         _selectedGame.Year = (int)(NumYear.Value ?? DateTime.Now.Year);
         _selectedGame.Genre = TxtGenre.Text ?? string.Empty;
@@ -2392,6 +2426,7 @@ public partial class MainWindow : Window
     {
         if (_selectedGame != null && _selectedGame.Id != 0)
         {
+            GestorJuegos.Utils.SoundHelper.PlayBack();
             _gameService.DeleteGame(_selectedGame.Id);
             LoadGames();
             PnlGameDetails.IsVisible = false;
@@ -2680,6 +2715,7 @@ public partial class MainWindow : Window
             }
 
             logLines.Add($"-> Iniciando: FileName='{psi.FileName}', Arguments='{psi.Arguments}'");
+            GestorJuegos.Utils.SoundHelper.PlayLaunch();
             Process.Start(psi);
             logLines.Add("Proceso iniciado con éxito.");
             
@@ -2696,6 +2732,7 @@ public partial class MainWindow : Window
 
     private async void MenuImportFolders_Click(object? sender, RoutedEventArgs e)
     {
+        SoundHelper.PlaySelect();
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel == null) return;
 
@@ -3014,6 +3051,8 @@ public partial class MainWindow : Window
             return;
         }
 
+        GestorJuegos.Utils.SoundHelper.PlaySelect();
+
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel == null) return;
 
@@ -3281,6 +3320,7 @@ public partial class MainWindow : Window
     // --- CONFIGURACIÓN ---
     private void MenuSettings_Click(object? sender, RoutedEventArgs e)
     {
+        SoundHelper.PlaySelect();
         CfgLbPath.Text = _settings.LaunchBoxPath;
         CfgAutoImportCovers.IsChecked = _settings.AutoImportCovers;
         
@@ -3300,6 +3340,7 @@ public partial class MainWindow : Window
 
     private async void BtnBrowseLb_Click(object? sender, RoutedEventArgs e)
     {
+        SoundHelper.PlaySelect();
         var topLevel = GetTopLevel(this);
         if (topLevel == null) return;
 
@@ -3363,6 +3404,7 @@ public partial class MainWindow : Window
 
     private void BtnAcceptConfirm_Click(object? sender, RoutedEventArgs e)
     {
+        GestorJuegos.Utils.SoundHelper.PlaySelect();
         OverlayConfirm.IsVisible = false;
         _onConfirmAction?.Invoke();
         _onConfirmAction = null;
@@ -3370,6 +3412,7 @@ public partial class MainWindow : Window
 
     private void BtnCancelConfirm_Click(object? sender, RoutedEventArgs e)
     {
+        GestorJuegos.Utils.SoundHelper.PlayBack();
         OverlayConfirm.IsVisible = false;
         _onConfirmAction = null;
     }

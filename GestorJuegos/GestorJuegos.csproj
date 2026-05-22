@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2" />
     <PackageReference Include="SkiaSharp" Version="3.119.4-preview.1.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.4-preview.1.1" />
+    <PackageReference Include="System.Windows.Extensions" Version="10.0.8" />
     <PackageReference Include="Vortice.XInput" Version="3.8.3" />
   </ItemGroup>
 

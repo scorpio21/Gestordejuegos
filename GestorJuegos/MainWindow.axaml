@@ -322,10 +322,21 @@
                     <ScrollViewer>
                         <Panel>
                             <StackPanel Name="PnlGameDetails" IsVisible="False" Spacing="0">
+                                <StackPanel.Transitions>
+                                    <Transitions>
+                                        <DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
+                                    </Transitions>
+                                </StackPanel.Transitions>
                                 <!-- Banner Superior Mejorado -->
                                 <Panel Height="220">
                                     <Border Background="#1e293b" ClipToBounds="True">
-                                        <Image Name="ImgDetailBackground" Stretch="UniformToFill" Opacity="0.4"/>
+                                        <Image Name="ImgDetailBackground" Stretch="UniformToFill" Opacity="0.4">
+                                            <Image.Transitions>
+                                                <Transitions>
+                                                    <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
+                                                </Transitions>
+                                            </Image.Transitions>
+                                        </Image>
                                     </Border>
                                     <!-- Contenedor del Logo (Ahora dinámico) -->
                                     <Border Name="BrdDetailLogo" 
@@ -334,7 +345,13 @@
                                             Margin="0,0,0,10" 
                                             Height="120" Width="300"
                                             ZIndex="10">
-                                        <Image Name="ImgDetailLogo" Stretch="Uniform"/>
+                                        <Image Name="ImgDetailLogo" Stretch="Uniform">
+                                            <Image.Transitions>
+                                                <Transitions>
+                                                    <DoubleTransition Property="Opacity" Duration="0:0:0.4"/>
+                                                </Transitions>
+                                            </Image.Transitions>
+                                        </Image>
                                     </Border>
                                 </Panel>
 
@@ -380,7 +397,13 @@
                                         <StackPanel Spacing="10">
                                             <TextBlock Text="CARÁTULA / MULTIMEDIA" FontSize="11" FontWeight="Bold" Foreground="#64748b"/>
                                             <Border Background="#1e293b" CornerRadius="12" MinHeight="250" MaxHeight="450" ClipToBounds="True">
-                                                <Image Name="ImgCover" Stretch="Uniform" Margin="10"/>
+                                                <Image Name="ImgCover" Stretch="Uniform" Margin="10">
+                                                    <Image.Transitions>
+                                                        <Transitions>
+                                                            <DoubleTransition Property="Opacity" Duration="0:0:0.4"/>
+                                                        </Transitions>
+                                                    </Image.Transitions>
+                                                </Image>
                                             </Border>
                                             <ComboBox Name="CmbArtType" SelectedIndex="3" HorizontalAlignment="Stretch" Background="#0f172a" BorderBrush="#334155" SelectionChanged="CmbArtType_SelectionChanged">
                                                 <ComboBoxItem Content="Advert"/>
