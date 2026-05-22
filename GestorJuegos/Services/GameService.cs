@@ -20,7 +20,11 @@ namespace GestorJuegos.Services
                 {
                     context.Database.EnsureCreated();
                     // Migraciones existentes...
-                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN RomPath TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN SelectedArtType TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Developer TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Publisher TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Description TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN OverrideEmulatorPath TEXT NOT NULL DEFAULT ''"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN EmulatorPath TEXT NOT NULL DEFAULT ''"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN LaunchArguments TEXT NOT NULL DEFAULT '\"{0}\"'"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN OverrideEmulatorPath TEXT NOT NULL DEFAULT ''"); } catch { }
@@ -306,6 +310,24 @@ namespace GestorJuegos.Services
         public void UpdateGame(Game game)
         {
             UpdateGamesBatch(new List<Game> { game });
+        }
+
+        public void UpdateGameMetadata(Game game)
+        {
+            using (var context = new AppDbContext())
+            {
+                context.Games.Update(game);
+                context.SaveChanges();
+            }
+        }
+
+        public void UpdateGamesMetadataBatch(List<Game> games)
+        {
+            using (var context = new AppDbContext())
+            {
+                context.Games.UpdateRange(games);
+                context.SaveChanges();
+            }
         }
 
         public void UpdateGamesBatch(List<Game> games)

@@ -387,9 +387,8 @@
                                                 <ComboBoxItem Content="Artwork Preview"/>
                                                 <ComboBoxItem Content="Background"/>
                                                 <ComboBoxItem Content="Box"/>
-                                                <ComboBoxItem Content="Box 2.5D"/>
-                                                <ComboBoxItem Content="Box 3D"/>
-                                                <ComboBoxItem Content="Cabinet"/>
+                                                <ComboBoxItem Content="Box Full"/>
+                                                <ComboBoxItem Content="Box 3D"/>                                                <ComboBoxItem Content="Cabinet"/>
                                                 <ComboBoxItem Content="Logos"/>
                                                 <ComboBoxItem Content="Marquee"/>
                                                 <ComboBoxItem Content="Snap"/>
@@ -438,7 +437,7 @@
 
         <!-- OVERLAYS (Necesarios para el .cs) -->
         <Border Name="OverlayEditGame" Background="#AA000000" IsVisible="False" ZIndex="150">
-            <Border Background="#1e293b" Width="700" Height="550" CornerRadius="12" Padding="25" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 10 30 0 #AA000000">
+            <Border Background="#1e293b" Width="750" Height="650" CornerRadius="12" Padding="25" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 10 30 0 #AA000000">
                 <DockPanel>
                     <!-- Header del Overlay -->
                     <Grid DockPanel.Dock="Top" ColumnDefinitions="*, Auto" Margin="0,0,0,15">
@@ -454,8 +453,8 @@
 
                     <!-- Contenido en Pestañas -->
                     <TabControl Classes="Modern" Margin="0,5">
-                        <!-- PESTAÑA 1: GENERAL -->
-                        <TabItem Header="General">
+                        <!-- PESTAÑA 1: DETALLES -->
+                        <TabItem Header="Detalles">
                             <ScrollViewer>
                                 <StackPanel Spacing="15" Margin="0,15,10,0">
                                     <Grid ColumnDefinitions="*, Auto">
@@ -471,7 +470,7 @@
                                             <TextBlock Text="Año de Lanzamiento" FontSize="11" Foreground="#64748b"/>
                                             <NumericUpDown Name="NumYear" Minimum="1900" Maximum="2100" FormatString="0"/>
                                         </StackPanel>
-                                        <StackPanel Spacing="5" Margin="10,0,0,0">
+                                        <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,0,0">
                                             <TextBlock Text="Región" FontSize="11" Foreground="#64748b"/>
                                             <ComboBox Name="CmbRegion" HorizontalAlignment="Stretch">
                                                 <ComboBoxItem Content="🇺🇸 US"/><ComboBoxItem Content="🇪🇺 EU"/><ComboBoxItem Content="🇪🇸 ES"/><ComboBoxItem Content="🇯🇵 JP"/><ComboBoxItem Content="🌎 World"/>
@@ -479,23 +478,35 @@
                                         </StackPanel>
                                     </Grid>
 
-                                    <StackPanel Spacing="5">
-                                        <TextBlock Text="Género(s)" FontSize="11" Foreground="#64748b"/>
-                                        <TextBox Name="TxtGenre" PlaceholderText="Ej: Platform, Adventure"/>
-                                    </StackPanel>
+                                    <Grid ColumnDefinitions="*, *">
+                                        <StackPanel Spacing="5" Margin="0,0,10,0">
+                                            <TextBlock Text="Género(s)" FontSize="11" Foreground="#64748b"/>
+                                            <TextBox Name="TxtGenre" PlaceholderText="Ej: Platform, Adventure"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,0,0">
+                                            <TextBlock Text="Idiomas" FontSize="11" Foreground="#64748b"/>
+                                            <TextBox Name="TxtLanguages" PlaceholderText="Ej: English, Spanish"/>
+                                        </StackPanel>
+                                    </Grid>
 
-                                    <StackPanel Spacing="5">
-                                        <TextBlock Text="Idiomas" FontSize="11" Foreground="#64748b"/>
-                                        <TextBox Name="TxtLanguages" PlaceholderText="Ej: English, Spanish"/>
-                                    </StackPanel>
+                                    <Grid ColumnDefinitions="*, *">
+                                        <StackPanel Spacing="5" Margin="0,0,10,0">
+                                            <TextBlock Text="Desarrollador" FontSize="11" Foreground="#64748b"/>
+                                            <TextBox Name="TxtDeveloper" PlaceholderText="Ej: Nintendo EAD"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,0,0">
+                                            <TextBlock Text="Distribuidor" FontSize="11" Foreground="#64748b"/>
+                                            <TextBox Name="TxtPublisher" PlaceholderText="Ej: Nintendo"/>
+                                        </StackPanel>
+                                    </Grid>
 
                                     <CheckBox Name="ChkIsFavorite" Content="Marcar como Favorito (⭐)" FontSize="13" Margin="0,5,0,0"/>
                                 </StackPanel>
                             </ScrollViewer>
                         </TabItem>
 
-                        <!-- PESTAÑA 2: ARCHIVOS Y MEDIA -->
-                        <TabItem Header="Archivos y Multimedia">
+                        <!-- PESTAÑA 2: ARCHIVOS -->
+                        <TabItem Header="Archivos">
                             <ScrollViewer>
                                 <StackPanel Spacing="15" Margin="0,15,10,0">
                                     <TextBlock Text="Rutas de ROM / Ejecutables" FontSize="11" Foreground="#64748b"/>
@@ -512,26 +523,8 @@
                                     </Grid>
 
                                     <Separator Background="#334155" Margin="0,5"/>
-
-                                    <TextBlock Text="Gestión de Carátula" FontSize="11" Foreground="#64748b"/>
-                                    <Grid ColumnDefinitions="*, *, *">
-                                        <Button Name="BtnSelectCover" Grid.Column="0" Content="📁 Seleccionar..." HorizontalAlignment="Stretch" Margin="0,0,5,0" Click="BtnSelectCover_Click"/>
-                                        <Button Name="BtnClearCover" Grid.Column="1" Content="🗑️ Limpiar" HorizontalAlignment="Stretch" Margin="5,0,5,0" Click="BtnClearCover_Click"/>
-                                        <Border Grid.Column="2" Background="#0f172a" Height="100" CornerRadius="8" BorderThickness="1" BorderBrush="#334155" Margin="5,0,0,0">
-                                            <Image Name="ImgEditCover" Stretch="Uniform" Margin="5"/>
-                                        </Border>
-                                    </Grid>
-                                </StackPanel>
-                            </ScrollViewer>
-                        </TabItem>
-
-                        <!-- PESTAÑA 3: AVANZADO -->
-                        <TabItem Header="Avanzado">
-                            <ScrollViewer>
-                                <StackPanel Spacing="15" Margin="0,15,10,0">
-                                    <Border Background="#ef4444" Opacity="0.1" CornerRadius="8" Padding="10">
-                                        <TextBlock Text="⚠️ Estos ajustes sobrescriben la configuración global de la plataforma." Foreground="#ef4444" FontSize="11" TextWrapping="Wrap" HorizontalAlignment="Center"/>
-                                    </Border>
+                                    
+                                    <TextBlock Text="Configuración de Lanzamiento" FontSize="11" Foreground="#64748b" FontWeight="Bold"/>
 
                                     <StackPanel Spacing="5">
                                         <TextBlock Text="Emulador personalizado (Override)" FontSize="11" Foreground="#64748b"/>
@@ -546,6 +539,61 @@
                                         <TextBox Name="TxtOverrideArgs" PlaceholderText="Ej: -L cores\snes9x_libretro.dll '{0}'"/>
                                         <TextBlock Text="Usa {0} como marcador de posición para la ruta de la ROM." FontSize="10" Foreground="#94a3b8" FontStyle="Italic"/>
                                     </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- PESTAÑA 3: MULTIMEDIA -->
+                        <TabItem Header="Multimedia">
+                            <ScrollViewer>
+                                <StackPanel Spacing="15" Margin="0,15,10,0">
+                                    <TextBlock Text="Gestión de Arte" FontSize="11" Foreground="#64748b"/>
+                                    
+                                    <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="10">
+                                            <TextBlock Text="Carátula Principal" FontSize="13" Foreground="White" FontWeight="Bold"/>
+                                            <TextBlock Text="Esta imagen se usará en la rejilla y en el panel lateral." FontSize="11" Foreground="#94a3b8" TextWrapping="Wrap"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
+                                                <Button Name="BtnSelectCover" Content="📁 Seleccionar..." Click="BtnSelectCover_Click"/>
+                                                <Button Name="BtnClearCover" Content="🗑️ Limpiar" Click="BtnClearCover_Click"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        
+                                        <Border Grid.Row="0" Grid.Column="1" Background="#0f172a" Width="120" Height="160" CornerRadius="8" BorderThickness="1" BorderBrush="#334155">
+                                            <Panel>
+                                                <TextBlock Text="Sin Imagen" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#334155" FontSize="10"/>
+                                                <Image Name="ImgEditCover" Stretch="Uniform" Margin="5"/>
+                                            </Panel>
+                                        </Border>
+                                    </Grid>
+
+                                    <Separator Background="#334155" Margin="0,5"/>
+                                    
+                                    <TextBlock Text="Arte Adicional (Fondo / Logo)" FontSize="13" Foreground="White" FontWeight="Bold"/>
+                                    <TextBlock Text="El sistema busca automáticamente Fanart y Clear Logo en las subcarpetas del sistema." FontSize="11" Foreground="#94a3b8" TextWrapping="Wrap"/>
+                                    
+                                    <StackPanel Spacing="5" Margin="0,5,0,0">
+                                        <TextBlock Text="Tipo de Arte Preferido" FontSize="11" Foreground="#64748b"/>
+                                        <ComboBox Name="CmbEditArtType" HorizontalAlignment="Stretch">
+                                            <ComboBoxItem Content="Box 3D"/>
+                                            <ComboBoxItem Content="Box Full"/>
+                                            <ComboBoxItem Content="Cart - Front"/>
+                                            <ComboBoxItem Content="Cart - 3D"/>
+                                            <ComboBoxItem Content="Support"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        
+                        <!-- PESTAÑA 4: DESCRIPCIÓN -->
+                        <TabItem Header="Descripción">
+                            <ScrollViewer>
+                                <StackPanel Spacing="10" Margin="0,15,10,0">
+                                    <TextBlock Text="Descripción del Juego" FontSize="11" Foreground="#64748b"/>
+                                    <TextBox Name="TxtDescription" AcceptsReturn="True" TextWrapping="Wrap" Height="300" 
+                                             Watermark="Escribe aquí la historia o detalles del juego..."
+                                             Background="#0f172a" BorderBrush="#334155" Foreground="White" Padding="10"/>
                                 </StackPanel>
                             </ScrollViewer>
                         </TabItem>
@@ -749,9 +797,8 @@
                         <ComboBoxItem Content="Artwork Preview"/>
                         <ComboBoxItem Content="Background"/>
                         <ComboBoxItem Content="Box"/>
-                        <ComboBoxItem Content="Box 2.5D"/>
-                        <ComboBoxItem Content="Box 3D"/>
-                        <ComboBoxItem Content="Cabinet"/>
+                        <ComboBoxItem Content="Box Full"/>
+                        <ComboBoxItem Content="Box 3D"/>                        <ComboBoxItem Content="Cabinet"/>
                         <ComboBoxItem Content="Logos"/>
                         <ComboBoxItem Content="Marquee"/>
                         <ComboBoxItem Content="Snap"/>

@@ -1,4 +1,4 @@
-# 🎮 Gestor de Juegos (v1.1.1.0-Dev)
+# 🎮 Gestor de Juegos (v1.1.2.0-Dev)
 
 Organizador de colecciones de videojuegos para Windows, optimizado para grandes bibliotecas y uso con mando (Gamepad).
 
@@ -14,7 +14,16 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
-### v1.1.1.0-Dev (Actual)
+### v1.1.2.0-Dev (Actual)
+*   **Rediseño de Formulario de Edición (Estilo Playnite)**: El `OverlayEditGame` ha sido completamente rediseñado con una estructura de pestañas profesional:
+    - **Metadatos**: Nuevos campos para Desarrollador, Distribuidor, Región (con selector visual) y Géneros.
+    - **Archivos**: Gestión centralizada de ROMs, emuladores personalizados y argumentos de lanzamiento.
+    - **Multimedia**: Selector de tipo de arte preferido por juego y previsualización de carátulas.
+    - **Descripción**: Nuevo campo de texto multilínea para historias y detalles del juego.
+*   **Expansión del Modelo de Datos**: Actualización de la base de datos principal para soportar los nuevos campos de metadatos mediante migraciones automáticas.
+*   **Sincronización de Arte Mejorada**: El tipo de arte seleccionado en el formulario de edición se sincroniza instantáneamente con la vista de la biblioteca.
+
+### v1.1.1.0-Dev
 *   **Autonomía de Multimedia**: Migración completa de la visualización de imágenes a la base de datos local. La aplicación ya no requiere acceso a la carpeta de LaunchBox para mostrar logotipos o fondos de juegos ya importados.
 *   **Gestión de ExtraImages**: `GameService` actualizado para soportar el almacenamiento y actualización de múltiples tipos de arte por juego (Clear Logo, Fanart, Screenshot, etc.).
 *   **Importador LaunchBox Potenciado**: Ahora captura automáticamente hasta 15 tipos diferentes de arte multimedia durante la importación inicial.

@@ -12,6 +12,9 @@ namespace GestorJuegos.Models
         public string Name { get; set; } = string.Empty;
         public int Year { get; set; }
         public string Genre { get; set; } = string.Empty;
+        public string Developer { get; set; } = string.Empty;
+        public string Publisher { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public string Region { get; set; } = "🇺🇸 US"; // Default to US or none
         public string Languages { get; set; } = string.Empty;
         
@@ -34,6 +37,7 @@ namespace GestorJuegos.Models
         public List<GameImage> ExtraImages { get; set; } = new();
         
         public string RomPath { get; set; } = string.Empty;
+        public string SelectedArtType { get; set; } = string.Empty; // Nueva: Guarda el tipo elegido (ej: "Box 3D")
         public string AdditionalRoms { get; set; } = string.Empty;
         public bool IsFavorite { get; set; } = false;
         public string OverrideEmulatorPath { get; set; } = string.Empty;
