@@ -1,4 +1,4 @@
-# 🎮 Gestor de Juegos (v1.1.2.0-Dev)
+# 🎮 Gestor de Juegos (v1.1.2.2-Dev)
 
 Organizador de colecciones de videojuegos para Windows, optimizado para grandes bibliotecas y uso con mando (Gamepad).
 
@@ -14,7 +14,18 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
-### v1.1.2.0-Dev (Actual)
+### v1.1.2.2-Dev (Actual)
+*   **Navegación Sonora Inmersiva**: Los efectos de sonido ahora se reproducen al pasar el ratón por las listas de juegos y plataformas, no solo al hacer clic.
+*   **Optimización de Carga Crítica**: Eliminado el retardo al abrir plataformas mediante una precarga más eficiente de la base de datos y paginación optimizada.
+*   **Sonido de Alta Velocidad**: Implementado sistema de caché en memoria para los sonidos (`SoundHelper`), eliminando latencias de disco durante la navegación rápida.
+*   **Compilación Portable**: La carpeta de sonidos ahora se incluye automáticamente en el directorio de salida para facilitar la creación de instaladores.
+
+### v1.1.2.1-Dev
+*   **Configuración de Audio**: Añadida opción en los ajustes para activar/desactivar los efectos de sonido (SFX).
+*   **Detalles Extendidos en UI**: El panel de información ahora muestra Desarrollador, Distribuidor y Descripción del juego, con visibilidad dinámica.
+*   **Refactorización y Estilos**: Centralización de recursos visuales y creación de estilos compartidos para botones y encabezados, mejorando la coherencia visual.
+
+### v1.1.2.0-Dev
 *   **Rediseño de Formulario de Edición (Estilo Playnite)**: El `OverlayEditGame` ha sido completamente rediseñado con una estructura de pestañas profesional:
     - **Metadatos**: Nuevos campos para Desarrollador, Distribuidor, Región (con selector visual) y Géneros.
     - **Archivos**: Gestión centralizada de ROMs, emuladores personalizados y argumentos de lanzamiento.

@@ -7,5 +7,6 @@ namespace GestorJuegos.Models
         public string LaunchBoxPath { get; set; } = @"H:\LaunchBox";
         public string PreferredArtType { get; set; } = "Box - Front";
         public bool AutoImportCovers { get; set; } = true;
+        public bool EnableSoundEffects { get; set; } = true;
     }
 }

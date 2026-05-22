@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Media;
 using System.Threading.Tasks;
@@ -8,39 +9,75 @@ namespace GestorJuegos.Utils
     public static class SoundHelper
     {
         private static readonly string SoundsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sounds");
+        private static readonly Dictionary<string, SoundPlayer> _soundCache = new Dictionary<string, SoundPlayer>();
+        public static bool IsEnabled { get; set; } = true;
+
+        static SoundHelper()
+        {
+            // Precargar sonidos comunes para evitar latencia de disco
+            PreloadSound("nav.wav");
+            PreloadSound("select.wav");
+            PreloadSound("back.wav");
+            PreloadSound("launch.wav");
+        }
+
+        private static void PreloadSound(string fileName)
+        {
+            try
+            {
+                string fullPath = Path.Combine(SoundsPath, fileName);
+                if (File.Exists(fullPath))
+                {
+                    var player = new SoundPlayer(fullPath);
+                    player.Load();
+                    _soundCache[fileName] = player;
+                }
+            }
+            catch { /* Ignorar errores de carga */ }
+        }
 
         public static void PlayNavigation()
         {
-            PlaySound("nav.wav");
+            if (!IsEnabled) return;
+            PlayCachedSound("nav.wav");
         }
 
         public static void PlaySelect()
         {
-            PlaySound("select.wav");
+            if (!IsEnabled) return;
+            PlayCachedSound("select.wav");
         }
 
         public static void PlayBack()
         {
-            PlaySound("back.wav");
+            if (!IsEnabled) return;
+            PlayCachedSound("back.wav");
         }
 
         public static void PlayLaunch()
         {
-            PlaySound("launch.wav");
+            if (!IsEnabled) return;
+            PlayCachedSound("launch.wav");
         }
 
-        private static void PlaySound(string fileName)
+        private static void PlayCachedSound(string fileName)
         {
             Task.Run(() =>
             {
                 try
                 {
-                    string fullPath = Path.Combine(SoundsPath, fileName);
-                    if (File.Exists(fullPath))
+                    if (_soundCache.TryGetValue(fileName, out var player))
                     {
-                        using (var player = new SoundPlayer(fullPath))
+                        player.Play();
+                    }
+                    else
+                    {
+                        // Si por algún motivo no estaba en caché, intentar carga directa
+                        string fullPath = Path.Combine(SoundsPath, fileName);
+                        if (File.Exists(fullPath))
                         {
-                            player.Play();
+                            using var fallbackPlayer = new SoundPlayer(fullPath);
+                            fallbackPlayer.Play();
                         }
                     }
                 }

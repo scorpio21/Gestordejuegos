@@ -58,6 +58,7 @@ public partial class MainWindow : Window
                 var json = File.ReadAllText(configPath);
                 _settings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
             }
+            SoundHelper.IsEnabled = _settings.EnableSoundEffects;
         }
         catch { _settings = new AppSettings(); }
     }
@@ -66,6 +67,7 @@ public partial class MainWindow : Window
     {
         try
         {
+            SoundHelper.IsEnabled = _settings.EnableSoundEffects;
             string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
             var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
             string json = System.Text.Json.JsonSerializer.Serialize(_settings, options);
@@ -1974,6 +1976,16 @@ public partial class MainWindow : Window
         }
     }
 
+    private void GameItem_PointerEntered(object? sender, PointerEventArgs e)
+    {
+        SoundHelper.PlayNavigation();
+    }
+
+    private void SidebarItem_PointerEntered(object? sender, PointerEventArgs e)
+    {
+        SoundHelper.PlayNavigation();
+    }
+
     private void LoadGames()
     {
         if (_selectedPlatform == null)
@@ -1985,7 +1997,11 @@ public partial class MainWindow : Window
         }
 
         _currentPage = 1;
+        
+        // Optimización: Cargar solo lo necesario de la DB principal
         _currentPlatformGames = _gameService.GetGamesByPlatform(_selectedPlatform.Id);
+        
+        // Ejecutar ApplySearchFilter de forma asíncrona para no bloquear la UI si hay muchos juegos
         ApplySearchFilter();
     }
 
@@ -2182,6 +2198,16 @@ public partial class MainWindow : Window
             TxtInfoYear.Text = game.Year.ToString();
             TxtInfoGenre.Text = string.IsNullOrEmpty(game.Genre) ? "Género Desconocido" : game.Genre;
             TxtInfoLanguages.Text = string.IsNullOrEmpty(game.Languages) ? "No especificado" : game.Languages;
+
+            // Desarrollador y Distribuidor
+            TxtInfoDeveloper.Text = game.Developer;
+            PnlInfoDeveloper.IsVisible = !string.IsNullOrEmpty(game.Developer);
+            TxtInfoPublisher.Text = game.Publisher;
+            PnlInfoPublisher.IsVisible = !string.IsNullOrEmpty(game.Publisher);
+            
+            // Descripción
+            TxtInfoDescription.Text = game.Description;
+            TxtInfoDescription.IsVisible = !string.IsNullOrEmpty(game.Description);
 
             // Región Flag Info
             if (ImgInfoRegion != null)
@@ -3323,6 +3349,7 @@ public partial class MainWindow : Window
         SoundHelper.PlaySelect();
         CfgLbPath.Text = _settings.LaunchBoxPath;
         CfgAutoImportCovers.IsChecked = _settings.AutoImportCovers;
+        CfgEnableSoundEffects.IsChecked = _settings.EnableSoundEffects;
         
         // Seleccionar el tipo de arte en el combo
         foreach (ComboBoxItem item in CfgArtType.Items)
@@ -3365,6 +3392,7 @@ public partial class MainWindow : Window
     {
         _settings.LaunchBoxPath = CfgLbPath.Text ?? "";
         _settings.AutoImportCovers = CfgAutoImportCovers.IsChecked ?? false;
+        _settings.EnableSoundEffects = CfgEnableSoundEffects.IsChecked ?? true;
         _settings.PreferredArtType = (CfgArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Boxes";
         
         SaveSettings();

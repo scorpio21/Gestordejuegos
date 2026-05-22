@@ -57,6 +57,25 @@
             <Setter Property="BorderBrush" Value="#334155"/>
             <Setter Property="CornerRadius" Value="6"/>
         </Style>
+
+        <Style Selector="Button.Secondary">
+            <Setter Property="Background" Value="#334155"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.Secondary:pointerover">
+            <Setter Property="Background" Value="#475569"/>
+        </Style>
+
+        <Style Selector="TextBlock.Header">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#64748b"/>
+        </Style>
     </Window.Styles>
 
     <Window.Resources>
@@ -64,6 +83,9 @@
         <utils:RegionToFlagConverter x:Key="RegionToFlag"/>
         <SolidColorBrush x:Key="AccentBrush" Color="#10b981"/>
         <SolidColorBrush x:Key="PanelBrush" Color="#1e293b"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#334155"/>
+        <SolidColorBrush x:Key="SecondaryTextBrush" Color="#64748b"/>
+        <SolidColorBrush x:Key="DeepDarkBrush" Color="#0f172a"/>
 
         <!-- Plantilla para Items de Sidebar -->
         <DataTemplate x:Key="SidebarItemTemplate" x:DataType="models:SidebarItem">
@@ -72,7 +94,7 @@
                            IsVisible="{Binding IsHeader}" 
                            FontSize="11" FontWeight="Bold" Foreground="#64748b" Margin="5,15,0,5"/>
                 
-                <Grid ColumnDefinitions="Auto, *, Auto" IsVisible="{Binding !IsHeader}" Height="32">
+                <Grid ColumnDefinitions="Auto, *, Auto" IsVisible="{Binding !IsHeader}" Height="32" Background="Transparent" PointerEntered="SidebarItem_PointerEntered">
                     <TextBlock Grid.Column="0" Text="{Binding Icon}" Margin="5,0,10,0" VerticalAlignment="Center" FontSize="16"/>
                     <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Foreground="#cbd5e1" FontSize="13"/>
                     <Border Grid.Column="2" Background="#334155" CornerRadius="10" Padding="8,1" VerticalAlignment="Center" Margin="0,0,5,0">
@@ -83,7 +105,7 @@
         </DataTemplate>
         <!-- Plantilla para Rejilla de Juegos (Premium) -->
         <DataTemplate x:Key="GameGridTemplate" x:DataType="models:Game">
-            <Border Name="RootBorder" Margin="8" CornerRadius="12" ClipToBounds="True" Background="#1e293b" BoxShadow="0 4 15 0 #AA000000">
+            <Border Name="RootBorder" Margin="8" CornerRadius="12" ClipToBounds="True" Background="#1e293b" BoxShadow="0 4 15 0 #AA000000" PointerEntered="GameItem_PointerEntered">
                 <Panel>
                     <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill" Height="220" Width="160"/>
                     
@@ -255,7 +277,7 @@
                             <ListBox Name="LstGames" IsVisible="False" Background="Transparent" BorderThickness="0">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="models:Game">
-                                        <Border Background="#1e293b" Margin="0,0,0,5" Padding="10" CornerRadius="8">
+                                        <Border Background="#1e293b" Margin="0,0,0,5" Padding="10" CornerRadius="8" PointerEntered="GameItem_PointerEntered">
                                             <Grid ColumnDefinitions="Auto, *, Auto">
                                                 <Image Grid.Column="0" Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="40" Height="60" Margin="0,0,10,0"/>
                                                 <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="White" VerticalAlignment="Center" FontWeight="Bold"/>
@@ -380,22 +402,42 @@
 
                                         <!-- Acciones Rápidas -->
                                         <Grid ColumnDefinitions="*, *, *">
-                                            <Button Name="BtnEditGame" Grid.Column="0" ToolTip.Tip="Editar Juego" Background="#334155" Margin="0,0,5,0" Height="45" CornerRadius="8">
+                                            <Button Name="BtnEditGame" Classes="Secondary" Grid.Column="0" ToolTip.Tip="Editar Juego" Margin="0,0,5,0" Height="45">
                                                 <TextBlock Text="✏️" HorizontalAlignment="Center"/>
                                             </Button>
-                                            <Button Name="BtnOpenFolder" Grid.Column="1" ToolTip.Tip="Abrir Carpeta" Background="#334155" Margin="5,0,5,0" Height="45" CornerRadius="8">
+                                            <Button Name="BtnOpenFolder" Classes="Secondary" Grid.Column="1" ToolTip.Tip="Abrir Carpeta" Margin="5,0,5,0" Height="45">
                                                 <TextBlock Text="📁" HorizontalAlignment="Center"/>
                                             </Button>
-                                            <Button Name="BtnDelete" Grid.Column="2" ToolTip.Tip="Eliminar Juego" Background="#334155" Margin="5,0,0,0" Height="45" CornerRadius="8">
+                                            <Button Name="BtnDelete" Classes="Secondary" Grid.Column="2" ToolTip.Tip="Eliminar Juego" Margin="5,0,0,0" Height="45">
                                                 <TextBlock Text="🗑️" Foreground="#ef4444" HorizontalAlignment="Center"/>
                                             </Button>
                                         </Grid>
 
                                         <Separator Background="#334155"/>
 
+                                        <!-- Sobre el Juego -->
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="SOBRE EL JUEGO" Classes="Header"/>
+                                            <Border Background="#1e293b" Padding="15" CornerRadius="12">
+                                                <StackPanel Spacing="12">
+                                                    <DockPanel Name="PnlInfoDeveloper">
+                                                        <TextBlock Text="Desarrollador" Foreground="#64748b" FontSize="12"/>
+                                                        <TextBlock Name="TxtInfoDeveloper" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
+                                                    </DockPanel>
+                                                    <DockPanel Name="PnlInfoPublisher">
+                                                        <TextBlock Text="Distribuidor" Foreground="#64748b" FontSize="12"/>
+                                                        <TextBlock Name="TxtInfoPublisher" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
+                                                    </DockPanel>
+                                                    <TextBlock Name="TxtInfoDescription" Foreground="#cbd5e1" FontSize="13" TextWrapping="Wrap" Opacity="0.9" LineHeight="20" Margin="0,5,0,0"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <Separator Background="#334155"/>
+
                                         <!-- Multimedia / Galería -->
                                         <StackPanel Spacing="10">
-                                            <TextBlock Text="CARÁTULA / MULTIMEDIA" FontSize="11" FontWeight="Bold" Foreground="#64748b"/>
+                                            <TextBlock Text="CARÁTULA / MULTIMEDIA" Classes="Header"/>
                                             <Border Background="#1e293b" CornerRadius="12" MinHeight="250" MaxHeight="450" ClipToBounds="True">
                                                 <Image Name="ImgCover" Stretch="Uniform" Margin="10">
                                                     <Image.Transitions>
@@ -421,7 +463,7 @@
 
                                         <!-- Datos Técnicos -->
                                         <StackPanel Spacing="10">
-                                            <TextBlock Text="DETALLES TÉCNICOS" FontSize="11" FontWeight="Bold" Foreground="#64748b"/>
+                                            <TextBlock Text="DETALLES TÉCNICOS" Classes="Header"/>
                                             <Border Background="#1e293b" Padding="15" CornerRadius="12">
                                                 <StackPanel Spacing="10">
                                                     <DockPanel>
@@ -830,6 +872,7 @@
                     </ComboBox>
 
                     <CheckBox Name="CfgAutoImportCovers" Content="Importar carátulas automáticamente"/>
+                    <CheckBox Name="CfgEnableSoundEffects" Content="Activar efectos de sonido (SFX)"/>
 
                     <Grid ColumnDefinitions="*,*" Margin="0,10,0,0">
                         <Button Name="BtnCancelSettings" Content="CANCELAR" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,5,0" Click="BtnCancelSettings_Click"/>
