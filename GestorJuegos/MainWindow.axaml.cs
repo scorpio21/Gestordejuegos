@@ -176,6 +176,9 @@ public partial class MainWindow : Window
         };
 
         BtnAppMenu.Click += (s, e) => { /* El Flyout se abre solo */ };
+        BtnToggleFilters.Click += BtnToggleFilters_Click;
+        BtnApplyFilters.Click += BtnApplyFilters_Click;
+        BtnClearFilters.Click += BtnClearFilters_Click;
     }
 
     private string GetLaunchBoxFolderName(string friendlyName)
@@ -1283,6 +1286,8 @@ public partial class MainWindow : Window
     private void BtnViewList_Click(object? sender, RoutedEventArgs e)
     {
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
+        BtnViewList.IsChecked = true;
+        BtnViewGrid.IsChecked = false;
         LstGames.IsVisible = true;
         LstGamesGrid.IsVisible = false;
         BtnViewList.Background = Avalonia.Media.Brush.Parse("#444444");
@@ -1292,6 +1297,8 @@ public partial class MainWindow : Window
     private void BtnViewGrid_Click(object? sender, RoutedEventArgs e)
     {
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
+        BtnViewGrid.IsChecked = true;
+        BtnViewList.IsChecked = false;
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = true;
         BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
