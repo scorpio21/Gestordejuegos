@@ -101,6 +101,28 @@ public partial class MainWindow : Window
                         command.CommandText = "ALTER TABLE Platforms ADD COLUMN Category TEXT DEFAULT 'Consoles';";
                         try { command.ExecuteNonQuery(); } catch { }
                     }
+
+                    // --- MIGRACIÓN TABLA GAMES ---
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "ALTER TABLE Games ADD COLUMN Rating INTEGER DEFAULT 0;";
+                        try { command.ExecuteNonQuery(); } catch { }
+                    }
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "ALTER TABLE Games ADD COLUMN PlayStatus TEXT DEFAULT 'Pendiente';";
+                        try { command.ExecuteNonQuery(); } catch { }
+                    }
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "ALTER TABLE Games ADD COLUMN Version TEXT DEFAULT '';";
+                        try { command.ExecuteNonQuery(); } catch { }
+                    }
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "ALTER TABLE Games ADD COLUMN PlayCount INTEGER DEFAULT 0;";
+                        try { command.ExecuteNonQuery(); } catch { }
+                    }
                 }
             }
         }
@@ -1389,8 +1411,14 @@ public partial class MainWindow : Window
                 else if (filter.Item1 == "REGION") { query = query.Where(g => g.Region == filter.Item2); }
             }
 
+            // Sync platform ref for additions/edits ANTES de aplicar el filtro para que el encabezado sea correcto
+            if (item.Tag is ValueTuple<string, string> f && f.Item1 == "PLATFORM")
+                _selectedPlatform = context.Platforms.FirstOrDefault(p => p.Name == f.Item2);
+            else
+                _selectedPlatform = _currentPlatformGames.FirstOrDefault()?.Platform;
+
             _currentPlatformGames = query.ToList();
-            
+
             // Si no hay juegos, mostrar dashboard o mensaje
             if (_currentPlatformGames.Count == 0)
             {
@@ -1401,15 +1429,8 @@ public partial class MainWindow : Window
             {
                 ApplySearchFilter();
             }
-
-            // Sync platform ref for additions/edits
-            if (item.Tag is ValueTuple<string, string> f && f.Item1 == "PLATFORM")
-                _selectedPlatform = context.Platforms.FirstOrDefault(p => p.Name == f.Item2);
-            else
-                _selectedPlatform = _currentPlatformGames.FirstOrDefault()?.Platform;
-        }
-    }
-
+            }
+            }
     private void PlatformMenuItem_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is MenuItem menuItem && menuItem.Tag is Platform platform)
