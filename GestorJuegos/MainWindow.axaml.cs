@@ -1098,7 +1098,7 @@ public partial class MainWindow : Window
             
             _cts = new System.Threading.CancellationTokenSource();
 
-            await System.Threading.Tasks.Task.Run(async () =>
+            await System.Threading.Tasks.Task.Run(() =>
             {
                 var xmlFiles = Directory.GetFiles(platformsPath, "*.xml");
                 int totalGamesAdded = 0;
@@ -3418,9 +3418,9 @@ public partial class MainWindow : Window
             if (CmbArtType != null)
             {
                 bool typeFound = false;
-                foreach (ComboBoxItem item in CmbArtType.Items)
+                foreach (var rawItem in CmbArtType.Items)
                 {
-                    if (item.Content?.ToString() == targetType)
+                    if (rawItem is ComboBoxItem item && item.Content?.ToString() == targetType)
                     {
                         CmbArtType.SelectedItem = item;
                         typeFound = true;
@@ -3568,9 +3568,9 @@ public partial class MainWindow : Window
         TxtVersion.Text = _selectedGame.Version;        TxtVersion.Text = _selectedGame.Version;
         
         // Estado
-        foreach (ComboBoxItem item in CmbPlayStatus.Items)
+        foreach (var rawItem in CmbPlayStatus.Items)
         {
-            if (item.Content?.ToString() == _selectedGame.PlayStatus)
+            if (rawItem is ComboBoxItem item && item.Content?.ToString() == _selectedGame.PlayStatus)
             {
                 CmbPlayStatus.SelectedItem = item;
                 break;
@@ -3595,9 +3595,9 @@ public partial class MainWindow : Window
         ChkIsFavorite.IsChecked = _selectedGame.IsFavorite;
 
         // Región
-        foreach (ComboBoxItem item in CmbRegion.Items)
+        foreach (var rawItem in CmbRegion.Items)
         {
-            if (item.Content?.ToString() == _selectedGame.Region)
+            if (rawItem is ComboBoxItem item && item.Content?.ToString() == _selectedGame.Region)
             {
                 CmbRegion.SelectedItem = item;
                 break;
@@ -3717,13 +3717,13 @@ public partial class MainWindow : Window
                 TxtDescription.Text = gameElement.Element("Notes")?.Value ?? TxtDescription.Text;
                 TxtVersion.Text = gameElement.Element("Version")?.Value ?? TxtVersion.Text;
                 
-                string releaseYear = gameElement.Element("ReleaseDate")?.Value;
+                string? releaseYear = gameElement.Element("ReleaseDate")?.Value;
                 if (!string.IsNullOrEmpty(releaseYear) && DateTime.TryParse(releaseYear, out var dt))
                 {
                     NumYear.Value = dt.Year;
                 }
 
-                string ratingStr = gameElement.Element("StarRating")?.Value;
+                string? ratingStr = gameElement.Element("StarRating")?.Value;
                 if (float.TryParse(ratingStr, out var rating))
                 {
                     SldRating.Value = (int)(rating * 20); // De 0-5 a 0-100
@@ -4394,7 +4394,7 @@ public partial class MainWindow : Window
                 
                 _cts = new System.Threading.CancellationTokenSource();
 
-                await System.Threading.Tasks.Task.Run(async () =>
+                await System.Threading.Tasks.Task.Run(() =>
                 {
                     var extensions = new[] { ".png", ".jpg", ".jpeg" };
                     var coverFiles = new List<(string Path, string Type)>();
@@ -4646,9 +4646,9 @@ public partial class MainWindow : Window
         CfgEnableSoundEffects.IsChecked = _settings.EnableSoundEffects;
         
         // Seleccionar el tipo de arte en el combo
-        foreach (ComboBoxItem item in CfgArtType.Items)
+        foreach (var rawItem in CfgArtType.Items)
         {
-            if (item.Content?.ToString() == _settings.PreferredArtType)
+            if (rawItem is ComboBoxItem item && item.Content?.ToString() == _settings.PreferredArtType)
             {
                 CfgArtType.SelectedItem = item;
                 break;
