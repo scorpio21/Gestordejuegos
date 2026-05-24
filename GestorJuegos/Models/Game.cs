@@ -10,6 +10,8 @@ namespace GestorJuegos.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string ShortName { get; set; } = string.Empty; // Identificador interno (ej: puckman)
+        public string? LaunchBoxDbId { get; set; } // ID vinculado a la DB de LaunchBox
         public int Year { get; set; }
         public string Genre { get; set; } = string.Empty;
         public string Developer { get; set; } = string.Empty;

@@ -123,6 +123,16 @@ public partial class MainWindow : Window
                         command.CommandText = "ALTER TABLE Games ADD COLUMN PlayCount INTEGER DEFAULT 0;";
                         try { command.ExecuteNonQuery(); } catch { }
                     }
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "ALTER TABLE Games ADD COLUMN ShortName TEXT DEFAULT '';";
+                        try { command.ExecuteNonQuery(); } catch { }
+                    }
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "ALTER TABLE Games ADD COLUMN LaunchBoxDbId TEXT DEFAULT '';";
+                        try { command.ExecuteNonQuery(); } catch { }
+                    }
                 }
             }
         }
@@ -1817,6 +1827,7 @@ public partial class MainWindow : Window
                     foreach (var gameNode in gamesNodes)
                     {
                         string name = "";
+                        string shortName = "";
                         string region = "🌎 World";
                         string genre = "";
                         string developer = "";
@@ -1839,6 +1850,7 @@ public partial class MainWindow : Window
                         else if (isLaunchBoxMame)
                         {
                             name = gameNode.Element("Name")?.Value ?? "";
+                            shortName = gameNode.Element("FileName")?.Value ?? "";
                             region = gameNode.Element("Region")?.Value ?? "🌎 World";
                             genre = gameNode.Element("Genre")?.Value ?? "";
                             developer = gameNode.Element("Developer")?.Value ?? "";
@@ -1848,7 +1860,10 @@ public partial class MainWindow : Window
                         }
                         else
                         {
-                            name = gameNode.Attribute("name")?.Value ?? "";
+                            // No-Intro: El atributo name suele ser el nombre descriptivo o el filename. 
+                            // Si tiene un hijo <description>, ese es el nombre real.
+                            shortName = gameNode.Attribute("name")?.Value ?? "";
+                            name = gameNode.Element("description")?.Value ?? shortName;
                         }
 
                         if (string.IsNullOrEmpty(name)) continue;
@@ -1903,6 +1918,7 @@ public partial class MainWindow : Window
                             {
                                 PlatformId = _selectedPlatform.Id,
                                 Name = cleanName,
+                                ShortName = shortName,
                                 Region = region,
                                 Genre = genre,
                                 Developer = developer,
@@ -1941,6 +1957,228 @@ public partial class MainWindow : Window
                     ShowMessage($"Error al importar el archivo: {ex.Message}");
                 });
             }
+        }
+    }
+
+    private async void MenuSyncLaunchBox_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedPlatform == null)
+        {
+            ShowMessage("Por favor, selecciona primero la plataforma en el menú lateral.");
+            return;
+        }
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Seleccionar XML de Plataforma de LaunchBox (ej: arcade.xml)",
+            AllowMultiple = false,
+            FileTypeFilter = new[] {
+                new FilePickerFileType("LaunchBox Platform XML") { Patterns = new[] { "*.xml" } }
+            }
+        });
+
+        if (files.Count > 0)
+        {
+            var file = files[0];
+            
+            await System.Threading.Tasks.Task.Run(async () =>
+            {
+                try
+                {
+                    using var stream = await file.OpenReadAsync();
+                    var doc = XDocument.Load(stream);
+                    
+                    var gameNodes = doc.Descendants("Game").ToList();
+                    if (!gameNodes.Any())
+                    {
+                        Avalonia.Threading.Dispatcher.UIThread.Post(() => ShowMessage("El archivo no parece ser un XML de plataforma de LaunchBox válido (no se encontraron etiquetas <Game>)."));
+                        return;
+                    }
+
+                    // Mapas para búsqueda rápida
+                    var titleToPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    var shortNameToPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var node in gameNodes)
+                    {
+                        string title = node.Element("Title")?.Value ?? "";
+                        string path = node.Element("ApplicationPath")?.Value ?? "";
+                        
+                        if (!string.IsNullOrEmpty(path))
+                        {
+                            // 1. Mapeo por Título
+                            if (!string.IsNullOrEmpty(title) && !titleToPath.ContainsKey(title))
+                                titleToPath.Add(title, path);
+                            
+                            // 2. Mapeo por Nombre de Archivo (ShortName)
+                            try
+                            {
+                                string fileName = Path.GetFileNameWithoutExtension(path);
+                                if (!string.IsNullOrEmpty(fileName) && !shortNameToPath.ContainsKey(fileName))
+                                    shortNameToPath.Add(fileName, path);
+                            }
+                            catch { }
+                        }
+                    }
+
+                    // Actualizar juegos en la base de datos
+                    using var context = new GestorJuegos.Data.AppDbContext();
+                    var gamesToUpdate = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id).ToList();
+                    int updatedCount = 0;
+
+                    foreach (var game in gamesToUpdate)
+                    {
+                        // Buscar nodo en el XML de LaunchBox para obtener metadatos completos
+                        var node = gameNodes.FirstOrDefault(n => 
+                            (n.Element("Title")?.Value?.Equals(game.Name, StringComparison.OrdinalIgnoreCase) == true) ||
+                            (Path.GetFileNameWithoutExtension(n.Element("ApplicationPath")?.Value ?? "")?.Equals(game.ShortName, StringComparison.OrdinalIgnoreCase) == true)
+                        );
+
+                        if (node != null)
+                        {
+                            // 1. Ruta (ROM)
+                            string path = node.Element("ApplicationPath")?.Value ?? "";
+                            if (!string.IsNullOrEmpty(path)) game.RomPath = path;
+
+                            // 2. Metadatos
+                            game.Description = node.Element("Notes")?.Value ?? game.Description;
+                            game.Developer = node.Element("Developer")?.Value ?? game.Developer;
+                            game.Publisher = node.Element("Publisher")?.Value ?? game.Publisher;
+                            game.Genre = node.Element("Genre")?.Value ?? game.Genre;
+                            game.Version = node.Element("Version")?.Value ?? game.Version;
+                            game.LaunchBoxDbId = node.Element("DatabaseID")?.Value ?? game.LaunchBoxDbId;
+                            
+                            string relDate = node.Element("ReleaseDate")?.Value ?? "";
+                            if (!string.IsNullOrEmpty(relDate) && DateTime.TryParse(relDate, out var dt))
+                            {
+                                game.Year = dt.Year;
+                            }
+
+                            string starRating = node.Element("StarRating")?.Value ?? "0";
+                            if (float.TryParse(starRating, out var rating))
+                            {
+                                game.Rating = (int)(rating * 20); // Escala 0-5 a 0-100
+                            }
+
+                            updatedCount++;
+                        }
+                    }
+
+                    if (updatedCount > 0)
+                    {
+                        context.UpdateRange(gamesToUpdate);
+                        context.SaveChanges();
+                    }
+
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        ShowMessage($"Sincronización Inteligente completada.\nSe han vinculado las rutas de {updatedCount} juegos.");
+                        LoadGames();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => ShowMessage($"Error durante la sincronización: {ex.Message}"));
+                }
+            });
+        }
+    }
+
+    private async void MenuSyncMasterDb_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedPlatform == null)
+        {
+            ShowMessage("Por favor, selecciona primero la plataforma en el menú lateral.");
+            return;
+        }
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Seleccionar LaunchBox.Metadata.db",
+            AllowMultiple = false,
+            FileTypeFilter = new[] {
+                new FilePickerFileType("LaunchBox Metadata Database") { Patterns = new[] { "*.db" } }
+            }
+        });
+
+        if (files.Count > 0)
+        {
+            string masterDbPath = files[0].TryGetLocalPath() ?? files[0].Name;
+            
+            await System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    using var masterConn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={masterDbPath}");
+                    masterConn.Open();
+
+                    using var context = new GestorJuegos.Data.AppDbContext();
+                    var games = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id).ToList();
+                    int updatedCount = 0;
+
+                    // Traducir nombre de plataforma si es necesario
+                    string lbPlatform = _selectedPlatform.Name;
+                    if (lbPlatform.Equals("MAME", StringComparison.OrdinalIgnoreCase)) lbPlatform = "Arcade";
+
+                    foreach (var game in games)
+                    {
+                        using var cmd = masterConn.CreateCommand();
+                        
+                        // Estrategia: Buscar por DatabaseID si lo tenemos, si no por Nombre + Plataforma
+                        if (!string.IsNullOrEmpty(game.LaunchBoxDbId))
+                        {
+                            cmd.CommandText = "SELECT Overview, Genres, Developer, Publisher, ReleaseYear, CommunityRating FROM Games WHERE DatabaseID = @id LIMIT 1";
+                            cmd.Parameters.AddWithValue("@id", game.LaunchBoxDbId);
+                        }
+                        else
+                        {
+                            cmd.CommandText = "SELECT Overview, Genres, Developer, Publisher, ReleaseYear, CommunityRating, DatabaseID FROM Games WHERE Name = @name AND Platform = @platform LIMIT 1";
+                            cmd.Parameters.AddWithValue("@name", game.Name);
+                            cmd.Parameters.AddWithValue("@platform", lbPlatform);
+                        }
+
+                        using var reader = cmd.ExecuteReader();
+                        if (reader.Read())
+                        {
+                            game.Description = reader["Overview"]?.ToString() ?? game.Description;
+                            game.Genre = reader["Genres"]?.ToString() ?? game.Genre;
+                            game.Developer = reader["Developer"]?.ToString() ?? game.Developer;
+                            game.Publisher = reader["Publisher"]?.ToString() ?? game.Publisher;
+                            
+                            if (int.TryParse(reader["ReleaseYear"]?.ToString(), out var year)) game.Year = year;
+                            if (float.TryParse(reader["CommunityRating"]?.ToString(), out var rating)) game.Rating = (int)(rating * 10);
+                            
+                            // Si no teníamos el ID, lo guardamos ahora
+                            if (string.IsNullOrEmpty(game.LaunchBoxDbId))
+                                game.LaunchBoxDbId = reader["DatabaseID"]?.ToString();
+
+                            updatedCount++;
+                        }
+                    }
+
+                    if (updatedCount > 0)
+                    {
+                        context.UpdateRange(games);
+                        context.SaveChanges();
+                    }
+
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        ShowMessage($"Importación de Metadatos completada.\nSe han enriquecido {updatedCount} juegos con descripciones y detalles.");
+                        LoadGames();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => ShowMessage($"Error al leer la base de datos maestra: {ex.Message}"));
+                }
+            });
         }
     }
 
@@ -2327,6 +2565,10 @@ public partial class MainWindow : Window
             PnlInfoDeveloper.IsVisible = !string.IsNullOrEmpty(game.Developer);
             TxtInfoPublisher.Text = game.Publisher;
             PnlInfoPublisher.IsVisible = !string.IsNullOrEmpty(game.Publisher);
+
+            // Versión
+            TxtInfoVersion.Text = game.Version;
+            PnlInfoVersion.IsVisible = !string.IsNullOrEmpty(game.Version);
             
             // Descripción
             TxtInfoDescription.Text = game.Description;
@@ -2517,7 +2759,7 @@ public partial class MainWindow : Window
         TxtPublisher.Text = _selectedGame.Publisher;
         TxtDescription.Text = _selectedGame.Description;
         TxtLanguages.Text = _selectedGame.Languages;
-        TxtVersion.Text = _selectedGame.Version;
+        TxtVersion.Text = _selectedGame.Version;        TxtVersion.Text = _selectedGame.Version;
         
         // Estado
         foreach (ComboBoxItem item in CmbPlayStatus.Items)
@@ -3682,6 +3924,51 @@ public partial class MainWindow : Window
         OverlayConfirm.IsVisible = false;
         _onConfirmAction?.Invoke();
         _onConfirmAction = null;
+    }
+
+    private void BtnOpenFolder_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame != null && !string.IsNullOrEmpty(_selectedGame.RomPath))
+        {
+            try
+            {
+                string? dir = Path.GetDirectoryName(_selectedGame.RomPath);
+                if (Directory.Exists(dir)) 
+                    Process.Start(new ProcessStartInfo(dir) { UseShellExecute = true });
+                else
+                    ShowMessage("La carpeta del juego no existe o no se puede encontrar.");
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error al abrir la carpeta: {ex.Message}");
+            }
+        }
+    }
+
+    private void BtnToggleFavorite_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null) return;
+
+        _selectedGame.IsFavorite = !_selectedGame.IsFavorite;
+        _gameService.UpdateGameMetadata(_selectedGame);
+        
+        SoundHelper.PlaySelect();
+        
+        // Refrescar UI
+        LoadPlatforms(); // Actualizar contador de favoritos
+        
+        // Si estamos en la vista de favoritos, recargar la lista
+        var sidebarItem = LstSidebar.SelectedItem as SidebarItem;
+        if (sidebarItem != null && sidebarItem.Tag?.ToString() == "FAVORITES")
+        {
+            ApplySearchFilter();
+        }
+        else
+        {
+            // Solo refrescar la visualización del item actual
+            if (LstGames.IsVisible) LstGames.ItemsSource = null; LstGames.ItemsSource = _currentPlatformGames;
+            if (LstGamesGrid.IsVisible) LstGamesGrid.ItemsSource = null; LstGamesGrid.ItemsSource = _currentPlatformGames;
+        }
     }
 
     private void BtnCancelConfirm_Click(object? sender, RoutedEventArgs e)

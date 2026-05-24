@@ -170,6 +170,8 @@
                                         <MenuItem Name="MenuImportLaunchBox" Header="Importar desde LaunchBox..." Click="MenuImportLaunchBox_Click"/>
                                         <Separator/>
                                         <MenuItem Name="MenuImportDat" Header="Importar lista desde DAT/XML..." Click="MenuImportDat_Click"/>
+                                        <MenuItem Name="MenuSyncLaunchBox" Header="Sincronizar Rutas con LaunchBox XML..." Click="MenuSyncLaunchBox_Click"/>
+                                        <MenuItem Name="MenuSyncMasterDb" Header="Importar Metadatos desde Master DB (LaunchBox)..." Click="MenuSyncMasterDb_Click"/>
                                         <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales..." Click="MenuScanLocalCovers_Click"/>
                                         <Separator/>
                                         <MenuItem Name="MenuCleanupOrphans" Header="Limpiar Juegos Huérfanos" Click="MenuCleanupOrphans_Click"/>
@@ -224,6 +226,39 @@
                             <ListBox Name="LstSidebar" Background="Transparent" BorderThickness="0" ItemTemplate="{StaticResource SidebarItemTemplate}">
                                 <ListBox.Styles>
                                     <Style Selector="ListBoxItem">
+                                        <Setter Property="ContextMenu">
+                                            <Setter.Value>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Jugar" Click="BtnLaunchGame_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="▶" Foreground="#10b981"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <Separator/>
+                                                    <MenuItem Header="Editar" Click="BtnEditGame_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="✏️"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Abrir Carpeta" Click="BtnOpenFolder_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="📁"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Añadir a Favoritos" Click="BtnToggleFavorite_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="⭐" Foreground="#f59e0b"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <Separator/>
+                                                    <MenuItem Header="Eliminar" Click="BtnDelete_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="🗑️" Foreground="#ef4444"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </ContextMenu>
+                                            </Setter.Value>
+                                        </Setter>
                                         <Setter Property="Padding" Value="10,2"/>
                                         <Setter Property="CornerRadius" Value="8"/>
                                         <Setter Property="Margin" Value="5,0"/>
@@ -275,6 +310,43 @@
 
                             <!-- Listas -->
                             <ListBox Name="LstGames" IsVisible="False" Background="Transparent" BorderThickness="0">
+                                <ListBox.Styles>
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="ContextMenu">
+                                            <Setter.Value>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Jugar" Click="BtnLaunchGame_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="▶" Foreground="#10b981"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <Separator/>
+                                                    <MenuItem Header="Editar" Click="BtnEditGame_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="✏️"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Abrir Carpeta" Click="BtnOpenFolder_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="📁"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Añadir a Favoritos" Click="BtnToggleFavorite_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="⭐" Foreground="#f59e0b"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <Separator/>
+                                                    <MenuItem Header="Eliminar" Click="BtnDelete_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="🗑️" Foreground="#ef4444"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </ContextMenu>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.Styles>
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="models:Game">
                                         <Border Background="#1e293b" Margin="0,0,0,5" Padding="10" CornerRadius="8" PointerEntered="GameItem_PointerEntered">
@@ -296,6 +368,39 @@
                                 </ListBox.ItemsPanel>
                                 <ListBox.Styles>
                                     <Style Selector="ListBoxItem">
+                                        <Setter Property="ContextMenu">
+                                            <Setter.Value>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Jugar" Click="BtnLaunchGame_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="▶" Foreground="#10b981"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <Separator/>
+                                                    <MenuItem Header="Editar" Click="BtnEditGame_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="✏️"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Abrir Carpeta" Click="BtnOpenFolder_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="📁"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Añadir a Favoritos" Click="BtnToggleFavorite_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="⭐" Foreground="#f59e0b"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <Separator/>
+                                                    <MenuItem Header="Eliminar" Click="BtnDelete_Click">
+                                                        <MenuItem.Icon>
+                                                            <TextBlock Text="🗑️" Foreground="#ef4444"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </ContextMenu>
+                                            </Setter.Value>
+                                        </Setter>
                                         <Setter Property="Padding" Value="0"/>
                                         <Setter Property="Background" Value="Transparent"/>
                                         <Setter Property="BorderThickness" Value="0"/>
@@ -391,7 +496,7 @@
                                         </StackPanel>
 
                                         <!-- Botón Principal -->
-                                        <Button Name="BtnLaunchGame" Background="#10b981" Foreground="White" Height="60" CornerRadius="12" HorizontalAlignment="Stretch" Padding="0">
+                                        <Button Name="BtnLaunchGame" Background="#10b981" Foreground="White" Height="60" CornerRadius="12" HorizontalAlignment="Stretch" Padding="0" Click="BtnLaunchGame_Click">
                                             <Grid ColumnDefinitions="Auto, *">
                                                 <Border Grid.Column="0" Background="#20000000" Width="60" CornerRadius="12,0,0,12">
                                                     <TextBlock Text="▶" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -402,13 +507,13 @@
 
                                         <!-- Acciones Rápidas -->
                                         <Grid ColumnDefinitions="*, *, *">
-                                            <Button Name="BtnEditGame" Classes="Secondary" Grid.Column="0" ToolTip.Tip="Editar Juego" Margin="0,0,5,0" Height="45">
+                                            <Button Name="BtnEditGame" Classes="Secondary" Grid.Column="0" ToolTip.Tip="Editar Juego" Margin="0,0,5,0" Height="45" Click="BtnEditGame_Click">
                                                 <TextBlock Text="✏️" HorizontalAlignment="Center"/>
                                             </Button>
-                                            <Button Name="BtnOpenFolder" Classes="Secondary" Grid.Column="1" ToolTip.Tip="Abrir Carpeta" Margin="5,0,5,0" Height="45">
+                                            <Button Name="BtnOpenFolder" Classes="Secondary" Grid.Column="1" ToolTip.Tip="Abrir Carpeta" Margin="5,0,5,0" Height="45" Click="BtnOpenFolder_Click">
                                                 <TextBlock Text="📁" HorizontalAlignment="Center"/>
                                             </Button>
-                                            <Button Name="BtnDelete" Classes="Secondary" Grid.Column="2" ToolTip.Tip="Eliminar Juego" Margin="5,0,0,0" Height="45">
+                                            <Button Name="BtnDelete" Classes="Secondary" Grid.Column="2" ToolTip.Tip="Eliminar Juego" Margin="5,0,0,0" Height="45" Click="BtnDelete_Click">
                                                 <TextBlock Text="🗑️" Foreground="#ef4444" HorizontalAlignment="Center"/>
                                             </Button>
                                         </Grid>
@@ -427,6 +532,10 @@
                                                     <DockPanel Name="PnlInfoPublisher">
                                                         <TextBlock Text="Distribuidor" Foreground="#64748b" FontSize="12"/>
                                                         <TextBlock Name="TxtInfoPublisher" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
+                                                    </DockPanel>
+                                                    <DockPanel Name="PnlInfoVersion">
+                                                        <TextBlock Text="Versión" Foreground="#64748b" FontSize="12"/>
+                                                        <TextBlock Name="TxtInfoVersion" Foreground="#10b981" HorizontalAlignment="Right" FontSize="11" FontWeight="Bold"/>
                                                     </DockPanel>
                                                     <TextBlock Name="TxtInfoDescription" Foreground="#cbd5e1" FontSize="13" TextWrapping="Wrap" Opacity="0.9" LineHeight="20" Margin="0,5,0,0"/>
                                                 </StackPanel>
