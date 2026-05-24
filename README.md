@@ -1,4 +1,4 @@
-# 🎮 Gestor de Juegos (v1.1.2.4-Dev)
+# 🎮 Gestor de Juegos (v1.1.2.5-Dev)
 
 Organizador de colecciones de videojuegos para Windows, optimizado para grandes bibliotecas y uso con mando (Gamepad).
 
@@ -14,7 +14,14 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
-### v1.1.2.4-Dev (Actual)
+### v1.1.2.5-Dev (Actual)
+*   **Réplica de Detalles de Plataforma y Categorías (LaunchBox exacto)**: Reestructurado por completo el panel derecho de la aplicación para que al seleccionar una plataforma (como Amstrad CPC) o una categoría (como Computers) en el panel izquierdo, se visualicen sus estadísticas y metadatos con el mismo formato premium de LaunchBox.
+*   **Independencia Total de LaunchBox**: Todos los datos técnicos de las plataformas (CPU, RAM, Gráficos, Sonido, Soporte de Carga, Desarrollador, Fabricante, Fecha de Estreno, Notas Históricas) y su foto física de hardware (`HardwareImage` binario) se almacenan de forma local en la base de datos `GestorJuegos.db` para que la aplicación funcione de forma autónoma.
+*   **Importador de Metadatos y Consolas en Segundo Plano**: Potenciado `ImportLaunchBoxAssets` para conectarse a la base de datos maestra `LaunchBox.Metadata.db` localmente e importar todas las especificaciones y descripciones de las plataformas, así como leer las fotos de consolas físicas de la carpeta `Console` de LaunchBox y guardarlas binariamente en SQLite.
+*   **Estadísticas Dinámicas Agregadas**: Al navegar por categorías o plataformas en la barra lateral, se calculan automáticamente métricas locales de tu biblioteca (juegos totales, completados, veces jugados, tiempo total jugado, último juego jugado y juego más jugado).
+*   **Auto-parcheo de Esquema SQLite**: Implementadas migraciones controladas en caliente para crear columnas técnicas y campos binarios en la tabla `Platforms` y el campo de descripción `Notes` en `PlatformCategories`.
+
+### v1.1.2.4-Dev
 *   **Barra Lateral Jerárquica (`TreeView`)**: Rediseño completo del panel izquierdo sustituyendo la lista plana por un árbol jerárquico al estilo LaunchBox, agrupando las plataformas por categorías ("Computers", "Consoles", "Handhelds").
 *   **Selector de Vista Dinámico**: Añadido un combobox superior para cambiar instantáneamente la vista de la barra lateral entre: Categoría de plataforma, Plataformas (lista plana), Géneros, Regiones y Biblioteca (Favoritos).
 *   **Gestión y Sincronización de Iconos de Categoría**: Carga automática e importación a la base de datos de iconos pixel-art oficiales y Clear Logos de LaunchBox para cada plataforma y categoría.

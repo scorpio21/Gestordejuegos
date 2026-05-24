@@ -1,10 +1,36 @@
-# Resumen de Cambios: Formato Premium de Launchbox (v1.1.2.4-Dev)
+# Resumen de Cambios: Formato Premium de Launchbox (v1.1.2.5-Dev)
 
-Hemos evolucionado la aplicación para añadir un sistema de organización y navegación jerárquica avanzado en la barra lateral izquierda, emulando fielmente la experiencia visual y funcional de **Launchbox** y dotando al sistema de total resiliencia frente a bases de datos SQLite preexistentes.
+Hemos evolucionado la aplicación para añadir una réplica exacta del panel derecho de detalles de LaunchBox para plataformas y categorías de sistemas, logrando independencia total para el usuario final mediante el almacenamiento local de metadatos técnicos y fotos físicas en SQLite.
 
 ---
 
-## 🛠️ Cambios Realizados en v1.1.2.4-Dev (Actual)
+## 🛠️ Cambios Realizados en v1.1.2.5-Dev (Actual)
+
+### 1. Panel Derecho de Detalles de Sistemas (`MainWindow.axaml` y `MainWindow.axaml.cs`)
+* **Visualización Dinámica e Integrada (`PnlPlatformDetails`)**:
+  * Compartiendo espacio en la columna derecha, se activa automáticamente cuando se hace clic en cualquier nodo de plataforma o categoría en el árbol lateral.
+  * Muestra el logotipo Clear Logo de la plataforma/categoría cargado localmente de la DB.
+  * Incluye la foto física de hardware de la consola o microordenador (`ImgPlatformHardware`) leída desde bytes guardados en la columna `HardwareImage`.
+  * Diseñada una tabla/grid estilizada con fondo oscuro para las especificaciones técnicas completas.
+  * Incluye una sección de descripción histórica con scroll vertical dedicada a las notas del sistema.
+* **Cálculo Dinámico de Estadísticas Locales**:
+  * Suma y visualiza en tiempo real: Juegos en total, juegos completados, última vez jugado, veces jugado en total y tiempo total de juego formateado en `Xh YYm ZZs`.
+  * Muestra dinámicamente el nombre del "Último Juego Jugado" y del "Juego Más Jugado" analizando los registros de ejecución locales.
+  * Soporte para estadísticas agregadas de la colección completa y por categorías completas (ej: Computadores, Consolas y Portátiles).
+
+### 2. Importador Asíncrono Portativo (`MainWindow.axaml.cs`)
+* **Scraper de Metadatos y Fotos de Consolas (`ImportLaunchBoxAssets`)**:
+  * Conexión en segundo plano a la base de datos maestra externa de LaunchBox (`LaunchBox.Metadata.db`) para copiar especificaciones de hardware (CPU, RAM, Gráficos, Sonido, Soporte, Desarrollador, Fabricante, etc.) directamente a la base local de la aplicación.
+  * Escaneo del directorio de LaunchBox para hallar las fotos del hardware (`Images/Platforms/[Name]/Console/`) y guardarlas binariamente.
+  * Inserción de descripciones detalladas por defecto para las categorías conceptuales ("Computers", "Consoles", "Handhelds").
+
+### 3. Migraciones y Modelado de Datos (`Platform.cs`, `PlatformCategory.cs` y `GameService.cs`)
+* **Nuevas Columnas de Hardware**: Agregadas propiedades correspondientes a CPU, Memory, Graphics, Sound, Display, Media, Notes, ReleaseDate, Developer, Manufacturer y la imagen binaria `HardwareImage` en `Platform.cs`.
+* **Auto-parcheo Silencioso**: `GameService.cs` ejecuta automáticamente comandos SQL `ALTER TABLE` y `CREATE TABLE IF NOT EXISTS` en el arranque para parchar bases de datos previas de forma segura.
+
+---
+
+## 🛠️ Cambios Realizados en v1.1.2.4-Dev (Anterior)
 
 ### 1. Barra Lateral Jerárquica y Navegación Dinámica (`MainWindow.axaml`)
 * **Barra Lateral con `TreeView` (`TvSidebar`)**:

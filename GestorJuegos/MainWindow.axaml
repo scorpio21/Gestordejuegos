@@ -816,7 +816,150 @@
                                 </TabControl>
                                 
                             </StackPanel>
-                            
+
+                            <!-- DERECHA: Info de Plataforma o Categoría (LaunchBox Style) -->
+                            <StackPanel Name="PnlPlatformDetails" IsVisible="False" Spacing="0">
+                                <!-- Banner Superior de Plataforma/Categoría -->
+                                <Panel Height="200">
+                                    <Border Background="#1e293b" ClipToBounds="True">
+                                        <!-- Imagen de fondo difuminada para estética premium -->
+                                        <Image Name="ImgPlatformBackground" Stretch="UniformToFill" Opacity="0.15"/>
+                                    </Border>
+                                    
+                                    <!-- Gradiente para desvanecer con el fondo azul oscuro de la app -->
+                                    <Border>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                                <GradientStop Offset="0" Color="Transparent"/>
+                                                <GradientStop Offset="0.8" Color="#150f172a"/>
+                                                <GradientStop Offset="1" Color="#0f172a"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
+
+                                    <!-- Acciones Rápidas (Esquina superior derecha) -->
+                                    <Border Background="#600f172a" CornerRadius="18" Padding="3" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="15" BorderBrush="#20ffffff" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal" Spacing="2">
+                                            <Button Name="BtnEditPlatformQuick" Background="Transparent" Foreground="White" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Editar Plataforma">
+                                                <TextBlock Text="✏️" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                            </Button>
+                                            <Button Name="BtnClosePlatformDetails" Background="Transparent" Foreground="White" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Cerrar Detalles">
+                                                <TextBlock Text="✕" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Clear Logo de la plataforma/categoría -->
+                                    <Border Name="BrdPlatformLogo" 
+                                            Background="Transparent" 
+                                            VerticalAlignment="Center" HorizontalAlignment="Center"
+                                            Height="100" Width="260"
+                                            Margin="0,20,0,0">
+                                        <Image Name="ImgPlatformLogo" Stretch="Uniform"/>
+                                    </Border>
+
+                                    <!-- Fecha de estreno (Abajo del logotipo / centrado) -->
+                                    <TextBlock Name="TxtPlatformReleaseDate" 
+                                               Text="Estrenado en 01/01/1984" 
+                                               Foreground="#94a3b8" 
+                                               FontSize="11" 
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Bottom" 
+                                               Margin="0,0,0,10"/>
+                                </Panel>
+
+                                <!-- Imagen central de hardware (Foto física de la consola) -->
+                                <Border Background="#101e293b" CornerRadius="10" ClipToBounds="True" Height="220" BoxShadow="0 4 12 0 #50000000" Margin="15,10">
+                                    <Panel>
+                                        <Image Name="ImgPlatformHardware" Stretch="Uniform" Margin="15"/>
+                                        <TextBlock Name="TxtPlatformHardwarePlaceholder" Text="Sin foto del sistema" Foreground="#64748b" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False"/>
+                                    </Panel>
+                                </Border>
+
+                                <!-- Tabla de Datos Técnicos y Estadísticas -->
+                                <Border Background="#101e293b" BorderBrush="#20334155" BorderThickness="0,1" Padding="15,15" Margin="15,5">
+                                    <StackPanel Name="PnlPlatformStatsTable" Spacing="8">
+                                        <!-- Filas Técnicas de Plataforma (se ocultan si es Categoría) -->
+                                        <Grid Name="RowPlatDeveloper" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Desarrollador:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatDeveloper" Text="--" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                        </Grid>
+                                        <Grid Name="RowPlatManufacturer" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Fabricante:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatManufacturer" Text="--" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                        </Grid>
+                                        <Grid Name="RowPlatCpu" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="CPU:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatCpu" Text="--" Foreground="White" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="180" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                        </Grid>
+                                        <Grid Name="RowPlatMemory" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Memoria:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatMemory" Text="--" Foreground="White" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="180" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                        </Grid>
+                                        <Grid Name="RowPlatGraphics" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Gráficos:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatGraphics" Text="--" Foreground="White" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="180" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                        </Grid>
+                                        <Grid Name="RowPlatSound" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Sonido:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatSound" Text="--" Foreground="White" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="180" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                        </Grid>
+                                        <Grid Name="RowPlatDisplay" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Mostrar:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatDisplay" Text="--" Foreground="White" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="180" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                        </Grid>
+                                        <Grid Name="RowPlatMedia" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Multimedia:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatMedia" Text="--" Foreground="White" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="180" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                        </Grid>
+                                        
+                                        <!-- Separador sutil -->
+                                        <Border Height="1" Background="#15334155" Margin="0,5"/>
+
+                                        <!-- Filas de Estadísticas Locales -->
+                                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Juegos en Total:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatTotalGames" Text="0" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Juegos Completados:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatCompletedGames" Text="0" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Última vez jugado:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatLastPlayed" Text="Nunca" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                        </Grid>
+                                        <Grid Name="RowPlatLastPlayedGame" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Último Juego Jugado:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatLastPlayedGame" Text="--" Foreground="White" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="180" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Veces Jugado:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatPlayCount" Text="0" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Tiempo Jugado:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatPlayTime" Text="0h 00m 00s" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                        </Grid>
+                                        <Grid Name="RowPlatMostPlayedGame" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                            <TextBlock Text="Juego Más Jugado:" Foreground="#64748b" FontSize="12"/>
+                                            <TextBlock Name="TxtPlatMostPlayedGame" Text="--" Foreground="White" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="180" HorizontalAlignment="Right" TextAlignment="Right"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Descripción histórica con scroll -->
+                                <StackPanel Spacing="5" Margin="15,10,15,20">
+                                    <TextBlock Text="DESCRIPCIÓN HISTÓRICA" Classes="Header" Foreground="#64748b" FontSize="11" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <Border Background="#1e293b" Padding="15" CornerRadius="12" BorderBrush="#334155" BorderThickness="1" MinHeight="100" MaxHeight="250">
+                                        <ScrollViewer>
+                                            <TextBlock Name="TxtPlatDescription" Foreground="#cbd5e1" FontSize="13" TextWrapping="Wrap" Opacity="0.95" LineHeight="20"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+
                             <!-- Estado Vacío cuando no hay juego seleccionado -->
                             <StackPanel Name="PnlNoGameSelected" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="0.2">
                                 <TextBlock Text="🎮" FontSize="60" HorizontalAlignment="Center"/>

@@ -1610,6 +1610,23 @@ public partial class MainWindow : Window
                         try { dbCat.Graphic = File.ReadAllBytes(graphicPath); } catch { }
                     }
 
+                    // Guardar notas/descripción por defecto de la categoría
+                    if (string.IsNullOrEmpty(dbCat.Notes))
+                    {
+                        if (catName == "Computers")
+                        {
+                            dbCat.Notes = "Home computers were a class of microcomputers entering the market in 1977, and becoming common during the 1980s. They were marketed to consumers as affordable and accessible computers that, for the first time, were intended for the use of a single nontechnical user. These computers were a distinct market segment that typically cost much less than business, scientific or engineering-oriented computers of the time such as the IBM PC, and were generally less powerful in terms of memory and expandability. However, a home computer often had better graphics and sound than contemporaneous business computers. Their most common uses were playing video games, but they were also regularly used for word processing, doing homework, and programming.";
+                        }
+                        else if (catName == "Handhelds")
+                        {
+                            dbCat.Notes = "Handheld game consoles are lightweight, portable devices with a built-in screen, game controls, and speakers. They allowed players to carry their gaming collections anywhere, becoming a dominant force in the industry with systems like the Nintendo Game Boy and PlayStation Portable.";
+                        }
+                        else if (catName == "Consoles")
+                        {
+                            dbCat.Notes = "Video game consoles are standardized devices designed for interactive entertainment, usually played on a television screen or monitor. They emerged in the early 1970s and evolved through generations of dedicated hardware, offering highly optimized gaming experiences in the living room.";
+                        }
+                    }
+
                     if (isNew)
                         context.PlatformCategories.Add(dbCat);
                     else
@@ -1617,9 +1634,33 @@ public partial class MainWindow : Window
                 }
                 context.SaveChanges();
 
-                // 2. Importar/actualizar iconos y logos para cada plataforma en la DB
+                // 2. Importar/actualizar iconos, logos y datos de plataforma en la DB
                 var dbPlatforms = context.Platforms.ToList();
                 bool anyPlatformUpdated = false;
+
+                // Intentar abrir la conexión a la base de datos maestra para traer especificaciones técnicas
+                string masterDbPath = Path.Combine(lbPath, "Metadata", "Metadata.db");
+                if (!File.Exists(masterDbPath))
+                    masterDbPath = Path.Combine(lbPath, "Metadata", "LaunchBox.Metadata.db");
+                if (!File.Exists(masterDbPath))
+                    masterDbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LaunchBox.Metadata.db");
+                if (!File.Exists(masterDbPath))
+                    masterDbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "LaunchBox.Metadata.db");
+                if (!File.Exists(masterDbPath))
+                    masterDbPath = @"k:\GestorJuegos\GestorJuegos\LaunchBox.Metadata.db"; // fallback absoluto
+                
+                bool hasMasterDb = File.Exists(masterDbPath);
+                Microsoft.Data.Sqlite.SqliteConnection? masterConn = null;
+                if (hasMasterDb)
+                {
+                    try
+                    {
+                        masterConn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={masterDbPath}");
+                        masterConn.Open();
+                    }
+                    catch { hasMasterDb = false; }
+                }
+
                 foreach (var platform in dbPlatforms)
                 {
                     bool isUpdated = false;
@@ -1652,6 +1693,67 @@ public partial class MainWindow : Window
                             }
                             catch { }
                         }
+                    }
+
+                    // Cargar foto física de la consola (HardwareImage)
+                    if (platform.HardwareImage == null || platform.HardwareImage.Length == 0)
+                    {
+                        string consoleImgPath = Path.Combine(lbPath, "Images", "Platforms", platform.Name, "Console", $"{platform.Name}.png");
+                        if (!File.Exists(consoleImgPath))
+                            consoleImgPath = Path.Combine(lbPath, "Images", "Platforms", platform.Name, "Console", $"{platform.Name}.jpg");
+                        
+                        // Buscar cualquier imagen en la carpeta Console si la exacta no coincide
+                        if (!File.Exists(consoleImgPath) && Directory.Exists(Path.Combine(lbPath, "Images", "Platforms", platform.Name, "Console")))
+                        {
+                            try
+                            {
+                                var files = Directory.GetFiles(Path.Combine(lbPath, "Images", "Platforms", platform.Name, "Console"), "*.*");
+                                consoleImgPath = files.FirstOrDefault(f => f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || 
+                                                                          f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)) ?? "";
+                            }
+                            catch { }
+                        }
+
+                        if (File.Exists(consoleImgPath))
+                        {
+                            try
+                            {
+                                platform.HardwareImage = File.ReadAllBytes(consoleImgPath);
+                                isUpdated = true;
+                            }
+                            catch { }
+                        }
+                    }
+
+                    // Cargar datos técnicos y descripción desde la DB Maestra
+                    if (hasMasterDb && masterConn != null && string.IsNullOrEmpty(platform.Notes))
+                    {
+                        try
+                        {
+                            string queryName = platform.Name;
+                            if (queryName.Equals("MAME", StringComparison.OrdinalIgnoreCase)) queryName = "Arcade";
+
+                            using var cmd = masterConn.CreateCommand();
+                            cmd.CommandText = "SELECT ReleaseDate, Developer, Manufacturer, Cpu, Memory, Graphics, Sound, Display, Media, Notes FROM Platforms WHERE Name = @name LIMIT 1";
+                            cmd.Parameters.AddWithValue("@name", queryName);
+
+                            using var reader = cmd.ExecuteReader();
+                            if (reader.Read())
+                            {
+                                platform.ReleaseDate = reader["ReleaseDate"]?.ToString() ?? platform.ReleaseDate;
+                                platform.Developer = reader["Developer"]?.ToString() ?? platform.Developer;
+                                platform.Manufacturer = reader["Manufacturer"]?.ToString() ?? platform.Manufacturer;
+                                platform.Cpu = reader["Cpu"]?.ToString() ?? platform.Cpu;
+                                platform.Memory = reader["Memory"]?.ToString() ?? platform.Memory;
+                                platform.Graphics = reader["Graphics"]?.ToString() ?? platform.Graphics;
+                                platform.Sound = reader["Sound"]?.ToString() ?? platform.Sound;
+                                platform.Display = reader["Display"]?.ToString() ?? platform.Display;
+                                platform.Media = reader["Media"]?.ToString() ?? platform.Media;
+                                platform.Notes = reader["Notes"]?.ToString() ?? platform.Notes;
+                                isUpdated = true;
+                            }
+                        }
+                        catch { }
                     }
 
                     // --- CLASIFICACIÓN DE CATEGORÍA AUTOMÁTICA EN LA DB SI ES DEFAULT ---
@@ -1690,6 +1792,11 @@ public partial class MainWindow : Window
                     }
                 }
 
+                if (masterConn != null)
+                {
+                    try { masterConn.Close(); } catch { }
+                }
+
                 if (anyPlatformUpdated)
                 {
                     context.SaveChanges();
@@ -1712,7 +1819,9 @@ public partial class MainWindow : Window
             _currentPage = 1;
             PnlDashboard.IsVisible = false;
             PnlPagination.IsVisible = true;
-            PnlGameDetails.IsVisible = false;
+            
+            // Cargar los detalles de la plataforma/categoría en el panel derecho
+            LoadPlatformOrCategoryDetails(item);
             
             // Forzar vista de rejilla por defecto
             BtnViewGrid_Click(null, new RoutedEventArgs());
@@ -1792,6 +1901,280 @@ public partial class MainWindow : Window
                 }
             }
         }
+    }
+
+    private void LoadPlatformOrCategoryDetails(SidebarNode item)
+    {
+        if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = false;
+        if (PnlGameDetails != null) PnlGameDetails.IsVisible = false;
+        if (PnlPlatformDetails == null) return;
+
+        PnlPlatformDetails.IsVisible = true;
+
+        using var context = new GestorJuegos.Data.AppDbContext();
+
+        // Limpiar controles
+        ImgPlatformLogo.Source = null;
+        ImgPlatformHardware.Source = null;
+        TxtPlatformHardwarePlaceholder.IsVisible = false;
+        TxtPlatformReleaseDate.IsVisible = false;
+        TxtPlatDescription.Text = string.Empty;
+
+        // Por defecto, mostrar todas las filas de la tabla
+        RowPlatDeveloper.IsVisible = true;
+        RowPlatManufacturer.IsVisible = true;
+        RowPlatCpu.IsVisible = true;
+        RowPlatMemory.IsVisible = true;
+        RowPlatGraphics.IsVisible = true;
+        RowPlatSound.IsVisible = true;
+        RowPlatDisplay.IsVisible = true;
+        RowPlatMedia.IsVisible = true;
+        RowPlatLastPlayedGame.IsVisible = true;
+        RowPlatMostPlayedGame.IsVisible = true;
+
+        if (item.Tag is ValueTuple<string, string> filter)
+        {
+            string filterType = filter.Item1;
+            string filterValue = filter.Item2;
+
+            if (filterType == "PLATFORM")
+            {
+                var platform = context.Platforms.FirstOrDefault(p => p.Name == filterValue);
+                if (platform != null)
+                {
+                    // 1. Mostrar Logo
+                    if (platform.Logo != null && platform.Logo.Length > 0)
+                    {
+                        try
+                        {
+                            using var ms = new MemoryStream(platform.Logo);
+                            ImgPlatformLogo.Source = new Bitmap(ms);
+                            BrdPlatformLogo.IsVisible = true;
+                        }
+                        catch { BrdPlatformLogo.IsVisible = false; }
+                    }
+                    else
+                    {
+                        BrdPlatformLogo.IsVisible = false;
+                    }
+
+                    // 2. Fecha de Estreno
+                    if (!string.IsNullOrEmpty(platform.ReleaseDate))
+                    {
+                        if (DateTime.TryParse(platform.ReleaseDate, out var dt))
+                        {
+                            TxtPlatformReleaseDate.Text = $"Estrenado en {dt:dd/MM/yyyy}";
+                        }
+                        else
+                        {
+                            TxtPlatformReleaseDate.Text = $"Estrenado en {platform.ReleaseDate}";
+                        }
+                        TxtPlatformReleaseDate.IsVisible = true;
+                    }
+
+                    // 3. Foto de Consola (HardwareImage)
+                    if (platform.HardwareImage != null && platform.HardwareImage.Length > 0)
+                    {
+                        try
+                        {
+                            using var ms = new MemoryStream(platform.HardwareImage);
+                            ImgPlatformHardware.Source = new Bitmap(ms);
+                            ImgPlatformHardware.IsVisible = true;
+                        }
+                        catch 
+                        { 
+                            ImgPlatformHardware.IsVisible = false;
+                            TxtPlatformHardwarePlaceholder.IsVisible = true; 
+                        }
+                    }
+                    else
+                    {
+                        ImgPlatformHardware.IsVisible = false;
+                        TxtPlatformHardwarePlaceholder.IsVisible = true;
+                    }
+
+                    // 4. Datos Técnicos
+                    TxtPlatDeveloper.Text = string.IsNullOrEmpty(platform.Developer) ? "--" : platform.Developer;
+                    TxtPlatManufacturer.Text = string.IsNullOrEmpty(platform.Manufacturer) ? "--" : platform.Manufacturer;
+                    TxtPlatCpu.Text = string.IsNullOrEmpty(platform.Cpu) ? "--" : platform.Cpu;
+                    TxtPlatMemory.Text = string.IsNullOrEmpty(platform.Memory) ? "--" : platform.Memory;
+                    TxtPlatGraphics.Text = string.IsNullOrEmpty(platform.Graphics) ? "--" : platform.Graphics;
+                    TxtPlatSound.Text = string.IsNullOrEmpty(platform.Sound) ? "--" : platform.Sound;
+                    TxtPlatDisplay.Text = string.IsNullOrEmpty(platform.Display) ? "--" : platform.Display;
+                    TxtPlatMedia.Text = string.IsNullOrEmpty(platform.Media) ? "--" : platform.Media;
+
+                    // 5. Estadísticas Locales
+                    var games = context.Games.Where(g => g.PlatformId == platform.Id).ToList();
+                    int totalGames = games.Count;
+                    int completedGames = games.Count(g => g.PlayStatus == "Completado");
+                    int totalPlayCount = games.Sum(g => g.PlayCount);
+                    int totalPlayTimeSeconds = games.Sum(g => g.PlayTime);
+
+                    int hours = totalPlayTimeSeconds / 3600;
+                    int minutes = (totalPlayTimeSeconds % 3600) / 60;
+                    int seconds = totalPlayTimeSeconds % 60;
+                    
+                    TxtPlatTotalGames.Text = totalGames.ToString();
+                    TxtPlatCompletedGames.Text = completedGames.ToString();
+                    TxtPlatPlayCount.Text = totalPlayCount.ToString();
+                    TxtPlatPlayTime.Text = $"{hours}h {minutes:00}m {seconds:00}s";
+
+                    var playedGames = games.Where(g => g.PlayCount > 0).ToList();
+                    if (playedGames.Any())
+                    {
+                        TxtPlatLastPlayed.Text = "Recientemente";
+                        var lastPlayedGame = playedGames.OrderByDescending(g => g.PlayCount).First();
+                        TxtPlatLastPlayedGame.Text = lastPlayedGame.Name;
+                    }
+                    else
+                    {
+                        TxtPlatLastPlayed.Text = "Nunca";
+                        TxtPlatLastPlayedGame.Text = "--";
+                    }
+
+                    var mostPlayedGame = games.OrderByDescending(g => g.PlayCount).FirstOrDefault();
+                    TxtPlatMostPlayedGame.Text = (mostPlayedGame != null && mostPlayedGame.PlayCount > 0) ? mostPlayedGame.Name : "--";
+
+                    // 6. Descripción
+                    TxtPlatDescription.Text = string.IsNullOrEmpty(platform.Notes) ? "Sin descripción histórica disponible." : platform.Notes;
+                }
+            }
+            else if (filterType == "CATEGORY")
+            {
+                var dbCat = context.PlatformCategories.FirstOrDefault(c => c.Name == filterValue);
+
+                RowPlatDeveloper.IsVisible = false;
+                RowPlatManufacturer.IsVisible = false;
+                RowPlatCpu.IsVisible = false;
+                RowPlatMemory.IsVisible = false;
+                RowPlatGraphics.IsVisible = false;
+                RowPlatSound.IsVisible = false;
+                RowPlatDisplay.IsVisible = false;
+                RowPlatMedia.IsVisible = false;
+
+                // 1. Logo
+                if (dbCat != null && dbCat.Graphic != null && dbCat.Graphic.Length > 0)
+                {
+                    try
+                    {
+                        using var ms = new MemoryStream(dbCat.Graphic);
+                        ImgPlatformLogo.Source = new Bitmap(ms);
+                        BrdPlatformLogo.IsVisible = true;
+                    }
+                    catch { BrdPlatformLogo.IsVisible = false; }
+                }
+                else
+                {
+                    BrdPlatformLogo.IsVisible = false;
+                }
+
+                ImgPlatformHardware.IsVisible = false;
+                TxtPlatformHardwarePlaceholder.IsVisible = false;
+                TxtPlatformReleaseDate.IsVisible = false;
+
+                // 2. Estadísticas
+                var platformIds = context.Platforms.Where(p => p.Category == filterValue).Select(p => p.Id).ToList();
+                var games = context.Games.Where(g => platformIds.Contains(g.PlatformId)).ToList();
+                int totalGames = games.Count;
+                int completedGames = games.Count(g => g.PlayStatus == "Completado");
+                int totalPlayCount = games.Sum(g => g.PlayCount);
+                int totalPlayTimeSeconds = games.Sum(g => g.PlayTime);
+
+                int hours = totalPlayTimeSeconds / 3600;
+                int minutes = (totalPlayTimeSeconds % 3600) / 60;
+                int seconds = totalPlayTimeSeconds % 60;
+
+                TxtPlatTotalGames.Text = totalGames.ToString();
+                TxtPlatCompletedGames.Text = completedGames.ToString();
+                TxtPlatPlayCount.Text = totalPlayCount.ToString();
+                TxtPlatPlayTime.Text = $"{hours}h {minutes:00}m {seconds:00}s";
+
+                var playedGames = games.Where(g => g.PlayCount > 0).ToList();
+                if (playedGames.Any())
+                {
+                    TxtPlatLastPlayed.Text = "Recientemente";
+                    var lastPlayedGame = playedGames.OrderByDescending(g => g.PlayCount).First();
+                    TxtPlatLastPlayedGame.Text = lastPlayedGame.Name;
+                }
+                else
+                {
+                    TxtPlatLastPlayed.Text = "Nunca";
+                    TxtPlatLastPlayedGame.Text = "--";
+                }
+
+                var mostPlayedGame = games.OrderByDescending(g => g.PlayCount).FirstOrDefault();
+                TxtPlatMostPlayedGame.Text = (mostPlayedGame != null && mostPlayedGame.PlayCount > 0) ? mostPlayedGame.Name : "--";
+
+                // 3. Descripción
+                TxtPlatDescription.Text = (dbCat != null && !string.IsNullOrEmpty(dbCat.Notes)) ? dbCat.Notes : "Sin descripción de categoría disponible.";
+            }
+        }
+        else if (item.Tag is string simpleTag && simpleTag == "ALL")
+        {
+            RowPlatDeveloper.IsVisible = false;
+            RowPlatManufacturer.IsVisible = false;
+            RowPlatCpu.IsVisible = false;
+            RowPlatMemory.IsVisible = false;
+            RowPlatGraphics.IsVisible = false;
+            RowPlatSound.IsVisible = false;
+            RowPlatDisplay.IsVisible = false;
+            RowPlatMedia.IsVisible = false;
+            
+            BrdPlatformLogo.IsVisible = false;
+            ImgPlatformHardware.IsVisible = false;
+            TxtPlatformHardwarePlaceholder.IsVisible = false;
+            TxtPlatformReleaseDate.IsVisible = false;
+
+            var games = context.Games.ToList();
+            int totalGames = games.Count;
+            int completedGames = games.Count(g => g.PlayStatus == "Completado");
+            int totalPlayCount = games.Sum(g => g.PlayCount);
+            int totalPlayTimeSeconds = games.Sum(g => g.PlayTime);
+
+            int hours = totalPlayTimeSeconds / 3600;
+            int minutes = (totalPlayTimeSeconds % 3600) / 60;
+            int seconds = totalPlayTimeSeconds % 60;
+
+            TxtPlatTotalGames.Text = totalGames.ToString();
+            TxtPlatCompletedGames.Text = completedGames.ToString();
+            TxtPlatPlayCount.Text = totalPlayCount.ToString();
+            TxtPlatPlayTime.Text = $"{hours}h {minutes:00}m {seconds:00}s";
+
+            var playedGames = games.Where(g => g.PlayCount > 0).ToList();
+            if (playedGames.Any())
+            {
+                TxtPlatLastPlayed.Text = "Recientemente";
+                var lastPlayedGame = playedGames.OrderByDescending(g => g.PlayCount).First();
+                TxtPlatLastPlayedGame.Text = lastPlayedGame.Name;
+            }
+            else
+            {
+                TxtPlatLastPlayed.Text = "Nunca";
+                TxtPlatLastPlayedGame.Text = "--";
+            }
+
+            var mostPlayedGame = games.OrderByDescending(g => g.PlayCount).FirstOrDefault();
+            TxtPlatMostPlayedGame.Text = (mostPlayedGame != null && mostPlayedGame.PlayCount > 0) ? mostPlayedGame.Name : "--";
+
+            TxtPlatDescription.Text = "Esta vista muestra el compendio general de todos los videojuegos importados y catalogados en tu biblioteca local de Gestor de Juegos, ofreciendo métricas de juego consolidadas para toda tu colección multimedia.";
+        }
+        else
+        {
+            PnlPlatformDetails.IsVisible = false;
+            if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = true;
+        }
+    }
+
+    private void BtnClosePlatformDetails_Click(object? sender, RoutedEventArgs e)
+    {
+        GestorJuegos.Utils.SoundHelper.PlayBack();
+        if (PnlPlatformDetails != null) PnlPlatformDetails.IsVisible = false;
+        if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = true;
+    }
+
+    private void BtnEditPlatformQuick_Click(object? sender, RoutedEventArgs e)
+    {
+        BtnManagePlatforms_Click(sender, e);
     }
 
     private void PlatformMenuItem_Click(object? sender, RoutedEventArgs e)
@@ -2872,6 +3255,7 @@ public partial class MainWindow : Window
 
             // Visibilidad de Paneles con Fade
             if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = false;
+            if (PnlPlatformDetails != null) PnlPlatformDetails.IsVisible = false;
             
             // Efecto Fade
             PnlGameDetails.Opacity = 0;

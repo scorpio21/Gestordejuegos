@@ -684,3 +684,6 @@ appsettings.json
 
 # Logs de importación de la app
 import_covers_log.txt
+
+# Archivos XML pesados no deseados
+*.xml

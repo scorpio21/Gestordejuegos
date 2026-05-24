@@ -31,11 +31,24 @@ namespace GestorJuegos.Services
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN OverrideLaunchArguments TEXT NOT NULL DEFAULT ''"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN AdditionalRoms TEXT NOT NULL DEFAULT ''"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN IsFavorite INTEGER NOT NULL DEFAULT 0"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN PlayTime INTEGER NOT NULL DEFAULT 0"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN DateAdded TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN LastScanDate TEXT;"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Logo BLOB"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Icon BLOB"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN HardwareImage BLOB"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN ReleaseDate TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Developer TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Manufacturer TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Cpu TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Memory TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Graphics TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Sound TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Display TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Media TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Notes TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS PlatformCategories (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT NOT NULL, Icon BLOB, Graphic BLOB);"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE PlatformCategories ADD COLUMN Notes TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("DELETE FROM Games WHERE PlatformId NOT IN (SELECT Id FROM Platforms)"); } catch { }
                 }
 
