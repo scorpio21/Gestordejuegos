@@ -101,6 +101,26 @@ public partial class MainWindow : Window
                         command.CommandText = "ALTER TABLE Platforms ADD COLUMN Category TEXT DEFAULT 'Consoles';";
                         try { command.ExecuteNonQuery(); } catch { }
                     }
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "ALTER TABLE Platforms ADD COLUMN Icon BLOB;";
+                        try { command.ExecuteNonQuery(); } catch { }
+                    }
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "ALTER TABLE Platforms ADD COLUMN Logo BLOB;";
+                        try { command.ExecuteNonQuery(); } catch { }
+                    }
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"CREATE TABLE IF NOT EXISTS PlatformCategories (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            Name TEXT NOT NULL,
+                            Icon BLOB,
+                            Graphic BLOB
+                        );";
+                        try { command.ExecuteNonQuery(); } catch { }
+                    }
 
                     // --- MIGRACIÓN TABLA GAMES ---
                     using (var command = connection.CreateCommand())
@@ -155,6 +175,7 @@ public partial class MainWindow : Window
         _vimmService = new VimmVaultService();
 
         LoadPlatforms();
+        ImportLaunchBoxAssets();
         LoadDashboard();
 
         AddHandler(DragDrop.DropEvent, Window_Drop);
@@ -174,7 +195,8 @@ public partial class MainWindow : Window
         LstGamesGrid.SelectionChanged += LstGames_SelectionChanged;
         
         LstPlatformsWall.SelectionChanged += LstPlatformsWall_SelectionChanged;
-        LstSidebar.SelectionChanged += LstSidebar_SelectionChanged;
+        TvSidebar.SelectionChanged += TvSidebar_SelectionChanged;
+        CmbSidebarView.SelectionChanged += CmbSidebarView_SelectionChanged;
 
         BtnShowPlatformsWall.Click += (s, e) => LoadPlatformsWall();
 
@@ -1348,51 +1370,184 @@ public partial class MainWindow : Window
     {
         try
         {
-            var sidebarItems = new List<SidebarItem>();
-
             using var context = new GestorJuegos.Data.AppDbContext();
             int totalGames = context.Games.Count();
             int favoritesCount = context.Games.Count(g => g.IsFavorite);
 
-            // --- SECCIÓN: BIBLIOTECA ---
-            sidebarItems.Add(new SidebarItem { Name = "BIBLIOTECA", IsHeader = true });
-            sidebarItems.Add(new SidebarItem { Name = "Todos los Juegos", Icon = "🏠", Count = totalGames, Tag = "ALL" });
-            sidebarItems.Add(new SidebarItem { Name = "Favoritos", Icon = "⭐", Count = favoritesCount, Tag = "FAVORITES" });
-
-            // --- SECCIÓN: PLATAFORMAS ---
-            var platformStats = _gameService.GetGamesCountByPlatform();
-            if (platformStats != null && platformStats.Any())
+            // Cargar ruta e icono de LaunchBox si están disponibles
+            string lbPath = _settings.LaunchBoxPath;
+            byte[]? allGamesIcon = null;
+            if (!string.IsNullOrEmpty(lbPath) && Directory.Exists(lbPath))
             {
-                sidebarItems.Add(new SidebarItem { Name = "PLATAFORMAS", IsHeader = true });
-                foreach (var p in platformStats.OrderBy(x => x.Key))
+                string allGamesPath = Path.Combine(lbPath, "Images", "Platform Icons", "All Games.png");
+                if (File.Exists(allGamesPath))
                 {
-                    sidebarItems.Add(new SidebarItem { Name = p.Key, Icon = "🎮", Count = p.Value, Tag = ("PLATFORM", p.Key) });
+                    try { allGamesIcon = File.ReadAllBytes(allGamesPath); } catch { }
                 }
             }
 
-            // --- SECCIÓN: GÉNEROS ---
-            var genreStats = _gameService.GetGenresWithCount();
-            if (genreStats != null && genreStats.Any())
+            int viewIndex = CmbSidebarView != null ? CmbSidebarView.SelectedIndex : 0;
+            var sidebarNodes = new List<SidebarNode>();
+
+            // Nodo raíz "Todo" que siempre se muestra arriba
+            var rootNode = new SidebarNode
             {
-                sidebarItems.Add(new SidebarItem { Name = "GÉNEROS", IsHeader = true });
-                foreach (var g in genreStats.OrderByDescending(x => x.Value).Take(15)) // Top 15 géneros
+                Name = "Todo",
+                Count = totalGames,
+                Tag = "ALL",
+                IconBytes = allGamesIcon,
+                ResortIcon = "🏠",
+                IsExpanded = true
+            };
+            sidebarNodes.Add(rootNode);
+
+            if (viewIndex == 0) // --- VISTA: CATEGORÍA DE PLATAFORMA (Estilo LaunchBox capturas) ---
+            {
+                // Cargar categorías guardadas en la base de datos
+                var dbCategories = context.PlatformCategories.ToList();
+
+                // Asegurar categorías por defecto en memoria si no hay nada en la DB
+                if (dbCategories.Count == 0)
                 {
-                    sidebarItems.Add(new SidebarItem { Name = g.Key, Icon = "📁", Count = g.Value, Tag = ("GENRE", g.Key) });
+                    dbCategories.Add(new PlatformCategory { Name = "Computers" });
+                    dbCategories.Add(new PlatformCategory { Name = "Consoles" });
+                    dbCategories.Add(new PlatformCategory { Name = "Handhelds" });
+                }
+
+                // Cargar estadísticas y objetos de plataformas
+                var platforms = context.Platforms.ToList();
+                var gamesCount = _gameService.GetGamesCountByPlatform() ?? new Dictionary<string, int>();
+
+                // Crear los nodos de categoría
+                var categoryNodes = new Dictionary<string, SidebarNode>();
+                foreach (var cat in dbCategories.OrderBy(c => c.Name))
+                {
+                    string emoji = cat.Name == "Computers" ? "🖥️" : (cat.Name == "Handhelds" ? "📟" : "🎮");
+                    var catNode = new SidebarNode
+                    {
+                        Name = cat.Name,
+                        Tag = ("CATEGORY", cat.Name),
+                        IconBytes = cat.Icon,
+                        ResortIcon = emoji,
+                        IsExpanded = true
+                    };
+                    categoryNodes[cat.Name] = catNode;
+                }
+
+                // Asegurar las 3 categorías principales en el diccionario por si acaso
+                string[] mainCats = new[] { "Computers", "Consoles", "Handhelds" };
+                foreach (var mc in mainCats)
+                {
+                    if (!categoryNodes.ContainsKey(mc))
+                    {
+                        string emoji = mc == "Computers" ? "🖥️" : (mc == "Handhelds" ? "📟" : "🎮");
+                        categoryNodes[mc] = new SidebarNode
+                        {
+                            Name = mc,
+                            Tag = ("CATEGORY", mc),
+                            ResortIcon = emoji,
+                            IsExpanded = true
+                        };
+                    }
+                }
+
+                // Clasificar plataformas en sus respectivas categorías
+                foreach (var platform in platforms.OrderBy(p => p.Name))
+                {
+                    int pCount = gamesCount.ContainsKey(platform.Name) ? gamesCount[platform.Name] : 0;
+                    string categoryName = platform.Category;
+
+                    // Si por alguna razón no es de las 3, por defecto va a Consoles
+                    if (categoryName != "Computers" && categoryName != "Handhelds" && categoryName != "Consoles")
+                    {
+                        categoryName = "Consoles";
+                    }
+
+                    var childNode = new SidebarNode
+                    {
+                        Name = platform.Name,
+                        Count = pCount,
+                        Tag = ("PLATFORM", platform.Name),
+                        IconBytes = platform.Icon, // Icono pixel-art de la plataforma desde SQLite
+                        ResortIcon = "🎮",
+                        IsExpanded = true
+                    };
+
+                    categoryNodes[categoryName].Children.Add(childNode);
+                }
+
+                // Calcular el total de juegos por categoría sumando sus hijos y añadir categorías al árbol
+                foreach (var mc in mainCats)
+                {
+                    var catNode = categoryNodes[mc];
+                    catNode.Count = catNode.Children.Sum(child => child.Count);
+                    sidebarNodes.Add(catNode);
                 }
             }
-
-            // --- SECCIÓN: REGIONES ---
-            var regionStats = _gameService.GetRegionsWithCount();
-            if (regionStats != null && regionStats.Any())
+            else if (viewIndex == 1) // --- VISTA: PLATAFORMAS (Lista plana) ---
             {
-                sidebarItems.Add(new SidebarItem { Name = "REGIONES", IsHeader = true });
-                foreach (var r in regionStats.OrderByDescending(x => x.Value))
+                var platforms = context.Platforms.ToList();
+                var gamesCount = _gameService.GetGamesCountByPlatform() ?? new Dictionary<string, int>();
+
+                foreach (var platform in platforms.OrderBy(p => p.Name))
                 {
-                    sidebarItems.Add(new SidebarItem { Name = r.Key, Icon = "🌎", Count = r.Value, Tag = ("REGION", r.Key) });
+                    int pCount = gamesCount.ContainsKey(platform.Name) ? gamesCount[platform.Name] : 0;
+                    sidebarNodes.Add(new SidebarNode
+                    {
+                        Name = platform.Name,
+                        Count = pCount,
+                        Tag = ("PLATFORM", platform.Name),
+                        IconBytes = platform.Icon,
+                        ResortIcon = "🎮"
+                    });
                 }
             }
+            else if (viewIndex == 2) // --- VISTA: GÉNEROS ---
+            {
+                var genreStats = _gameService.GetGenresWithCount();
+                if (genreStats != null)
+                {
+                    foreach (var g in genreStats.OrderByDescending(x => x.Value).Take(20))
+                    {
+                        sidebarNodes.Add(new SidebarNode
+                        {
+                            Name = g.Key,
+                            Count = g.Value,
+                            Tag = ("GENRE", g.Key),
+                            ResortIcon = "📁"
+                        });
+                    }
+                }
+            }
+            else if (viewIndex == 3) // --- VISTA: REGIONES ---
+            {
+                var regionStats = _gameService.GetRegionsWithCount();
+                if (regionStats != null)
+                {
+                    foreach (var r in regionStats.OrderByDescending(x => x.Value))
+                    {
+                        sidebarNodes.Add(new SidebarNode
+                        {
+                            Name = r.Key,
+                            Count = r.Value,
+                            Tag = ("REGION", r.Key),
+                            ResortIcon = "🌎"
+                        });
+                    }
+                }
+            }
+            else if (viewIndex == 4) // --- VISTA: BIBLIOTECA ---
+            {
+                sidebarNodes.Add(new SidebarNode
+                {
+                    Name = "Favoritos",
+                    Count = favoritesCount,
+                    Tag = "FAVORITES",
+                    ResortIcon = "⭐"
+                });
+            }
 
-            LstSidebar.ItemsSource = sidebarItems;
+            TvSidebar.ItemsSource = sidebarNodes;
         }
         catch (Exception ex)
         {
@@ -1400,20 +1555,162 @@ public partial class MainWindow : Window
         }
     }
 
-    private void LstSidebar_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private void CmbSidebarView_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (LstSidebar.SelectedItem is SidebarItem item)
-        {
-            if (item.IsHeader)
-            {
-                LstSidebar.SelectedItem = null;
-                return;
-            }
+        LoadPlatforms();
+    }
 
+    private async void ImportLaunchBoxAssets()
+    {
+        string lbPath = _settings.LaunchBoxPath;
+        if (string.IsNullOrEmpty(lbPath) || !Directory.Exists(lbPath))
+        {
+            // Intentar con la ruta por defecto F:\LaunchBox si no está configurada o si la de configuración no existe
+            if (Directory.Exists(@"F:\LaunchBox"))
+            {
+                lbPath = @"F:\LaunchBox";
+                _settings.LaunchBoxPath = lbPath;
+                SaveSettings();
+            }
+            else
+            {
+                return; // No se puede importar si no existe LaunchBox
+            }
+        }
+
+        await System.Threading.Tasks.Task.Run(() =>
+        {
+            try
+            {
+                using var context = new GestorJuegos.Data.AppDbContext();
+
+                // 1. Importar/actualizar iconos y gráficos de categorías principales
+                string[] categories = new[] { "Computers", "Consoles", "Handhelds" };
+                foreach (var catName in categories)
+                {
+                    var dbCat = context.PlatformCategories.FirstOrDefault(c => c.Name == catName);
+                    bool isNew = false;
+                    if (dbCat == null)
+                    {
+                        dbCat = new PlatformCategory { Name = catName };
+                        isNew = true;
+                    }
+
+                    // Cargar icono pixel-art de la categoría
+                    string iconPath = Path.Combine(lbPath, "Images", "Platform Icons", "Platform Categories", $"{catName}.png");
+                    if (File.Exists(iconPath))
+                    {
+                        try { dbCat.Icon = File.ReadAllBytes(iconPath); } catch { }
+                    }
+
+                    // Cargar gráfico Clear Logo grande de la categoría
+                    string graphicPath = Path.Combine(lbPath, "Images", "Platform Categories", catName, "Clear Logo", $"{catName}.png");
+                    if (File.Exists(graphicPath))
+                    {
+                        try { dbCat.Graphic = File.ReadAllBytes(graphicPath); } catch { }
+                    }
+
+                    if (isNew)
+                        context.PlatformCategories.Add(dbCat);
+                    else
+                        context.PlatformCategories.Update(dbCat);
+                }
+                context.SaveChanges();
+
+                // 2. Importar/actualizar iconos y logos para cada plataforma en la DB
+                var dbPlatforms = context.Platforms.ToList();
+                bool anyPlatformUpdated = false;
+                foreach (var platform in dbPlatforms)
+                {
+                    bool isUpdated = false;
+
+                    // Si no tiene icono pixel-art guardado en DB, intentar cargarlo de LaunchBox
+                    if (platform.Icon == null || platform.Icon.Length == 0)
+                    {
+                        string platIconPath = Path.Combine(lbPath, "Images", "Platform Icons", "Platforms", $"{platform.Name}.png");
+                        if (File.Exists(platIconPath))
+                        {
+                            try
+                            {
+                                platform.Icon = File.ReadAllBytes(platIconPath);
+                                isUpdated = true;
+                            }
+                            catch { }
+                        }
+                    }
+
+                    // Si no tiene logo/Clear Logo en la DB, intentar cargarlo
+                    if (platform.Logo == null || platform.Logo.Length == 0)
+                    {
+                        string logoPath = Path.Combine(lbPath, "Images", "Platforms", platform.Name, "Clear Logo", $"{platform.Name}.png");
+                        if (File.Exists(logoPath))
+                        {
+                            try
+                            {
+                                platform.Logo = File.ReadAllBytes(logoPath);
+                                isUpdated = true;
+                            }
+                            catch { }
+                        }
+                    }
+
+                    // --- CLASIFICACIÓN DE CATEGORÍA AUTOMÁTICA EN LA DB SI ES DEFAULT ---
+                    // Si tiene la categoría default "Consoles", la reclasificamos de forma inteligente para que persista
+                    if (platform.Category == "Consoles")
+                    {
+                        string nameLower = platform.Name.ToLower();
+                        string newCategory = "Consoles";
+
+                        if (nameLower.Contains("amiga") || nameLower.Contains("spectrum") || nameLower.Contains("amstrad") || 
+                            nameLower.Contains("msx") || nameLower.Contains("x68000") || nameLower.Contains("windows") || 
+                            nameLower.Contains("dos") || nameLower.Contains("ibm") || nameLower.Contains("pc") || 
+                            nameLower.Contains("commodore") || nameLower.Contains("atari st"))
+                        {
+                            newCategory = "Computers";
+                        }
+                        else if (nameLower.Contains("game boy") || nameLower.Contains("gameboy") || nameLower.Contains("advance") || 
+                                 nameLower.Contains("color") || nameLower.Contains("psp") || nameLower.Contains("portable") || 
+                                 nameLower.Contains("ds") || nameLower.Contains("3ds") || nameLower.Contains("game gear") || 
+                                 nameLower.Contains("lynx") || nameLower.Contains("wonderswan") || nameLower.Contains("pocket"))
+                        {
+                            newCategory = "Handhelds";
+                        }
+
+                        if (newCategory != platform.Category)
+                        {
+                            platform.Category = newCategory;
+                            isUpdated = true;
+                        }
+                    }
+
+                    if (isUpdated)
+                    {
+                        context.Platforms.Update(platform);
+                        anyPlatformUpdated = true;
+                    }
+                }
+
+                if (anyPlatformUpdated)
+                {
+                    context.SaveChanges();
+                    // Refrescar el árbol en el hilo de UI
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => LoadPlatforms());
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error en ImportLaunchBoxAssets: {ex.Message}");
+            }
+        });
+    }
+
+    private void TvSidebar_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (TvSidebar.SelectedItem is SidebarNode item)
+        {
             GestorJuegos.Utils.SoundHelper.PlaySelect();
             _currentPage = 1;
             PnlDashboard.IsVisible = false;
-            // PnlHeaderToggles.IsVisible = true; (Eliminado)
             PnlPagination.IsVisible = true;
             PnlGameDetails.IsVisible = false;
             
@@ -1430,12 +1727,30 @@ public partial class MainWindow : Window
             }
             else if (item.Tag is ValueTuple<string, string> filter)
             {
-                if (filter.Item1 == "PLATFORM") { query = query.Where(g => g.Platform.Name == filter.Item2); }
-                else if (filter.Item1 == "GENRE") { query = query.Where(g => g.Genre.Contains(filter.Item2)); }
-                else if (filter.Item1 == "REGION") { query = query.Where(g => g.Region == filter.Item2); }
+                if (filter.Item1 == "PLATFORM") 
+                { 
+                    query = query.Where(g => g.Platform.Name == filter.Item2); 
+                }
+                else if (filter.Item1 == "CATEGORY") 
+                { 
+                    // Filtrar por todas las plataformas que correspondan a esta categoría
+                    var platformNames = context.Platforms
+                        .Where(p => p.Category == filter.Item2)
+                        .Select(p => p.Name)
+                        .ToList();
+                    query = query.Where(g => platformNames.Contains(g.Platform.Name)); 
+                }
+                else if (filter.Item1 == "GENRE") 
+                { 
+                    query = query.Where(g => g.Genre.Contains(filter.Item2)); 
+                }
+                else if (filter.Item1 == "REGION") 
+                { 
+                    query = query.Where(g => g.Region == filter.Item2); 
+                }
             }
 
-            // Sync platform ref for additions/edits ANTES de aplicar el filtro para que el encabezado sea correcto
+            // Sync platform ref for additions/edits ANTES de aplicar el filtro
             if (item.Tag is ValueTuple<string, string> f && f.Item1 == "PLATFORM")
                 _selectedPlatform = context.Platforms.FirstOrDefault(p => p.Name == f.Item2);
             else
@@ -1453,16 +1768,37 @@ public partial class MainWindow : Window
             {
                 ApplySearchFilter();
             }
+        }
+    }
+
+    private void SelectSidebarNodeByTag(object tag)
+    {
+        var items = TvSidebar.ItemsSource as IEnumerable<SidebarNode>;
+        if (items == null) return;
+
+        foreach (var node in items)
+        {
+            if (Equals(node.Tag, tag))
+            {
+                TvSidebar.SelectedItem = node;
+                return;
             }
+            foreach (var child in node.Children)
+            {
+                if (Equals(child.Tag, tag))
+                {
+                    TvSidebar.SelectedItem = child;
+                    return;
+                }
             }
+        }
+    }
+
     private void PlatformMenuItem_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is MenuItem menuItem && menuItem.Tag is Platform platform)
         {
-            // Buscar el item en la sidebar y seleccionarlo
-            var sidebarItems = LstSidebar.ItemsSource as IEnumerable<SidebarItem>;
-            var item = sidebarItems?.FirstOrDefault(i => i.Tag is ValueTuple<string, string> f && f.Item1 == "PLATFORM" && f.Item2 == platform.Name);
-            if (item != null) LstSidebar.SelectedItem = item;
+            SelectSidebarNodeByTag(("PLATFORM", platform.Name));
         }
     }
 
@@ -1488,10 +1824,7 @@ public partial class MainWindow : Window
     {
         if (LstPlatformsWall.SelectedItem is Platform platform)
         {
-            // Buscar en la sidebar
-            var sidebarItems = LstSidebar.ItemsSource as IEnumerable<SidebarItem>;
-            var item = sidebarItems?.FirstOrDefault(i => i.Tag is ValueTuple<string, string> f && f.Item1 == "PLATFORM" && f.Item2 == platform.Name);
-            if (item != null) LstSidebar.SelectedItem = item;
+            SelectSidebarNodeByTag(("PLATFORM", platform.Name));
             
             OverlayPlatformsWall.IsVisible = false;
             LstPlatformsWall.SelectedItem = null;
@@ -3987,8 +4320,8 @@ public partial class MainWindow : Window
         LoadPlatforms(); // Actualizar contador de favoritos
         
         // Si estamos en la vista de favoritos, recargar la lista
-        var sidebarItem = LstSidebar.SelectedItem as SidebarItem;
-        if (sidebarItem != null && sidebarItem.Tag?.ToString() == "FAVORITES")
+        var sidebarNode = TvSidebar.SelectedItem as SidebarNode;
+        if (sidebarNode != null && sidebarNode.Tag?.ToString() == "FAVORITES")
         {
             ApplySearchFilter();
         }

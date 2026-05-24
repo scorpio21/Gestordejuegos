@@ -103,6 +103,46 @@
                 </Grid>
             </Panel>
         </DataTemplate>
+        
+        <!-- Plantilla Jerárquica para Nodos del Árbol de la Barra Lateral -->
+        <TreeDataTemplate x:Key="SidebarNodeTemplate" DataType="models:SidebarNode" ItemsSource="{Binding Children}">
+            <Grid ColumnDefinitions="Auto, Auto, *, Auto" Height="36" Background="Transparent">
+                <!-- Icono en Byte Array (Logo o Icono de LaunchBox) -->
+                <Image Grid.Column="0" 
+                       Source="{Binding IconBytes, Converter={StaticResource ByteToBitmap}}" 
+                       Width="22" Height="22" 
+                       Margin="0,0,8,0" 
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding HasIconBytes}"/>
+                       
+                <!-- Emoji de Respaldo (si no hay binario) -->
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding ResortIcon}" 
+                           Margin="0,0,8,0" 
+                           VerticalAlignment="Center" 
+                           FontSize="16"
+                           IsVisible="{Binding !HasIconBytes}"/>
+                           
+                <!-- Nombre del Nodo -->
+                <TextBlock Grid.Column="2" 
+                           Text="{Binding Name}" 
+                           VerticalAlignment="Center" 
+                           Foreground="#cbd5e1" 
+                           FontSize="13"
+                           FontWeight="{Binding FontWeight}"/>
+                           
+                <!-- Contador de Juegos -->
+                <Border Grid.Column="3" 
+                        Background="#334155" 
+                        CornerRadius="10" 
+                        Padding="8,1" 
+                        VerticalAlignment="Center" 
+                        Margin="5,0,5,0"
+                        IsVisible="{Binding ShowCount}">
+                    <TextBlock Text="{Binding Count}" FontSize="10" Foreground="#94a3b8" FontWeight="Bold"/>
+                </Border>
+            </Grid>
+        </TreeDataTemplate>
         <!-- Plantilla para Rejilla de Juegos (Premium) -->
         <DataTemplate x:Key="GameGridTemplate" x:DataType="models:Game">
             <Border Name="RootBorder" Margin="8" CornerRadius="12" ClipToBounds="True" Background="#1e293b" BoxShadow="0 4 15 0 #AA000000" PointerEntered="GameItem_PointerEntered">
@@ -221,11 +261,23 @@
                 <!-- IZQUIERDA: Sidebar de Filtros Inteligente -->
                 <Border Grid.Column="0" Background="#0f172a" BorderBrush="#334155" BorderThickness="0,0,1,0" Padding="5">
                     <DockPanel>
+                        <!-- Selector de Vista estilo LaunchBox -->
+                        <Border DockPanel.Dock="Top" Background="#1e293b" CornerRadius="8" Margin="5,5,5,10" Padding="2" BorderBrush="#334155" BorderThickness="1">
+                            <ComboBox Name="CmbSidebarView" SelectedIndex="0" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" CornerRadius="6">
+                                <ComboBoxItem Content="Categoría de Plataforma"/>
+                                <ComboBoxItem Content="Plataformas"/>
+                                <ComboBoxItem Content="Géneros"/>
+                                <ComboBoxItem Content="Regiones"/>
+                                <ComboBoxItem Content="Biblioteca"/>
+                            </ComboBox>
+                        </Border>
+
                         <Button DockPanel.Dock="Bottom" Name="BtnAddPlatform" Content="+ Nueva Plataforma" Background="Transparent" Foreground="#64748b" HorizontalAlignment="Stretch" Margin="5" Padding="10"/>
+                        
                         <ScrollViewer>
-                            <ListBox Name="LstSidebar" Background="Transparent" BorderThickness="0" ItemTemplate="{StaticResource SidebarItemTemplate}">
-                                <ListBox.Styles>
-                                    <Style Selector="ListBoxItem">
+                            <TreeView Name="TvSidebar" x:CompileBindings="False" Background="Transparent" BorderThickness="0" ItemTemplate="{StaticResource SidebarNodeTemplate}">
+                                <TreeView.Styles>
+                                    <Style Selector="TreeViewItem">
                                         <Setter Property="ContextMenu">
                                             <Setter.Value>
                                                 <ContextMenu>
@@ -259,12 +311,13 @@
                                                 </ContextMenu>
                                             </Setter.Value>
                                         </Setter>
-                                        <Setter Property="Padding" Value="10,2"/>
+                                        <Setter Property="Padding" Value="4,2"/>
                                         <Setter Property="CornerRadius" Value="8"/>
-                                        <Setter Property="Margin" Value="5,0"/>
+                                        <Setter Property="Margin" Value="5,1"/>
+                                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                     </Style>
-                                </ListBox.Styles>
-                            </ListBox>
+                                </TreeView.Styles>
+                            </TreeView>
                         </ScrollViewer>
                     </DockPanel>
                 </Border>

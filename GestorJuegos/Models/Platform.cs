@@ -13,7 +13,7 @@ namespace GestorJuegos.Models
         public DateTime? LastScanDate { get; set; }
         public List<Game> Games { get; set; } = new();
 
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public byte[]? Logo { get; set; }
+        public byte[]? Icon { get; set; }
     }
 }

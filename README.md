@@ -1,4 +1,4 @@
-# 🎮 Gestor de Juegos (v1.1.2.3-Dev)
+# 🎮 Gestor de Juegos (v1.1.2.4-Dev)
 
 Organizador de colecciones de videojuegos para Windows, optimizado para grandes bibliotecas y uso con mando (Gamepad).
 
@@ -14,7 +14,14 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
-### v1.1.2.3-Dev (Actual)
+### v1.1.2.4-Dev (Actual)
+*   **Barra Lateral Jerárquica (`TreeView`)**: Rediseño completo del panel izquierdo sustituyendo la lista plana por un árbol jerárquico al estilo LaunchBox, agrupando las plataformas por categorías ("Computers", "Consoles", "Handhelds").
+*   **Selector de Vista Dinámico**: Añadido un combobox superior para cambiar instantáneamente la vista de la barra lateral entre: Categoría de plataforma, Plataformas (lista plana), Géneros, Regiones y Biblioteca (Favoritos).
+*   **Gestión y Sincronización de Iconos de Categoría**: Carga automática e importación a la base de datos de iconos pixel-art oficiales y Clear Logos de LaunchBox para cada plataforma y categoría.
+*   **Clasificación Inteligente Automática**: Reclasificación automatizada y persistente de las plataformas de "Consoles" a "Computers" o "Handhelds" según el nombre de la plataforma (ej. Game Boy, Amiga, Spectrum).
+*   **Actualizaciones del Esquema en Caliente**: Implementado auto-parcheo en caliente del esquema de base de datos local SQLite al arrancar el programa, creando dinámicamente la tabla `PlatformCategories` y las columnas `Logo` e `Icon` si la base de datos ya existía, previniendo crashes.
+
+### v1.1.2.3-Dev
 *   **Rediseño de Detalles estilo LaunchBox**: Reestructurado por completo el panel derecho de detalles para emular con fidelidad la experiencia premium de LaunchBox (banner inmersivo, logotipo flotante transparente, calificación dinámica y estrellas celestes).
 *   **Mejoras y Correcciones de Banner e Imágenes**:
     - **Solapamiento resuelto**: El banner/fanart del juego se mantiene visible debajo del logotipo del juego para una estética inmersiva real en lugar de un fondo plano, y se oculta el botón flotante "Ver todas las imágenes" cuando el juego dispone de logotipo, eliminando la superposición de texto y mejorando la legibilidad.

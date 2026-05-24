@@ -681,3 +681,6 @@ appsettings.json
 
 # Locales
 /paratuinfo/
+
+# Logs de importación de la app
+import_covers_log.txt
