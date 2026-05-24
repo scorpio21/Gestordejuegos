@@ -1,10 +1,47 @@
-# Resumen de Cambios: Formato Premium de Launchbox (v1.1.2.3-Dev)
+# Resumen de Cambios: Formato Premium de Launchbox (v1.1.2.4-Dev)
 
-Hemos reestructurado por completo el panel de detalles del juego en la parte derecha de la aplicación para replicar de forma exacta, premium y dinámica la experiencia visual y funcional de **Launchbox**, tal y como se ilustraba en las capturas de pantalla compartidas.
+Hemos evolucionado la aplicación para añadir un sistema de organización y navegación jerárquica avanzado en la barra lateral izquierda, emulando fielmente la experiencia visual y funcional de **Launchbox** y dotando al sistema de total resiliencia frente a bases de datos SQLite preexistentes.
 
-## 🛠️ Cambios Realizados
+---
 
-### 1. Interfaz de Usuario Avanzada (`MainWindow.axaml`)
+## 🛠️ Cambios Realizados en v1.1.2.4-Dev (Actual)
+
+### 1. Barra Lateral Jerárquica y Navegación Dinámica (`MainWindow.axaml`)
+* **Barra Lateral con `TreeView` (`TvSidebar`)**:
+  * Reemplazado el antiguo ListBox por un árbol de navegación jerárquico.
+  * Agrupación automática de plataformas bajo sus categorías principales: **Consoles** (🕹️), **Computers** (🖥️) y **Handhelds** (📟).
+  * Soporte para mostrar iconos pixel-art binarios de cada plataforma/categoría extraídos de la base de datos, con emojis de respaldo si no hay binario disponible.
+  * Expansión de nodos habilitada por defecto y contadores de juegos dinámicos visibles por cada categoría y plataforma.
+* **Selector de Vistas Superior (`CmbSidebarView`)**:
+  * Implementado un menú desplegable superior sobre la barra lateral que permite alternar la vista entre:
+    * *Categoría de Plataforma* (Vista jerárquica por defecto).
+    * *Plataformas* (Lista plana tradicional).
+    * *Géneros* (Filtro por etiquetas de género).
+    * *Regiones* (Filtro geográfico con banderas).
+    * *Biblioteca* (Acceso rápido a Favoritos).
+
+### 2. Clasificación Inteligente y Scraper de Logotipos (`MainWindow.axaml.cs`)
+* **Lógica del Árbol (`LoadPlatforms`)**:
+  * Mapeo de datos dinámico que genera los nodos jerárquicos según la vista del combobox y calcula de forma agregada el número total de juegos por categoría sumando sus nodos hijo.
+  * Filtrado recursivo al hacer clic en nodos principales de categoría (por ejemplo, al hacer clic en "Computers" se visualizan todos los juegos de todos los microordenadores).
+* **Importación y Caché Multimedia (`ImportLaunchBoxAssets`)**:
+  * Hilo en segundo plano asíncrono para escanear y guardar binariamente en SQLite los iconos pixel-art y logotipos Clear Logo desde la ruta local de LaunchBox.
+* **Reclasificación de Categoría Inteligente**:
+  * Algoritmo de detección que analiza el nombre de la plataforma y la mueve de la categoría genérica "Consoles" a "Computers" (ej: Amiga, Spectrum, MSX, PC) o "Handhelds" (ej: Game Boy, PSP, Game Gear, DS) guardando este cambio de forma persistente.
+
+### 3. Modelo de Datos y Esquema en Caliente (`GameService.cs` y `AppDbContext.cs`)
+* **Modelo de Categorías (`PlatformCategory.cs` y `Platform.cs`)**:
+  * Creada la entidad `PlatformCategory` con campos para nombre, icono y banner Clear Logo.
+  * Añadidas las propiedades de base de datos `Logo` e `Icon` en `Platform.cs` para almacenar el arte de plataformas de forma local.
+* **Auto-parcheo de Esquema SQLite**:
+  * Agregadas sentencias `ALTER TABLE` y `CREATE TABLE IF NOT EXISTS` controladas con bloques `try-catch` en el constructor de `GameService.cs`.
+  * Esto permite que, si ejecutas el gestor con una base de datos ya existente en tu PC, se actualice su estructura agregando las nuevas columnas e indexaciones sin lanzar fallos críticos ni requerir migraciones complejas de Entity Framework.
+
+---
+
+## 🛠️ Cambios Realizados en v1.1.2.3-Dev
+
+### 1. Interfaz de Usuario de Detalles (`MainWindow.axaml`)
 * **Cabecera Inmersiva (Banner)**:
   * Fondo multimedia del juego con gradiente de desvanecimiento premium al azul oscuro de la aplicación.
   * Logotipo transparente superpuesto dinámicamente (`BrdDetailLogo`).
@@ -58,3 +95,5 @@ Hemos reestructurado por completo el panel de detalles del juego en la parte der
    * Ejecutado `dotnet build` obteniendo **compilación correcta con cero errores**.
 2. **Verificación de Eventos**:
    * Verificado el correcto funcionamiento del enlazado de eventos del constructor de C# con los nombres de control unificados (`BtnEditGame`, `BtnOpenFolder`, `BtnDelete`, `ImgCover`).
+3. **Validación del Esquema en Caliente**:
+   * Verificada la persistencia automática al iniciar la aplicación con una base de datos local preexistente, confirmando la creación exitosa de las columnas de iconos e imágenes adicionales sin fallos ni crashes en la interfaz.
