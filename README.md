@@ -1,4 +1,4 @@
-# 🎮 Gestor de Juegos (v1.1.2.2-Dev)
+# 🎮 Gestor de Juegos (v1.1.2.3-Dev)
 
 Organizador de colecciones de videojuegos para Windows, optimizado para grandes bibliotecas y uso con mando (Gamepad).
 
@@ -14,7 +14,17 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
-### v1.1.2.2-Dev (Actual)
+### v1.1.2.3-Dev (Actual)
+*   **Rediseño de Detalles estilo LaunchBox**: Reestructurado por completo el panel derecho de detalles para emular con fidelidad la experiencia premium de LaunchBox (banner inmersivo, logotipo flotante transparente, calificación dinámica y estrellas celestes).
+*   **Mejoras y Correcciones de Banner e Imágenes**:
+    - **Solapamiento resuelto**: El banner/fanart del juego se mantiene visible debajo del logotipo del juego para una estética inmersiva real en lugar de un fondo plano, y se oculta el botón flotante "Ver todas las imágenes" cuando el juego dispone de logotipo, eliminando la superposición de texto y mejorando la legibilidad.
+    - **Controlador de Captura**: Se solventó el bug de Avalonia XAML controlando programáticamente el placeholder "Sin captura de pantalla" desde el código de C#, eliminando la superposición del texto gray sobre las imágenes de fallback.
+*   **Carrusel de Capturas Interactivo**: Añadido un visor de capturas grande acompañado de un carrusel horizontal de miniaturas para capturas adicionales y fanarts, con soporte para visor de pantalla completa inmersivo (`OverlayImageViewer`).
+*   **Acciones Rápidas Flotantes**: Barra de herramientas flotante con accesos directos rápidos para Editar, Favorito rápido (corazón dinámico que cambia de color e icono en tiempo real), Abrir Carpeta y Eliminar.
+*   **Botón JUGAR Multi-Disco Inteligente**: Reemplazado por un botón verde gigante con degradado premium y un menú desplegable dinámico que detecta automáticamente los discos/ROMs en juegos multi-disco para iniciarlos individualmente.
+*   **Fichas de Datos Técnicos e Internet**: Cuadrícula de detalles técnicos estilo tarjeta (Clasificación, Género, Series, Modo, Progreso coloreado, Estado, Archivo) e iconos de acceso rápido para buscar trailers en YouTube y artículos en Wikipedia.
+
+### v1.1.2.2-Dev
 *   **Navegación Sonora Inmersiva**: Los efectos de sonido ahora se reproducen al pasar el ratón por las listas de juegos y plataformas, no solo al hacer clic.
 *   **Optimización de Carga Crítica**: Eliminado el retardo al abrir plataformas mediante una precarga más eficiente de la base de datos y paginación optimizada.
 *   **Sonido de Alta Velocidad**: Implementado sistema de caché en memoria para los sonidos (`SoundHelper`), eliminando latencias de disco durante la navegación rápida.

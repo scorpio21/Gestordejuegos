@@ -2554,32 +2554,50 @@ public partial class MainWindow : Window
             // --- FONDO DINÁMICO (Fase B) ---
             UpdateDynamicBackground(game);
 
-            // --- Llenar Panel Informativo (Derecha) ---
+            // --- Llenar Panel Informativo (Derecha estilo LaunchBox) ---
             TxtInfoName.Text = game.Name;
-            TxtInfoYear.Text = game.Year.ToString();
-            TxtInfoGenre.Text = string.IsNullOrEmpty(game.Genre) ? "Género Desconocido" : game.Genre;
-            TxtInfoLanguages.Text = string.IsNullOrEmpty(game.Languages) ? "No especificado" : game.Languages;
+            TxtInfoPlatform.Text = game.Platform != null ? game.Platform.Name.ToUpper() : "DESCONOCIDO";
 
-            // Desarrollador y Distribuidor
-            TxtInfoDeveloper.Text = game.Developer;
-            PnlInfoDeveloper.IsVisible = !string.IsNullOrEmpty(game.Developer);
-            TxtInfoPublisher.Text = game.Publisher;
-            PnlInfoPublisher.IsVisible = !string.IsNullOrEmpty(game.Publisher);
+            // Calificación
+            double ratingVal = game.Rating / 20.0;
+            TxtInfoRatingText.Text = ratingVal > 0 ? ratingVal.ToString("0.0") : "0.0";
+            int starCount = (int)Math.Round(ratingVal);
+            TxtInfoRatingStars.Text = new string('★', starCount) + new string('☆', 5 - starCount);
 
-            // Versión
-            TxtInfoVersion.Text = game.Version;
-            PnlInfoVersion.IsVisible = !string.IsNullOrEmpty(game.Version);
+            // Favorito
+            UpdateFavoriteUI();
+
+            // Info Básica
+            TxtBaseReleaseDate.Text = game.Year > 0 ? game.Year.ToString() : "--";
+            TxtBaseDeveloper.Text = string.IsNullOrEmpty(game.Developer) ? "--" : game.Developer;
+            TxtBasePublisher.Text = string.IsNullOrEmpty(game.Publisher) ? "--" : game.Publisher;
+            TxtBasePlaytime.Text = $"{game.PlayCount} partidas ({game.PlayStatus})";
+
+            // Bloque INFORMACIÓN
+            TxtInfoRating.Text = ratingVal > 0 ? $"{ratingVal:0.0} / 5" : "Not Rated";
+            TxtInfoGenre.Text = string.IsNullOrEmpty(game.Genre) ? "Desconocido" : game.Genre;
+            TxtInfoSeries.Text = string.IsNullOrEmpty(game.Genre) ? "--" : game.Genre.Split('/').First().Trim();
             
-            // Descripción
-            TxtInfoDescription.Text = game.Description;
-            TxtInfoDescription.IsVisible = !string.IsNullOrEmpty(game.Description);
-
-            // Región Flag Info
-            if (ImgInfoRegion != null)
+            // Determinar modo de juego aproximado
+            TxtInfoPlayMode.Text = game.Platform != null && game.Platform.Name.Contains("MAME", StringComparison.OrdinalIgnoreCase) 
+                ? "4-Player Alternating / 2-Player Simultaneous" 
+                : "1-2 Jugadores";
+                
+            TxtInfoProgress.Text = game.PlayStatus;
+            TxtInfoProgress.Foreground = game.PlayStatus switch
             {
-                var regionConverter = new Utils.RegionToFlagConverter();
-                ImgInfoRegion.Source = regionConverter.Convert(game.Region, null, null, null) as Avalonia.Media.Imaging.Bitmap;
-            }
+                "Completado" => Avalonia.Media.Brushes.LightGreen,
+                "Jugando" => Avalonia.Media.Brushes.LightSkyBlue,
+                _ => Avalonia.Media.Brushes.Orange
+            };
+            TxtInfoStatus.Text = "good";
+            TxtInfoSource.Text = "MAME / database";
+            TxtInfoPortable.Text = "No";
+            TxtInfoFile.Text = string.IsNullOrEmpty(game.RomPath) ? "--" : Path.GetFileName(game.RomPath);
+            TxtInfoLastPlayed.Text = game.PlayCount > 0 ? "Recientemente" : "Nunca";
+
+            // Descripción
+            TxtInfoDescription.Text = string.IsNullOrEmpty(game.Description) ? "Sin descripción disponible." : game.Description;
 
             // --- Preparar Formulario de Edición (Overlay) ---
             TxtName.Text = game.Name;
@@ -2600,7 +2618,6 @@ public partial class MainWindow : Window
                 }
             }
             LstRoms.ItemsSource = _currentRoms;
-            LstInfoRoms.ItemsSource = _currentRoms;
 
             TxtOverrideEmulator.Text = game.OverrideEmulatorPath;
             TxtOverrideArgs.Text = game.OverrideLaunchArguments;
@@ -2644,7 +2661,7 @@ public partial class MainWindow : Window
             {
                 BrdDetailLogo.IsVisible = false; // Ocultar por defecto
 
-                // Intentar cargar "Clear Logo" o "Logos" (según tu nueva estructura)
+                // Intentar cargar "Clear Logo" o "Logos"
                 byte[]? logoData = _gameService.GetGameExtraImage(game.Id, "Logos") ?? 
                                   _gameService.GetGameExtraImage(game.Id, "Clear Logo");
 
@@ -2660,8 +2677,19 @@ public partial class MainWindow : Window
             }
             catch { BrdDetailLogo.IsVisible = false; }
 
-            // Si hay logo, ocultamos el fondo del banner para que el logo destaque limpio arriba
-            ImgDetailBackground.IsVisible = !hasLogo;
+            // Si hay logo, ocultamos el botón de 'Ver todas las imágenes' para que no solape con el logo
+            BtnViewAllImages.IsVisible = !hasLogo;
+            // El fondo del banner debe seguir siendo visible debajo del logo
+            ImgDetailBackground.IsVisible = true;
+
+            // Cargar screenshots y galería
+            LoadGameGallery(game.Id);
+
+            // Cargar juegos relacionados
+            LoadRelatedGames(game);
+
+            // Rellenar menú desplegable de ROMs
+            PopulateRomsFlyout(game);
 
             // Visibilidad de Paneles
             if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = false;
@@ -3953,6 +3981,7 @@ public partial class MainWindow : Window
         _gameService.UpdateGameMetadata(_selectedGame);
         
         SoundHelper.PlaySelect();
+        UpdateFavoriteUI();
         
         // Refrescar UI
         LoadPlatforms(); // Actualizar contador de favoritos
@@ -3968,6 +3997,299 @@ public partial class MainWindow : Window
             // Solo refrescar la visualización del item actual
             if (LstGames.IsVisible) LstGames.ItemsSource = null; LstGames.ItemsSource = _currentPlatformGames;
             if (LstGamesGrid.IsVisible) LstGamesGrid.ItemsSource = null; LstGamesGrid.ItemsSource = _currentPlatformGames;
+        }
+    }
+
+    private void UpdateFavoriteUI()
+    {
+        if (_selectedGame == null || TxtFavoriteIcon == null) return;
+        TxtFavoriteIcon.Text = _selectedGame.IsFavorite ? "♥" : "♡";
+        TxtFavoriteIcon.Foreground = _selectedGame.IsFavorite ? Avalonia.Media.Brushes.Red : Avalonia.Media.Brushes.White;
+    }
+
+    private void PopulateRomsFlyout(Game game)
+    {
+        MenuFlyout? flyoutRoms = null;
+        if (BtnLaunchGame != null && BtnLaunchGame.Content is Grid grid && grid.Children.Count >= 3)
+        {
+            if (grid.Children[2] is Border border)
+            {
+                flyoutRoms = Avalonia.Controls.Primitives.FlyoutBase.GetAttachedFlyout(border) as MenuFlyout;
+            }
+        }
+
+        if (flyoutRoms == null) return;
+        flyoutRoms.Items.Clear();
+
+        var romList = new List<string>();
+        if (!string.IsNullOrEmpty(game.RomPath)) romList.Add(game.RomPath);
+        if (!string.IsNullOrEmpty(game.AdditionalRoms))
+        {
+            foreach (var r in game.AdditionalRoms.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                romList.Add(r);
+            }
+        }
+
+        if (romList.Count <= 1)
+        {
+            var item = new MenuItem { Header = "Iniciar ROM Principal" };
+            item.Click += (s, e) => LaunchSpecificRom(game.RomPath);
+            flyoutRoms.Items.Add(item);
+        }
+        else
+        {
+            for (int i = 0; i < romList.Count; i++)
+            {
+                string romPath = romList[i];
+                string name = $"Disco {i + 1} ({Path.GetFileName(romPath)})";
+                var item = new MenuItem { Header = name };
+                item.Click += (s, e) => LaunchSpecificRom(romPath);
+                flyoutRoms.Items.Add(item);
+            }
+        }
+    }
+
+    private void LaunchSpecificRom(string romPath)
+    {
+        if (_selectedGame == null) return;
+        
+        // Crear una copia temporal del juego con el RomPath específico
+        var tempGame = new Game
+        {
+            Id = _selectedGame.Id,
+            Name = _selectedGame.Name,
+            RomPath = romPath,
+            AdditionalRoms = _selectedGame.AdditionalRoms,
+            OverrideEmulatorPath = _selectedGame.OverrideEmulatorPath,
+            OverrideLaunchArguments = _selectedGame.OverrideLaunchArguments,
+            PlatformId = _selectedGame.PlatformId,
+            Platform = _selectedGame.Platform
+        };
+
+        var oldSelected = _selectedGame;
+        _selectedGame = tempGame;
+        
+        BtnLaunchGame_Click(null, new RoutedEventArgs());
+        
+        _selectedGame = oldSelected;
+    }
+
+    private void LoadGameGallery(int gameId)
+    {
+        try
+        {
+            using var context = new GestorJuegos.Data.CoversDbContext();
+            // Buscar imágenes de tipo Screenshot - Gameplay, Snap, Fanart
+            var images = context.Images
+                .Where(i => i.GameId == gameId && (i.ImageType == "Screenshot - Gameplay" || i.ImageType == "Snap" || i.ImageType == "Fanart - Background" || i.ImageType == "Fanart" || i.ImageType == "Screenshot"))
+                .ToList();
+
+            if (images.Count > 0)
+            {
+                LstScreenshots.ItemsSource = images;
+                LstScreenshots.IsVisible = true;
+                
+                // Seleccionar la primera imagen por defecto
+                ShowGameplayPreview(images[0].ImageData);
+            }
+            else
+            {
+                // Fallback: Si no hay imágenes, mostrar la carátula principal
+                byte[]? fullCover = _gameService.GetGameFullCover(gameId);
+                if (fullCover != null && fullCover.Length > 0)
+                {
+                    ShowGameplayPreview(fullCover);
+                }
+                else
+                {
+                    ImgGameplayPreview.Source = null;
+                    if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = true;
+                }
+                LstScreenshots.ItemsSource = null;
+                LstScreenshots.IsVisible = false;
+            }
+        }
+        catch
+        {
+            ImgGameplayPreview.Source = null;
+            if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = true;
+            LstScreenshots.ItemsSource = null;
+            LstScreenshots.IsVisible = false;
+        }
+    }
+
+    private void ShowGameplayPreview(byte[]? data)
+    {
+        if (data != null && data.Length > 0)
+        {
+            try
+            {
+                using var ms = new MemoryStream(data);
+                ImgGameplayPreview.Source = new Bitmap(ms);
+                if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = false;
+            }
+            catch
+            {
+                ImgGameplayPreview.Source = null;
+                if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = true;
+            }
+        }
+        else
+        {
+            ImgGameplayPreview.Source = null;
+            if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = true;
+        }
+    }
+
+    private void LstScreenshots_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (LstScreenshots.SelectedItem is GameImage selectedImage)
+        {
+            ShowGameplayPreview(selectedImage.ImageData);
+        }
+    }
+
+    private void ImgGameplayPreview_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (_selectedGame == null) return;
+        
+        // Si hay una imagen seleccionada en el carrusel, usar esa; si no, la imagen cargada
+        if (LstScreenshots.SelectedItem is GameImage selectedImg && selectedImg.ImageData != null)
+        {
+            OpenFullImageViewer(selectedImg.ImageData);
+        }
+        else
+        {
+            // Intentar con la portada o fanart
+            byte[]? fullCover = _gameService.GetGameFullCover(_selectedGame.Id);
+            if (fullCover != null) OpenFullImageViewer(fullCover);
+        }
+    }
+
+    private void BtnViewFullArt_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null) return;
+        byte[]? fullCover = _gameService.GetGameFullCover(_selectedGame.Id);
+        if (fullCover != null)
+        {
+            OpenFullImageViewer(fullCover);
+        }
+    }
+
+    private void BtnViewAllImages_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null) return;
+        
+        using var context = new GestorJuegos.Data.CoversDbContext();
+        var firstScreenshot = context.Images
+            .Where(i => i.GameId == _selectedGame.Id && (i.ImageType == "Screenshot - Gameplay" || i.ImageType == "Snap" || i.ImageType == "Fanart - Background"))
+            .Select(i => i.ImageData)
+            .FirstOrDefault();
+            
+        if (firstScreenshot != null)
+        {
+            OpenFullImageViewer(firstScreenshot);
+        }
+        else
+        {
+            byte[]? fullCover = _gameService.GetGameFullCover(_selectedGame.Id);
+            if (fullCover != null) OpenFullImageViewer(fullCover);
+        }
+    }
+
+    private void OpenFullImageViewer(byte[] imageData)
+    {
+        try
+        {
+            using var ms = new MemoryStream(imageData);
+            ImgFullViewer.Source = new Bitmap(ms);
+            OverlayImageViewer.IsVisible = true;
+            SoundHelper.PlaySelect();
+        }
+        catch { }
+    }
+
+    private void BtnCloseImageViewer_Click(object? sender, RoutedEventArgs e)
+    {
+        SoundHelper.PlayBack();
+        OverlayImageViewer.IsVisible = false;
+        ImgFullViewer.Source = null;
+    }
+
+    private void OverlayImageViewer_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        SoundHelper.PlayBack();
+        OverlayImageViewer.IsVisible = false;
+        ImgFullViewer.Source = null;
+    }
+
+    private void BtnWiki_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null) return;
+        SoundHelper.PlaySelect();
+        string url = $"https://es.wikipedia.org/wiki/Special:Search?search={Uri.EscapeDataString(_selectedGame.Name)}";
+        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+    }
+
+    private void BtnYoutube_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null) return;
+        SoundHelper.PlaySelect();
+        string platformName = _selectedPlatform?.Name ?? "";
+        string url = $"https://www.youtube.com/results?search_query={Uri.EscapeDataString(_selectedGame.Name)}+{Uri.EscapeDataString(platformName)}+gameplay+trailer";
+        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+    }
+
+    private void BtnConfigQuick_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null) return;
+        SoundHelper.PlaySelect();
+        // Abrir el editor de juegos directamente en la pestaña de emulador
+        BtnEditGame_Click(sender, e);
+    }
+
+    private void LoadRelatedGames(Game game)
+    {
+        try
+        {
+            // Obtener juegos de la misma plataforma excluyendo el actual
+            var related = _currentPlatformGames
+                .Where(g => g.Id != game.Id)
+                .Take(8)
+                .ToList();
+
+            foreach (var r in related)
+            {
+                string gameArtType = !string.IsNullOrEmpty(r.SelectedArtType) ? r.SelectedArtType : _settings.PreferredArtType;
+                string artFolder = GetLaunchBoxFolderName(gameArtType);
+                r.Cover = _gameService.GetGameThumbnail(r.Id, artFolder);
+            }
+
+            LstRelatedGames.ItemsSource = related;
+            TxtNoRelatedGames.IsVisible = !related.Any();
+        }
+        catch
+        {
+            LstRelatedGames.ItemsSource = null;
+            TxtNoRelatedGames.IsVisible = true;
+        }
+    }
+
+    private void LstRelatedGames_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (LstRelatedGames.SelectedItem is Game relatedGame)
+        {
+            LstRelatedGames.SelectedItem = null;
+            SoundHelper.PlaySelect();
+
+            // Buscar en la lista de juegos y seleccionarlo
+            var match = _currentPlatformGames.FirstOrDefault(g => g.Id == relatedGame.Id);
+            if (match != null)
+            {
+                if (LstGames.IsVisible) LstGames.SelectedItem = match;
+                else if (LstGamesGrid.IsVisible) LstGamesGrid.SelectedItem = match;
+            }
         }
     }
 

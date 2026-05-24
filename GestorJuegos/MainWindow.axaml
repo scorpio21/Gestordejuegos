@@ -444,7 +444,7 @@
                     </DockPanel>
                 </Border>
 
-                <!-- DERECHA: Info (Premium) -->
+                <!-- DERECHA: Info (Premium LaunchBox Style) -->
                 <Border Grid.Column="2" Background="#0f172a" BorderBrush="#334155" BorderThickness="1,0,0,0">
                     <ScrollViewer>
                         <Panel>
@@ -454,10 +454,11 @@
                                         <DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
                                     </Transitions>
                                 </StackPanel.Transitions>
-                                <!-- Banner Superior Mejorado -->
-                                <Panel Height="220">
+                                
+                                <!-- Banner Superior inmersivo estilo LaunchBox -->
+                                <Panel Height="240">
                                     <Border Background="#1e293b" ClipToBounds="True">
-                                        <Image Name="ImgDetailBackground" Stretch="UniformToFill" Opacity="0.4">
+                                        <Image Name="ImgDetailBackground" Stretch="UniformToFill" Opacity="0.3">
                                             <Image.Transitions>
                                                 <Transitions>
                                                     <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
@@ -465,12 +466,37 @@
                                             </Image.Transitions>
                                         </Image>
                                     </Border>
-                                    <!-- Contenedor del Logo (Ahora dinámico) -->
+                                    
+                                    <!-- Gradiente para desvanecer con el fondo azul oscuro de la app -->
+                                    <Border>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                                <GradientStop Offset="0" Color="Transparent"/>
+                                                <GradientStop Offset="0.75" Color="#150f172a"/>
+                                                <GradientStop Offset="1" Color="#0f172a"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
+
+                                    <!-- Botón para ver imagen en pantalla completa (arriba izquierda) -->
+                                    <Button Name="BtnViewFullArt" Background="#70000000" Foreground="White" Width="36" Height="36" CornerRadius="18" Margin="15" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0" Click="BtnViewFullArt_Click" ToolTip.Tip="Ver Arte en Grande">
+                                        <TextBlock Text="↗" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+                                    </Button>
+
+                                    <!-- Botón flotante 'Ver todas las imágenes' en el centro (glassmorphism) -->
+                                    <Button Name="BtnViewAllImages" Background="#601e293b" BorderBrush="#33ffffff" BorderThickness="1" Foreground="White" CornerRadius="20" Padding="15,8" HorizontalAlignment="Center" VerticalAlignment="Center" Click="BtnViewAllImages_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="🖼️" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Ver todas las imágenes" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+                                    <!-- Contenedor del Logo (PNG transparente, superpuesto dinámicamente) -->
                                     <Border Name="BrdDetailLogo" 
                                             Background="Transparent" 
                                             VerticalAlignment="Bottom" HorizontalAlignment="Center"
-                                            Margin="0,0,0,10" 
-                                            Height="120" Width="300"
+                                            Margin="0,0,0,35" 
+                                            Height="95" Width="260"
                                             ZIndex="10">
                                         <Image Name="ImgDetailLogo" Stretch="Uniform">
                                             <Image.Transitions>
@@ -480,128 +506,268 @@
                                             </Image.Transitions>
                                         </Image>
                                     </Border>
+
+                                    <!-- Calificación por Estrellas (Abajo Izquierda) -->
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="15,0,0,12">
+                                        <TextBlock Name="TxtInfoRatingText" Text="0.0" Foreground="#38bdf8" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                                        <TextBlock Name="TxtInfoRatingStars" Text="☆☆☆☆☆" Foreground="#38bdf8" FontSize="12" VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- Acciones Flotantes Rápidas (Abajo Derecha) -->
+                                    <Border Background="#600f172a" CornerRadius="18" Padding="3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,15,10" BorderBrush="#20ffffff" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal" Spacing="2">
+                                            <Button Name="BtnEditGame" Background="Transparent" Foreground="White" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Editar Juego">
+                                                <TextBlock Text="✏️" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                            </Button>
+                                            <Button Name="BtnFavoriteQuick" Background="Transparent" Foreground="#ef4444" Width="32" Height="32" CornerRadius="16" Padding="0" Click="BtnToggleFavorite_Click" ToolTip.Tip="Añadir a Favoritos">
+                                                <TextBlock Name="TxtFavoriteIcon" Text="♡" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="15" FontWeight="Bold"/>
+                                            </Button>
+                                            <Button Name="BtnOpenFolder" Background="Transparent" Foreground="White" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Abrir Carpeta">
+                                                <TextBlock Text="📁" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                            </Button>
+                                            <Button Name="BtnDelete" Background="Transparent" Foreground="#ef4444" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Eliminar Juego">
+                                                <TextBlock Text="🗑️" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
                                 </Panel>
 
-                                <Border Padding="20" Margin="0,10,0,0">
-                                    <StackPanel Spacing="25">
-                                        <!-- Cabecera Informativa -->
-                                        <StackPanel Spacing="5">
-                                            <TextBlock Name="TxtInfoName" FontSize="26" FontWeight="Black" Foreground="White" TextWrapping="Wrap" TextAlignment="Center"/>
-                                            <StackPanel Orientation="Horizontal" Spacing="10" Opacity="0.7" HorizontalAlignment="Center">
-                                                <Image Name="ImgInfoRegion" Width="20"/>
-                                                <TextBlock Name="TxtInfoYear" VerticalAlignment="Center"/>
-                                                <TextBlock Text="•" VerticalAlignment="Center"/>
-                                                <TextBlock Name="TxtInfoGenre" VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </StackPanel>
-
-                                        <!-- Botón Principal -->
-                                        <Button Name="BtnLaunchGame" Background="#10b981" Foreground="White" Height="60" CornerRadius="12" HorizontalAlignment="Stretch" Padding="0" Click="BtnLaunchGame_Click">
-                                            <Grid ColumnDefinitions="Auto, *">
-                                                <Border Grid.Column="0" Background="#20000000" Width="60" CornerRadius="12,0,0,12">
-                                                    <TextBlock Text="▶" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                                <TextBlock Grid.Column="1" Text="JUGAR" FontSize="20" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,60,0"/>
-                                            </Grid>
-                                        </Button>
-
-                                        <!-- Acciones Rápidas -->
-                                        <Grid ColumnDefinitions="*, *, *">
-                                            <Button Name="BtnEditGame" Classes="Secondary" Grid.Column="0" ToolTip.Tip="Editar Juego" Margin="0,0,5,0" Height="45" Click="BtnEditGame_Click">
-                                                <TextBlock Text="✏️" HorizontalAlignment="Center"/>
-                                            </Button>
-                                            <Button Name="BtnOpenFolder" Classes="Secondary" Grid.Column="1" ToolTip.Tip="Abrir Carpeta" Margin="5,0,5,0" Height="45" Click="BtnOpenFolder_Click">
-                                                <TextBlock Text="📁" HorizontalAlignment="Center"/>
-                                            </Button>
-                                            <Button Name="BtnDelete" Classes="Secondary" Grid.Column="2" ToolTip.Tip="Eliminar Juego" Margin="5,0,0,0" Height="45" Click="BtnDelete_Click">
-                                                <TextBlock Text="🗑️" Foreground="#ef4444" HorizontalAlignment="Center"/>
-                                            </Button>
-                                        </Grid>
-
-                                        <Separator Background="#334155"/>
-
-                                        <!-- Sobre el Juego -->
-                                        <StackPanel Spacing="10">
-                                            <TextBlock Text="SOBRE EL JUEGO" Classes="Header"/>
-                                            <Border Background="#1e293b" Padding="15" CornerRadius="12">
-                                                <StackPanel Spacing="12">
-                                                    <DockPanel Name="PnlInfoDeveloper">
-                                                        <TextBlock Text="Desarrollador" Foreground="#64748b" FontSize="12"/>
-                                                        <TextBlock Name="TxtInfoDeveloper" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
-                                                    </DockPanel>
-                                                    <DockPanel Name="PnlInfoPublisher">
-                                                        <TextBlock Text="Distribuidor" Foreground="#64748b" FontSize="12"/>
-                                                        <TextBlock Name="TxtInfoPublisher" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
-                                                    </DockPanel>
-                                                    <DockPanel Name="PnlInfoVersion">
-                                                        <TextBlock Text="Versión" Foreground="#64748b" FontSize="12"/>
-                                                        <TextBlock Name="TxtInfoVersion" Foreground="#10b981" HorizontalAlignment="Right" FontSize="11" FontWeight="Bold"/>
-                                                    </DockPanel>
-                                                    <TextBlock Name="TxtInfoDescription" Foreground="#cbd5e1" FontSize="13" TextWrapping="Wrap" Opacity="0.9" LineHeight="20" Margin="0,5,0,0"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </StackPanel>
-
-                                        <Separator Background="#334155"/>
-
-                                        <!-- Multimedia / Galería -->
-                                        <StackPanel Spacing="10">
-                                            <TextBlock Text="CARÁTULA / MULTIMEDIA" Classes="Header"/>
-                                            <Border Background="#1e293b" CornerRadius="12" MinHeight="250" MaxHeight="450" ClipToBounds="True">
-                                                <Image Name="ImgCover" Stretch="Uniform" Margin="10">
-                                                    <Image.Transitions>
-                                                        <Transitions>
-                                                            <DoubleTransition Property="Opacity" Duration="0:0:0.4"/>
-                                                        </Transitions>
-                                                    </Image.Transitions>
-                                                </Image>
-                                            </Border>
-                                            <ComboBox Name="CmbArtType" SelectedIndex="3" HorizontalAlignment="Stretch" Background="#0f172a" BorderBrush="#334155" SelectionChanged="CmbArtType_SelectionChanged">
-                                                <ComboBoxItem Content="Advert"/>
-                                                <ComboBoxItem Content="Artwork Preview"/>
-                                                <ComboBoxItem Content="Background"/>
-                                                <ComboBoxItem Content="Box"/>
-                                                <ComboBoxItem Content="Box Full"/>
-                                                <ComboBoxItem Content="Box 3D"/>                                                <ComboBoxItem Content="Cabinet"/>
-                                                <ComboBoxItem Content="Logos"/>
-                                                <ComboBoxItem Content="Marquee"/>
-                                                <ComboBoxItem Content="Snap"/>
-                                                <ComboBoxItem Content="System Logo"/>
-                                                <ComboBoxItem Content="Title"/>
-                                            </ComboBox>                                        </StackPanel>
-
-                                        <!-- Datos Técnicos -->
-                                        <StackPanel Spacing="10">
-                                            <TextBlock Text="DETALLES TÉCNICOS" Classes="Header"/>
-                                            <Border Background="#1e293b" Padding="15" CornerRadius="12">
-                                                <StackPanel Spacing="10">
-                                                    <DockPanel>
-                                                        <TextBlock Text="Idiomas" Foreground="#64748b" FontSize="12"/>
-                                                        <TextBlock Name="TxtInfoLanguages" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
-                                                    </DockPanel>
-                                                    <StackPanel Spacing="5">
-                                                        <TextBlock Text="Archivos / Discos" Foreground="#64748b" FontSize="12"/>
-                                                        <ItemsControl Name="LstInfoRoms">
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate>
-                                                                    <TextBlock Text="{Binding}" Foreground="#cbd5e1" FontSize="11" TextWrapping="Wrap" Margin="0,2"/>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
-                                                    </StackPanel>
-                                                    <StackPanel Name="PnlInfoEmulator" IsVisible="False" Spacing="2">
-                                                        <TextBlock Text="Emulador Custom" Foreground="#64748b" FontSize="12"/>
-                                                        <TextBlock Name="TxtInfoEmulator" Foreground="#10b981" FontSize="11" TextWrapping="Wrap"/>
-                                                    </StackPanel>
-                                                </StackPanel>
-                                            </Border>
-                                        </StackPanel>
+                                <!-- Información de Título y Plataforma -->
+                                <StackPanel Spacing="5" Margin="20,15,20,5">
+                                    <StackPanel Orientation="Horizontal" Spacing="6" Opacity="0.8">
+                                        <TextBlock Text="🕹️" FontSize="12" VerticalAlignment="Center"/>
+                                        <TextBlock Name="TxtInfoPlatform" Text="ARCADE" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy" LetterSpacing="1" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                </Border>
+                                    <TextBlock Name="TxtInfoName" FontSize="26" FontWeight="Black" Foreground="White" TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <!-- Pestañas de Detalle -->
+                                <TabControl Classes="Modern" Margin="10,0">
+                                    <!-- Pestaña 1: DESCRIPCIÓN GENERAL -->
+                                    <TabItem Header="Descripción general">
+                                        <ScrollViewer Margin="0,10,0,0">
+                                            <StackPanel Spacing="20">
+                                                
+                                                <!-- Captura de Pantalla / Previsualización Principal -->
+                                                <Border Background="#1e293b" CornerRadius="10" ClipToBounds="True" Height="200" BoxShadow="0 4 12 0 #50000000" Margin="10,0">
+                                                    <Panel>
+                                                        <Image Name="ImgGameplayPreview" Stretch="UniformToFill" Cursor="Hand" PointerPressed="ImgGameplayPreview_PointerPressed"/>
+                                                        <!-- Placeholder si no hay imagen -->
+                                                        <TextBlock Name="TxtGameplayPlaceholder" Text="Sin captura de pantalla" Foreground="#64748b" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Panel>
+                                                </Border>
+
+                                                <!-- Carrusel Horizontal de Capturas y Arte Adicional -->
+                                                <ListBox Name="LstScreenshots" Background="Transparent" BorderThickness="0" Height="65" Margin="10,0" SelectionChanged="LstScreenshots_SelectionChanged">
+                                                    <ListBox.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" Spacing="8"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ListBox.ItemsPanel>
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate x:DataType="models:GameImage">
+                                                            <Border CornerRadius="6" ClipToBounds="True" Width="85" Height="53" BorderBrush="#334155" BorderThickness="1">
+                                                                <Image Source="{Binding ImageData, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill"/>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                    <ListBox.Styles>
+                                                        <Style Selector="ListBoxItem">
+                                                            <Setter Property="Padding" Value="0"/>
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                        </Style>
+                                                    </ListBox.Styles>
+                                                </ListBox>
+
+                                                <!-- Botón JUGAR Gigante Verde LaunchBox -->
+                                                <Button Name="BtnLaunchGame" Background="#22c55e" Foreground="White" Height="52" CornerRadius="10" HorizontalAlignment="Stretch" Margin="10,0" Padding="0" Click="BtnLaunchGame_Click">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#4ade80"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <Grid ColumnDefinitions="Auto, *, Auto">
+                                                        <!-- Lado izquierdo: Símbolo Play -->
+                                                        <Border Grid.Column="0" Background="#20000000" Width="52" CornerRadius="10,0,0,10">
+                                                            <TextBlock Text="▶" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <!-- Centro: JUGAR -->
+                                                        <TextBlock Grid.Column="1" Text="JUGAR" FontSize="18" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        <!-- Lado derecho: Desplegable de discos o ROMs adicionales -->
+                                                        <Border Name="BdrRoms" Grid.Column="2" Background="#10000000" Width="40" CornerRadius="0,10,10,0">
+                                                            <TextBlock Text="▼" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            <FlyoutBase.AttachedFlyout>
+                                                                <MenuFlyout>
+                                                                    <!-- Se rellena dinámicamente -->
+                                                                </MenuFlyout>
+                                                            </FlyoutBase.AttachedFlyout>
+                                                        </Border>
+                                                    </Grid>
+                                                </Button>
+
+                                                <!-- Información Básica -->
+                                                <Border Background="#101e293b" BorderBrush="#20334155" BorderThickness="0,1" Padding="10,15" Margin="10,0">
+                                                    <Grid RowDefinitions="Auto, Auto, Auto, Auto" ColumnDefinitions="Auto, *">
+                                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Fecha de lanzamiento" Foreground="#64748b" FontSize="12" Margin="0,0,0,10"/>
+                                                        <TextBlock Grid.Row="0" Grid.Column="1" Name="TxtBaseReleaseDate" Text="--" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="SemiBold"/>
+
+                                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Desarrollador" Foreground="#64748b" FontSize="12" Margin="0,0,0,10"/>
+                                                        <TextBlock Grid.Row="1" Grid.Column="1" Name="TxtBaseDeveloper" Text="--" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="SemiBold"/>
+
+                                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Editor" Foreground="#64748b" FontSize="12" Margin="0,0,0,10"/>
+                                                        <TextBlock Grid.Row="2" Grid.Column="1" Name="TxtBasePublisher" Text="--" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="SemiBold"/>
+
+                                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Tiempo Jugado" Foreground="#64748b" FontSize="12"/>
+                                                        <TextBlock Grid.Row="3" Grid.Column="1" Name="TxtBasePlaytime" Text="0h 00m 00s (0)" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="SemiBold"/>
+                                                    </Grid>
+                                                </Border>
+
+                                                <!-- Selector de Tipo de Arte Principal (Dropdown de LaunchBox para portadas) -->
+                                                <StackPanel Spacing="5" Margin="10,0">
+                                                    <TextBlock Text="TIPO DE CARÁTULA / MULTIMEDIA" Classes="Header" Foreground="#64748b" FontSize="11" FontWeight="Bold"/>
+                                                    <ComboBox Name="CmbArtType" SelectedIndex="3" HorizontalAlignment="Stretch" Background="#1e293b" BorderBrush="#334155" SelectionChanged="CmbArtType_SelectionChanged">
+                                                        <ComboBoxItem Content="Advert"/>
+                                                        <ComboBoxItem Content="Artwork Preview"/>
+                                                        <ComboBoxItem Content="Background"/>
+                                                        <ComboBoxItem Content="Box"/>
+                                                        <ComboBoxItem Content="Box Full"/>
+                                                        <ComboBoxItem Content="Box 3D"/>
+                                                        <ComboBoxItem Content="Cabinet"/>
+                                                        <ComboBoxItem Content="Logos"/>
+                                                        <ComboBoxItem Content="Marquee"/>
+                                                        <ComboBoxItem Content="Snap"/>
+                                                        <ComboBoxItem Content="System Logo"/>
+                                                        <ComboBoxItem Content="Title"/>
+                                                    </ComboBox>
+                                                    
+                                                    <!-- Visor de Carátulas e Imagen de Arte Seleccionada -->
+                                                    <Border Background="#1e293b" CornerRadius="12" MinHeight="250" MaxHeight="350" ClipToBounds="True" BorderBrush="#334155" BorderThickness="1" Margin="0,10,0,0">
+                                                        <Image Name="ImgCover" Stretch="Uniform" Margin="10">
+                                                            <Image.Transitions>
+                                                                <Transitions>
+                                                                    <DoubleTransition Property="Opacity" Duration="0:0:0.4"/>
+                                                                </Transitions>
+                                                            </Image.Transitions>
+                                                        </Image>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <!-- Sección INFORMACIÓN (Caja Redondeada) -->
+                                                <StackPanel Spacing="8" Margin="10,0">
+                                                    <Grid ColumnDefinitions="*, Auto">
+                                                        <TextBlock Grid.Column="0" Text="INFORMACIÓN" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy"/>
+                                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" Opacity="0.7">
+                                                            <Button Background="Transparent" Padding="0" Click="BtnWiki_Click" ToolTip.Tip="Buscar en Wikipedia">
+                                                                <TextBlock Text="🌐" FontSize="14" Foreground="#38bdf8"/>
+                                                            </Button>
+                                                            <Button Background="Transparent" Padding="0" Click="BtnYoutube_Click" ToolTip.Tip="Buscar en YouTube">
+                                                                <TextBlock Text="▶" Foreground="#ef4444" FontSize="14"/>
+                                                            </Button>
+                                                        </StackPanel>
+                                                    </Grid>
+
+                                                    <Border Background="#1e293b" Padding="15" CornerRadius="12" BorderBrush="#334155" BorderThickness="1">
+                                                        <StackPanel Spacing="10">
+                                                            <DockPanel>
+                                                                <TextBlock Text="Clasificación" Foreground="#64748b" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoRating" Text="Not Rated" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium"/>
+                                                            </DockPanel>
+                                                            <Separator Background="#15ffffff"/>
+                                                            <DockPanel>
+                                                                <TextBlock Text="Género" Foreground="#64748b" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoGenre" Text="--" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium"/>
+                                                            </DockPanel>
+                                                            <Separator Background="#15ffffff"/>
+                                                            <DockPanel>
+                                                                <TextBlock Text="Series" Foreground="#64748b" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoSeries" Text="--" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium"/>
+                                                            </DockPanel>
+                                                            <Separator Background="#15ffffff"/>
+                                                            <DockPanel>
+                                                                <TextBlock Text="Modo de Juego" Foreground="#64748b" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoPlayMode" Text="--" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium" TextWrapping="Wrap" MaxWidth="180"/>
+                                                            </DockPanel>
+                                                            <Separator Background="#15ffffff"/>
+                                                            <DockPanel>
+                                                                <TextBlock Text="Progreso" Foreground="#64748b" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoProgress" Text="Pendiente" Foreground="#f59e0b" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium"/>
+                                                            </DockPanel>
+                                                            <Separator Background="#15ffffff"/>
+                                                            <DockPanel>
+                                                                <TextBlock Text="Estado" Foreground="#64748b" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoStatus" Text="good" Foreground="#22c55e" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium"/>
+                                                            </DockPanel>
+                                                            <Separator Background="#15ffffff"/>
+                                                            <DockPanel>
+                                                                <TextBlock Text="Fuente" Foreground="#64748b" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoSource" Text="MAME / Database" Foreground="White" HorizontalAlignment="Right" FontSize="11" Opacity="0.8"/>
+                                                            </DockPanel>
+                                                            <Separator Background="#15ffffff"/>
+                                                            <DockPanel>
+                                                                <TextBlock Text="Portable" Foreground="#64748b" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoPortable" Text="No" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
+                                                            </DockPanel>
+                                                            <Separator Background="#15ffffff"/>
+                                                            <DockPanel>
+                                                                <TextBlock Text="Archivo" Foreground="#64748b" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoFile" Text="--" Foreground="#38bdf8" HorizontalAlignment="Right" FontSize="11" TextWrapping="Wrap" MaxWidth="180"/>
+                                                            </DockPanel>
+                                                            <Separator Background="#15ffffff"/>
+                                                            <DockPanel>
+                                                                <TextBlock Text="Última vez jugado" Foreground="#64748b" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoLastPlayed" Text="Nunca" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
+                                                            </DockPanel>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <!-- Sección DESCRIPCIÓN (Caja Redondeada) -->
+                                                <StackPanel Spacing="8" Margin="10,0,10,20">
+                                                    <TextBlock Text="DESCRIPCIÓN" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy"/>
+                                                    <Border Background="#1e293b" Padding="15" CornerRadius="12" BorderBrush="#334155" BorderThickness="1">
+                                                        <TextBlock Name="TxtInfoDescription" Foreground="#cbd5e1" FontSize="13" TextWrapping="Wrap" Opacity="0.95" LineHeight="20"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </TabItem>
+                                    
+                                    <!-- Pestaña 2: JUEGOS RELACIONADOS -->
+                                    <TabItem Header="Juegos Relacionados">
+                                        <ScrollViewer Margin="0,10,0,0">
+                                            <StackPanel Spacing="15" Margin="10,0,10,20">
+                                                <TextBlock Text="JUEGOS DE LA MISMA PLATAFORMA" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy" Margin="0,0,0,5"/>
+                                                
+                                                <ListBox Name="LstRelatedGames" Background="Transparent" BorderThickness="0" SelectionChanged="LstRelatedGames_SelectionChanged">
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate x:DataType="models:Game">
+                                                            <Border Background="#1e293b" Margin="0,0,0,8" Padding="8" CornerRadius="8" BorderBrush="#20334155" BorderThickness="1">
+                                                                <Grid ColumnDefinitions="Auto, *, Auto">
+                                                                    <Image Grid.Column="0" Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="45" Height="65" Stretch="UniformToFill" Margin="0,0,12,0"/>
+                                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                                                        <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold" FontSize="13" TextWrapping="Wrap"/>
+                                                                        <TextBlock Text="{Binding Genre}" Foreground="#64748b" FontSize="11"/>
+                                                                    </StackPanel>
+                                                                    <TextBlock Grid.Column="2" Text="{Binding Year}" Foreground="#94a3b8" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
+                                                
+                                                <TextBlock Name="TxtNoRelatedGames" Text="No se encontraron juegos relacionados." Foreground="#64748b" FontSize="12" HorizontalAlignment="Center" IsVisible="False" Margin="0,20,0,0"/>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </TabItem>
+                                </TabControl>
+                                
                             </StackPanel>
+                            
+                            <!-- Estado Vacío cuando no hay juego seleccionado -->
                             <StackPanel Name="PnlNoGameSelected" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="0.2">
                                 <TextBlock Text="🎮" FontSize="60" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Selecciona un juego"/>
+                                <TextBlock Text="Selecciona un juego" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Panel>
                     </ScrollViewer>
@@ -1092,6 +1258,14 @@
                     </ListBox>
                 </DockPanel>
             </Border>
+        </Border>
+
+        <!-- OVERLAY PARA VISOR DE IMÁGENES -->
+        <Border Name="OverlayImageViewer" Background="#EE000000" IsVisible="False" ZIndex="600" PointerPressed="OverlayImageViewer_PointerPressed">
+            <Panel>
+                <Image Name="ImgFullViewer" Stretch="Uniform" MaxWidth="1200" MaxHeight="900" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Button Name="BtnCloseImageViewer" Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="25" Width="50" Height="50" Background="#33000000" Foreground="White" CornerRadius="25" Click="BtnCloseImageViewer_Click" FontSize="20"/>
+            </Panel>
         </Border>
 
     </Grid>
