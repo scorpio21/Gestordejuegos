@@ -20,6 +20,10 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 *   **Importador de Metadatos y Consolas en Segundo Plano**: Potenciado `ImportLaunchBoxAssets` para conectarse a la base de datos maestra `LaunchBox.Metadata.db` localmente e importar todas las especificaciones y descripciones de las plataformas, así como leer las fotos de consolas físicas de la carpeta `Console` de LaunchBox y guardarlas binariamente en SQLite.
 *   **Estadísticas Dinámicas Agregadas**: Al navegar por categorías o plataformas en la barra lateral, se calculan automáticamente métricas locales de tu biblioteca (juegos totales, completados, veces jugados, tiempo total jugado, último juego jugado y juego más jugado).
 *   **Auto-parcheo de Esquema SQLite**: Implementadas migraciones controladas en caliente para crear columnas técnicas y campos binarios en la tabla `Platforms` y el campo de descripción `Notes` en `PlatformCategories`.
+*   **Rediseño de Rejilla de Juegos Estilo LaunchBox**: Removido por completo el marco oscuro limitante alrededor de las carátulas y cambiado el modo de estiramiento a `Uniform`. La sombra se adapta ahora proporcional y exactamente al contorno y dimensiones reales de la carátula, flotando de forma inmersiva.
+*   **Metadatos bajo la Portada**: El Título y el Desarrollador se posicionan de manera limpia e integrada bajo la imagen de portada, en consonancia directa con la interfaz de LaunchBox.
+*   **Estrategia de Fallback en Rejilla**: El subtexto evalúa la propiedad calculada `GridSubtext` (Desarrollador -> Distribuidor -> Año) de forma inteligente para rellenar de forma coherente las fichas de los juegos.
+*   **Resplandor Azul Neón de Selección**: Añadido un efecto luminoso de glow (`#00a2ff`) alrededor del borde de la carátula o placeholder seleccionado para mejorar significativamente la interactividad de la UI.
 
 ### v1.1.2.4-Dev
 *   **Barra Lateral Jerárquica (`TreeView`)**: Rediseño completo del panel izquierdo sustituyendo la lista plana por un árbol jerárquico al estilo LaunchBox, agrupando las plataformas por categorías ("Computers", "Consoles", "Handhelds").

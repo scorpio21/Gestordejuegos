@@ -28,6 +28,19 @@ Hemos evolucionado la aplicación para añadir una réplica exacta del panel der
 * **Nuevas Columnas de Hardware**: Agregadas propiedades correspondientes a CPU, Memory, Graphics, Sound, Display, Media, Notes, ReleaseDate, Developer, Manufacturer y la imagen binaria `HardwareImage` en `Platform.cs`.
 * **Auto-parcheo Silencioso**: `GameService.cs` ejecuta automáticamente comandos SQL `ALTER TABLE` y `CREATE TABLE IF NOT EXISTS` en el arranque para parchar bases de datos previas de forma segura.
 
+### 4. Rediseño Premium de la Rejilla de Juegos (`MainWindow.axaml` y `Game.cs`)
+* **Aspecto Limpio y Flotante (LaunchBox Grid)**:
+  * Removido el marco rectangular oscuro y rígido de la rejilla. Las carátulas ahora flotan directamente sobre la interfaz de fondo.
+  * Cambiado el modo de visualización de la imagen a `Stretch="Uniform"`. Ahora las cajas (Sega 32X, Arcade, NES, etc.) preservan perfectamente sus proporciones originales sin estirarse ni recortarse.
+  * Implementada sombra dinámica *shrink-wrap* (`BoxShadow="0 5 12 0 #90000000"`) en el borde contenedor que se amolda exactamente a las dimensiones reales y formas proporcionales del box art, en lugar de un área fija.
+* **Metadatos Integrados Debajo**:
+  * El Título y el Desarrollador se reubicaron en un panel limpio debajo de la carátula, alineados a la izquierda.
+  * Creada la propiedad inteligente `GridSubtext` en `Game.cs` para resolver en segundo plano el metadato del subtexto con una estrategia de fallback de tres capas: `Developer` -> `Publisher` -> `Year`.
+* **Placeholder de Gamepad Dinámico**:
+  * Diseñado un cuadro de placeholder redondeado sutil (`#2e384d`) con un icono de control (`🎮`) que se activa únicamente si la carátula es nula mediante conversores estáticos de Avalonia, evitando solapamientos laterales de fondo en cajas personalizadas.
+* **Resplandor Azul Neón en Selección**:
+  * Añadido estilo visual de selección (`ListBoxItem:selected`) que aplica un contorno y sombra de brillo azul eléctrico (`#00a2ff`) en el borde exacto de la carátula o placeholder seleccionado.
+
 ---
 
 ## 🛠️ Cambios Realizados en v1.1.2.4-Dev (Anterior)

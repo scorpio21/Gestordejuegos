@@ -41,6 +41,17 @@ namespace GestorJuegos.Models
         public string CoverType { get; set; } = "Box - Front";
 
         [NotMapped]
+        public string GridSubtext
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(Developer)) return Developer;
+                if (!string.IsNullOrWhiteSpace(Publisher)) return Publisher;
+                return Year > 0 ? Year.ToString() : string.Empty;
+            }
+        }
+
+        [NotMapped]
         public List<GameImage> ExtraImages { get; set; } = new();
         
         public string RomPath { get; set; } = string.Empty;
