@@ -2185,6 +2185,67 @@ public partial class MainWindow : Window
         }
     }
 
+    private void MenuEditPlatformSidebar_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TvSidebar.SelectedItem is SidebarNode node)
+        {
+            if (node.Tag is ValueTuple<string, string> filter && filter.Item1 == "PLATFORM")
+            {
+                string platformName = filter.Item2;
+                
+                // Abrir el gestor de plataformas
+                var platforms = _gameService.GetPlatforms();
+                LstManagePlatforms.ItemsSource = platforms;
+                OverlayManagePlatforms.IsVisible = true;
+                
+                // Buscar y seleccionar esta plataforma en la lista del gestor
+                var platformToSelect = platforms.FirstOrDefault(p => p.Name == platformName);
+                if (platformToSelect != null)
+                {
+                    // Buscar el objeto exacto en la lista asignada
+                    var matched = platforms.FirstOrDefault(p => p.Id == platformToSelect.Id);
+                    if (matched != null)
+                    {
+                        LstManagePlatforms.SelectedItem = matched;
+                    }
+                }
+            }
+            else
+            {
+                ShowMessage("Solo puedes editar nodos que representen a una Plataforma.");
+            }
+        }
+    }
+
+    private void MenuDeletePlatformSidebar_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TvSidebar.SelectedItem is SidebarNode node)
+        {
+            if (node.Tag is ValueTuple<string, string> filter && filter.Item1 == "PLATFORM")
+            {
+                string platformName = filter.Item2;
+                var platforms = _gameService.GetPlatforms();
+                var platformToDelete = platforms.FirstOrDefault(p => p.Name == platformName);
+                if (platformToDelete != null)
+                {
+                    // Abrir el gestor de plataformas con la plataforma seleccionada para proceder
+                    LstManagePlatforms.ItemsSource = platforms;
+                    OverlayManagePlatforms.IsVisible = true;
+                    
+                    var matched = platforms.FirstOrDefault(p => p.Id == platformToDelete.Id);
+                    if (matched != null)
+                    {
+                        LstManagePlatforms.SelectedItem = matched;
+                    }
+                }
+            }
+            else
+            {
+                ShowMessage("Solo puedes eliminar nodos que representen a una Plataforma.");
+            }
+        }
+    }
+
     private void BtnManagePlatforms_Click(object? sender, RoutedEventArgs e)
     {
         LstManagePlatforms.ItemsSource = _gameService.GetPlatforms();
