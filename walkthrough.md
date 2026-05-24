@@ -12,11 +12,12 @@ Hemos evolucionado la aplicación para añadir una réplica exacta del panel der
   * Muestra el logotipo Clear Logo de la plataforma/categoría cargado localmente de la DB.
   * Incluye la foto física de hardware de la consola o microordenador (`ImgPlatformHardware`) leída desde bytes guardados en la columna `HardwareImage`.
   * Diseñada una tabla/grid estilizada con fondo oscuro para las especificaciones técnicas completas.
-  * Incluye una sección de descripción histórica con scroll vertical dedicada a las notas del sistema.
-* **Cálculo Dinámico de Estadísticas Locales**:
+  * Incluye una sección de descripción histórica con scroll vertical dedicada a* **Cálculo Dinámico de Estadísticas Locales**:
   * Suma y visualiza en tiempo real: Juegos en total, juegos completados, última vez jugado, veces jugado en total y tiempo total de juego formateado en `Xh YYm ZZs`.
   * Muestra dinámicamente el nombre del "Último Juego Jugado" y del "Juego Más Jugado" analizando los registros de ejecución locales.
   * Soporte para estadísticas agregadas de la colección completa y por categorías completas (ej: Computadores, Consolas y Portátiles).
+* **Solución de Solapamiento Visual**:
+  * Corregido el bug de solapamiento en las filas de la tabla de detalles añadiendo `Grid.Column="1"` a los valores y números del lado derecho. Esto asegura que se dibujen alineados en la columna derecha y no se amontonen encima del texto descriptivo de la izquierda.
 
 ### 2. Importador Asíncrono Portativo (`MainWindow.axaml.cs`)
 * **Scraper de Metadatos y Fotos de Consolas (`ImportLaunchBoxAssets`)**:
@@ -40,6 +41,11 @@ Hemos evolucionado la aplicación para añadir una réplica exacta del panel der
   * Diseñado un cuadro de placeholder redondeado sutil (`#2e384d`) con un icono de control (`🎮`) que se activa únicamente si la carátula es nula mediante conversores estáticos de Avalonia, evitando solapamientos laterales de fondo en cajas personalizadas.
 * **Resplandor Azul Neón en Selección**:
   * Añadido estilo visual de selección (`ListBoxItem:selected`) que aplica un contorno y sombra de brillo azul eléctrico (`#00a2ff`) en el borde exacto de la carátula o placeholder seleccionado.
+
+### 5. Menú Contextual de la Barra Lateral (`MainWindow.axaml` y `MainWindow.axaml.cs`)
+* **Acciones de Plataforma en `TreeViewItem`**:
+  * Reemplazado el menú contextual incorrecto de juego (Jugar, Favoritos, etc.) en los nodos de la barra lateral (`TvSidebar`) por opciones de plataforma: **Editar Plataforma** y **Eliminar Plataforma**.
+  * **Mapeo a Panel de Gestión**: Implementados `MenuEditPlatformSidebar_Click` y `MenuDeletePlatformSidebar_Click` en C# para que, al pulsar "Editar", se inicie de forma inmediata el panel de gestión de plataformas con el sistema correspondiente pre-seleccionado para su edición o eliminación segura.
 
 ---
 
