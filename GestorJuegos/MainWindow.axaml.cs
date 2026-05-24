@@ -220,6 +220,8 @@ public partial class MainWindow : Window
         BtnDeletePlatform.Click += BtnDeletePlatform_Click;
         LstManagePlatforms.SelectionChanged += LstManagePlatforms_SelectionChanged;
         BtnSelectEmulator.Click += BtnSelectEmulator_Click;
+        BtnEditPlatformQuick.Click += BtnEditPlatformQuick_Click;
+        BtnClosePlatformDetails.Click += BtnClosePlatformDetails_Click;
 
         BtnOpenFolder.Click += (s, e) => {
             if (_selectedGame != null && !string.IsNullOrEmpty(_selectedGame.RomPath))
@@ -2174,7 +2176,22 @@ public partial class MainWindow : Window
 
     private void BtnEditPlatformQuick_Click(object? sender, RoutedEventArgs e)
     {
-        BtnManagePlatforms_Click(sender, e);
+        if (_selectedPlatform != null)
+        {
+            var platforms = _gameService.GetPlatforms();
+            LstManagePlatforms.ItemsSource = platforms;
+            OverlayManagePlatforms.IsVisible = true;
+            
+            var matched = platforms.FirstOrDefault(p => p.Id == _selectedPlatform.Id);
+            if (matched != null)
+            {
+                LstManagePlatforms.SelectedItem = matched;
+            }
+        }
+        else
+        {
+            BtnManagePlatforms_Click(sender, e);
+        }
     }
 
     private void PlatformMenuItem_Click(object? sender, RoutedEventArgs e)
