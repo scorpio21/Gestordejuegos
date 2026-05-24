@@ -209,7 +209,15 @@ namespace GestorJuegos.Services
 
         public void AddPlatform(Platform platform)
         {
+            if (string.IsNullOrWhiteSpace(platform.Name)) return;
+
             using var context = new AppDbContext();
+            // Evitar duplicados por nombre
+            if (context.Platforms.Any(p => p.Name.ToLower() == platform.Name.ToLower()))
+            {
+                return;
+            }
+
             context.Platforms.Add(platform);
             context.SaveChanges();
         }
@@ -450,8 +458,11 @@ namespace GestorJuegos.Services
         {
             using var context = new AppDbContext();
             return context.Platforms
-                .Select(p => new { p.Name, Count = p.Games.Count })
-                .ToDictionary(x => x.Name, x => x.Count);
+                .Where(p => !string.IsNullOrEmpty(p.Name))
+                .Select(p => new { p.Name, Count = context.Games.Count(g => g.PlatformId == p.Id) })
+                .AsEnumerable()
+                .GroupBy(x => x.Name)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Count));
         }
 
         public Dictionary<string, int> GetGenresWithCount()

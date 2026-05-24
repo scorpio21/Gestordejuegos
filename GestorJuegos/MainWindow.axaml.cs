@@ -1295,14 +1295,21 @@ public partial class MainWindow : Window
 
     private void BtnSavePlatform_Click(object? sender, RoutedEventArgs e)
     {
-        var platformName = TxtNewPlatformName.Text?.Trim();
-        if (!string.IsNullOrEmpty(platformName))
+        try
         {
-            string category = (CmbNewPlatformCategory.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Consoles";
-            _gameService.AddPlatform(new Platform { Name = platformName, Category = category });
-            LoadPlatforms();
+            var platformName = TxtNewPlatformName.Text?.Trim();
+            if (!string.IsNullOrEmpty(platformName))
+            {
+                string category = (CmbNewPlatformCategory.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Consoles";
+                _gameService.AddPlatform(new Platform { Name = platformName, Category = category });
+                LoadPlatforms();
+            }
+            OverlayAddPlatform.IsVisible = false;
         }
-        OverlayAddPlatform.IsVisible = false;
+        catch (Exception ex)
+        {
+            ShowMessage($"Error al guardar la plataforma: {ex.Message}");
+        }
     }
 
     private void BtnViewList_Click(object? sender, RoutedEventArgs e)
@@ -1329,51 +1336,58 @@ public partial class MainWindow : Window
 
     private void LoadPlatforms()
     {
-        var sidebarItems = new List<SidebarItem>();
-
-        using var context = new GestorJuegos.Data.AppDbContext();
-        int totalGames = context.Games.Count();
-        int favoritesCount = context.Games.Count(g => g.IsFavorite);
-
-        // --- SECCIÓN: BIBLIOTECA ---
-        sidebarItems.Add(new SidebarItem { Name = "BIBLIOTECA", IsHeader = true });
-        sidebarItems.Add(new SidebarItem { Name = "Todos los Juegos", Icon = "🏠", Count = totalGames, Tag = "ALL" });
-        sidebarItems.Add(new SidebarItem { Name = "Favoritos", Icon = "⭐", Count = favoritesCount, Tag = "FAVORITES" });
-
-        // --- SECCIÓN: PLATAFORMAS ---
-        var platformStats = _gameService.GetGamesCountByPlatform();
-        if (platformStats.Any())
+        try
         {
-            sidebarItems.Add(new SidebarItem { Name = "PLATAFORMAS", IsHeader = true });
-            foreach (var p in platformStats.OrderBy(x => x.Key))
-            {
-                sidebarItems.Add(new SidebarItem { Name = p.Key, Icon = "🎮", Count = p.Value, Tag = ("PLATFORM", p.Key) });
-            }
-        }
+            var sidebarItems = new List<SidebarItem>();
 
-        // --- SECCIÓN: GÉNEROS ---
-        var genreStats = _gameService.GetGenresWithCount();
-        if (genreStats.Any())
+            using var context = new GestorJuegos.Data.AppDbContext();
+            int totalGames = context.Games.Count();
+            int favoritesCount = context.Games.Count(g => g.IsFavorite);
+
+            // --- SECCIÓN: BIBLIOTECA ---
+            sidebarItems.Add(new SidebarItem { Name = "BIBLIOTECA", IsHeader = true });
+            sidebarItems.Add(new SidebarItem { Name = "Todos los Juegos", Icon = "🏠", Count = totalGames, Tag = "ALL" });
+            sidebarItems.Add(new SidebarItem { Name = "Favoritos", Icon = "⭐", Count = favoritesCount, Tag = "FAVORITES" });
+
+            // --- SECCIÓN: PLATAFORMAS ---
+            var platformStats = _gameService.GetGamesCountByPlatform();
+            if (platformStats != null && platformStats.Any())
+            {
+                sidebarItems.Add(new SidebarItem { Name = "PLATAFORMAS", IsHeader = true });
+                foreach (var p in platformStats.OrderBy(x => x.Key))
+                {
+                    sidebarItems.Add(new SidebarItem { Name = p.Key, Icon = "🎮", Count = p.Value, Tag = ("PLATFORM", p.Key) });
+                }
+            }
+
+            // --- SECCIÓN: GÉNEROS ---
+            var genreStats = _gameService.GetGenresWithCount();
+            if (genreStats != null && genreStats.Any())
+            {
+                sidebarItems.Add(new SidebarItem { Name = "GÉNEROS", IsHeader = true });
+                foreach (var g in genreStats.OrderByDescending(x => x.Value).Take(15)) // Top 15 géneros
+                {
+                    sidebarItems.Add(new SidebarItem { Name = g.Key, Icon = "📁", Count = g.Value, Tag = ("GENRE", g.Key) });
+                }
+            }
+
+            // --- SECCIÓN: REGIONES ---
+            var regionStats = _gameService.GetRegionsWithCount();
+            if (regionStats != null && regionStats.Any())
+            {
+                sidebarItems.Add(new SidebarItem { Name = "REGIONES", IsHeader = true });
+                foreach (var r in regionStats.OrderByDescending(x => x.Value))
+                {
+                    sidebarItems.Add(new SidebarItem { Name = r.Key, Icon = "🌎", Count = r.Value, Tag = ("REGION", r.Key) });
+                }
+            }
+
+            LstSidebar.ItemsSource = sidebarItems;
+        }
+        catch (Exception ex)
         {
-            sidebarItems.Add(new SidebarItem { Name = "GÉNEROS", IsHeader = true });
-            foreach (var g in genreStats.OrderByDescending(x => x.Value).Take(15)) // Top 15 géneros
-            {
-                sidebarItems.Add(new SidebarItem { Name = g.Key, Icon = "📁", Count = g.Value, Tag = ("GENRE", g.Key) });
-            }
+            Debug.WriteLine($"Error en LoadPlatforms: {ex.Message}");
         }
-
-        // --- SECCIÓN: REGIONES ---
-        var regionStats = _gameService.GetRegionsWithCount();
-        if (regionStats.Any())
-        {
-            sidebarItems.Add(new SidebarItem { Name = "REGIONES", IsHeader = true });
-            foreach (var r in regionStats.OrderByDescending(x => x.Value))
-            {
-                sidebarItems.Add(new SidebarItem { Name = r.Key, Icon = "🌎", Count = r.Value, Tag = ("REGION", r.Key) });
-            }
-        }
-
-        LstSidebar.ItemsSource = sidebarItems;
     }
 
     private void LstSidebar_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -1771,7 +1785,22 @@ public partial class MainWindow : Window
                     var doc = XDocument.Load(stream);
                     
                     int count = 0;
-                    var games = doc.Descendants("game");
+                    var gamesNodes = doc.Descendants("game").ToList(); // Formato No-Intro
+                    bool isLaunchBox = false;
+                    bool isLaunchBoxMame = false;
+
+                    if (!gamesNodes.Any())
+                    {
+                        gamesNodes = doc.Descendants("Game").ToList(); // Formato LaunchBox Estándar
+                        isLaunchBox = gamesNodes.Any();
+                        
+                        if (!isLaunchBox)
+                        {
+                            gamesNodes = doc.Descendants("MameFile").ToList(); // Formato LaunchBox MAME
+                            isLaunchBoxMame = gamesNodes.Any();
+                        }
+                    }
+
                     var newGames = new System.Collections.Generic.List<Game>();
                     
                     var existingNames = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -1785,9 +1814,43 @@ public partial class MainWindow : Window
                     int skippedCount = 0;
                     var drossPatterns = LoadDrossPatterns();
 
-                    foreach (var gameNode in games)
+                    foreach (var gameNode in gamesNodes)
                     {
-                        string name = gameNode.Attribute("name")?.Value ?? "";
+                        string name = "";
+                        string region = "🌎 World";
+                        string genre = "";
+                        string developer = "";
+                        string publisher = "";
+                        int year = DateTime.Now.Year;
+
+                        if (isLaunchBox)
+                        {
+                            name = gameNode.Element("Title")?.Value ?? "";
+                            region = gameNode.Element("Region")?.Value ?? "🌎 World";
+                            genre = gameNode.Element("Genre")?.Value ?? "";
+                            developer = gameNode.Element("Developer")?.Value ?? "";
+                            publisher = gameNode.Element("Publisher")?.Value ?? "";
+                            string relDate = gameNode.Element("ReleaseDate")?.Value ?? "";
+                            if (!string.IsNullOrEmpty(relDate) && DateTime.TryParse(relDate, out var dt))
+                            {
+                                year = dt.Year;
+                            }
+                        }
+                        else if (isLaunchBoxMame)
+                        {
+                            name = gameNode.Element("Name")?.Value ?? "";
+                            region = gameNode.Element("Region")?.Value ?? "🌎 World";
+                            genre = gameNode.Element("Genre")?.Value ?? "";
+                            developer = gameNode.Element("Developer")?.Value ?? "";
+                            publisher = gameNode.Element("Publisher")?.Value ?? "";
+                            string yearStr = gameNode.Element("Year")?.Value ?? "";
+                            if (int.TryParse(yearStr, out var y)) year = y;
+                        }
+                        else
+                        {
+                            name = gameNode.Attribute("name")?.Value ?? "";
+                        }
+
                         if (string.IsNullOrEmpty(name)) continue;
 
                         if (ImportService.IsDross(name, drossPatterns))
@@ -1796,22 +1859,36 @@ public partial class MainWindow : Window
                             continue;
                         }
 
-                        string region = "🌎 World";
-                        if (name.Contains("(JP") || name.Contains("(Japan")) region = "🇯🇵 JP";
-                        else if (name.Contains("(US") || name.Contains("(USA")) region = "🇺🇸 US";
-                        else if (name.Contains("(EU") || name.Contains("(Europe")) region = "🇪🇺 EU";
-                        else if (name.Contains("(Spain", StringComparison.OrdinalIgnoreCase) || name.Contains("(España", StringComparison.OrdinalIgnoreCase) || name.Contains("(Es)", StringComparison.OrdinalIgnoreCase) || name.Contains("(Es-Es)", StringComparison.OrdinalIgnoreCase) || name.Contains("(Es - Es)", StringComparison.OrdinalIgnoreCase)) region = "🇪🇸 ES";
+                        // Normalización de Región
+                        if (region == "🌎 World" || string.IsNullOrEmpty(region))
+                        {
+                            if (name.Contains("(JP") || name.Contains("(Japan")) region = "🇯🇵 JP";
+                            else if (name.Contains("(US") || name.Contains("(USA")) region = "🇺🇸 US";
+                            else if (name.Contains("(EU") || name.Contains("(Europe")) region = "🇪🇺 EU";
+                            else if (name.Contains("(Spain", StringComparison.OrdinalIgnoreCase) || name.Contains("(España", StringComparison.OrdinalIgnoreCase) || name.Contains("(Es)", StringComparison.OrdinalIgnoreCase) || name.Contains("(Es-Es)", StringComparison.OrdinalIgnoreCase) || name.Contains("(Es - Es)", StringComparison.OrdinalIgnoreCase)) region = "🇪🇸 ES";
+                            else region = "🌎 World";
+                        }
+                        else
+                        {
+                            if (region.Contains("Japan", StringComparison.OrdinalIgnoreCase)) region = "🇯🇵 JP";
+                            else if (region.Contains("United States", StringComparison.OrdinalIgnoreCase) || region.Contains("North America", StringComparison.OrdinalIgnoreCase)) region = "🇺🇸 US";
+                            else if (region.Contains("Europe", StringComparison.OrdinalIgnoreCase)) region = "🇪🇺 EU";
+                            else if (region.Contains("Spain", StringComparison.OrdinalIgnoreCase)) region = "🇪🇸 ES";
+                        }
 
                         string cleanName = name;
-                        int bracketIndex = name.IndexOf('(');
-                        if (bracketIndex > 0)
+                        if (!isLaunchBox && !isLaunchBoxMame)
                         {
-                            cleanName = name.Substring(0, bracketIndex).Trim();
-                        }
-                        
-                        if (cleanName.Contains("•"))
-                        {
-                            cleanName = cleanName.Split('•')[0].Trim();
+                            int bracketIndex = name.IndexOf('(');
+                            if (bracketIndex > 0)
+                            {
+                                cleanName = name.Substring(0, bracketIndex).Trim();
+                            }
+                            
+                            if (cleanName.Contains("•"))
+                            {
+                                cleanName = cleanName.Split('•')[0].Trim();
+                            }
                         }
 
                         string uniqueKey = $"{cleanName}|{region}";
@@ -1827,7 +1904,11 @@ public partial class MainWindow : Window
                                 PlatformId = _selectedPlatform.Id,
                                 Name = cleanName,
                                 Region = region,
-                                Year = DateTime.Now.Year
+                                Genre = genre,
+                                Developer = developer,
+                                Publisher = publisher,
+                                Year = year,
+                                DateAdded = DateTime.Now
                             });
                         }
                     }
@@ -1960,47 +2041,61 @@ public partial class MainWindow : Window
 
     private void BtnSaveEditPlatform_Click(object? sender, RoutedEventArgs e)
     {
-        if (LstManagePlatforms.SelectedItem is Platform platform)
+        try
         {
-            var newName = TxtEditPlatformName.Text?.Trim();
-            if (!string.IsNullOrEmpty(newName))
+            if (LstManagePlatforms.SelectedItem is Platform platform)
             {
-                platform.Name = newName;
-                platform.EmulatorPath = TxtEmulatorPath.Text?.Trim() ?? "";
-                platform.LaunchArguments = TxtLaunchArgs.Text?.Trim() ?? "";
-                platform.Category = (CmbEditPlatformCategory.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Consoles";
-                
-                _gameService.UpdatePlatform(platform);
-                LoadPlatforms();
-                LstManagePlatforms.ItemsSource = _gameService.GetPlatforms();
-                
-                // Update currently selected text if it was modified
-                if (_selectedPlatform?.Id == platform.Id)
+                var newName = TxtEditPlatformName.Text?.Trim();
+                if (!string.IsNullOrEmpty(newName))
                 {
-                    TxtSelectedPlatform.Text = $"Plataforma: {platform.Name}";
+                    platform.Name = newName;
+                    platform.EmulatorPath = TxtEmulatorPath.Text?.Trim() ?? "";
+                    platform.LaunchArguments = TxtLaunchArgs.Text?.Trim() ?? "";
+                    platform.Category = (CmbEditPlatformCategory.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Consoles";
+                    
+                    _gameService.UpdatePlatform(platform);
+                    LoadPlatforms();
+                    LstManagePlatforms.ItemsSource = _gameService.GetPlatforms();
+                    
+                    // Update currently selected text if it was modified
+                    if (_selectedPlatform?.Id == platform.Id)
+                    {
+                        TxtSelectedPlatform.Text = $"Plataforma: {platform.Name}";
+                    }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Error al actualizar la plataforma: {ex.Message}");
         }
     }
 
     private void BtnDeletePlatform_Click(object? sender, RoutedEventArgs e)
     {
-        if (LstManagePlatforms.SelectedItem is Platform platform)
+        try
         {
-            _gameService.DeletePlatform(platform.Id);
-            LoadPlatforms();
-            LstManagePlatforms.ItemsSource = _gameService.GetPlatforms();
-            PnlEditPlatform.IsVisible = false;
-
-            // Reset current view if the deleted platform was the active one
-            if (_selectedPlatform?.Id == platform.Id)
+            if (LstManagePlatforms.SelectedItem is Platform platform)
             {
-                _selectedPlatform = null;
-                TxtSelectedPlatform.Text = "Seleccione una plataforma";
-                LstGames.ItemsSource = null;
-                LstGamesGrid.ItemsSource = null;
-                PnlGameDetails.IsVisible = false;
+                _gameService.DeletePlatform(platform.Id);
+                LoadPlatforms();
+                LstManagePlatforms.ItemsSource = _gameService.GetPlatforms();
+                PnlEditPlatform.IsVisible = false;
+
+                // Reset current view if the deleted platform was the active one
+                if (_selectedPlatform?.Id == platform.Id)
+                {
+                    _selectedPlatform = null;
+                    TxtSelectedPlatform.Text = "Seleccione una plataforma";
+                    LstGames.ItemsSource = null;
+                    LstGamesGrid.ItemsSource = null;
+                    PnlGameDetails.IsVisible = false;
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Error al eliminar la plataforma: {ex.Message}");
         }
     }
 
