@@ -149,4 +149,4 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 3. Ejecutar `dotnet run` dentro de la carpeta del proyecto.
 
 ---
-Desarrollado con ❤️ por Gemini CLI.
+Desarrollado con ❤️ por Scorpio.

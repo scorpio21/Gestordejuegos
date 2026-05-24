@@ -3918,7 +3918,7 @@ public partial class MainWindow : Window
     {
         string aboutText = "🎮 GESTOR DE JUEGOS v1.0.9.5\n\n" +
             "Un organizador integral para colecciones de juegos retro, optimizado para grandes bibliotecas y uso con mando.\n\n" +
-            "👨‍💻 Autor: scorpio21 / Gemini CLI\n" +
+            "👨‍💻 Autor: Scorpio\n" +
             "📂 Repositorio: https://github.com/scorpio21/Gestordejuegos\n\n" +
             "🔥 NOVEDADES v1.0.9.5:\n" +
             "• Arquitectura de Base de Datos Dual (Datos + Multimedia).\n" +
