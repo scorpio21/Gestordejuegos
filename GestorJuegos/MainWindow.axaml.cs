@@ -2860,7 +2860,7 @@ public partial class MainWindow : Window
         });
     }
 
-    private async void BtnSyncMasterDbLocal_Click(object? sender, RoutedEventArgs e)
+    private void BtnSyncMasterDbLocal_Click(object? sender, RoutedEventArgs e)
     {
         if (_selectedGame == null || _selectedPlatform == null) return;
 
@@ -3288,11 +3288,46 @@ public partial class MainWindow : Window
             TxtInfoName.Text = game.Name;
             TxtInfoPlatform.Text = game.Platform != null ? game.Platform.Name.ToUpper() : "DESCONOCIDO";
 
-            // Calificación
-            double ratingVal = game.Rating / 20.0;
-            TxtInfoRatingText.Text = ratingVal > 0 ? ratingVal.ToString("0.0") : "0.0";
+            // Calificación (Prioriza la calificación personal del usuario, de lo contrario muestra la de la comunidad)
+            double ratingVal = 0;
+            if (game.Rating > 0)
+            {
+                ratingVal = game.Rating / 20.0;
+            }
+            else if (!string.IsNullOrEmpty(game.CommunityRating))
+            {
+                string cleanRating = game.CommunityRating.Replace(',', '.').Trim();
+                if (double.TryParse(cleanRating, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double commRating))
+                {
+                    ratingVal = commRating;
+                }
+            }
+            TxtInfoRatingText.Text = ratingVal > 0 ? ratingVal.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : "0.0";
             int starCount = (int)Math.Round(ratingVal);
             TxtInfoRatingStars.Text = new string('★', starCount) + new string('☆', 5 - starCount);
+
+            // ToolTip de Calificación estilo LaunchBox
+            string userRatingStr = game.Rating > 0 ? (game.Rating / 20.0).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : "Ninguno";
+            string communityRatingStr = "--";
+            if (!string.IsNullOrEmpty(game.CommunityRating))
+            {
+                string cleanRating = game.CommunityRating.Replace(',', '.').Trim();
+                if (double.TryParse(cleanRating, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double commRating))
+                {
+                    communityRatingStr = commRating.ToString("0.00", System.Globalization.CultureInfo.CurrentCulture);
+                }
+                else
+                {
+                    communityRatingStr = game.CommunityRating;
+                }
+            }
+            string ratingTooltip = $"Tu Calificación en Estrellas: {userRatingStr}\n" +
+                                   $"Calificación en Estrellas de la Comunidad: {communityRatingStr}\n" +
+                                   $"Votos Totales de la Calificación en Estrellas de la Comunidad: {game.CommunityRatingCount}";
+            ToolTip.SetTip(PnlRatingContainer, ratingTooltip);
+
+            // ToolTip de Progreso rápido
+            ToolTip.SetTip(BtnProgressQuick, string.IsNullOrEmpty(game.PlayStatus) ? "No Jugado" : game.PlayStatus);
 
             // Favorito
             UpdateFavoriteUI();
@@ -3303,43 +3338,78 @@ public partial class MainWindow : Window
             TxtBasePublisher.Text = string.IsNullOrEmpty(game.Publisher) ? "--" : game.Publisher;
             TxtBasePlaytime.Text = $"{game.PlayCount} partidas ({game.PlayStatus})";
 
-            // Bloque INFORMACIÓN
+            // Bloque INFORMACIÓN (Réplica exacta de LaunchBox)
+            
+            // 1. Clasificación:
             TxtInfoEsrb.Text = string.IsNullOrEmpty(game.ESRB) ? "--" : game.ESRB;
-            TxtInfoMaxPlayers.Text = game.MaxPlayers.HasValue ? game.MaxPlayers.Value.ToString() : "--";
-            TxtInfoCooperative.Text = game.Cooperative ? "Sí" : "No";
-            TxtInfoGenre.Text = string.IsNullOrEmpty(game.Genre) ? "Desconocido" : game.Genre;
+            
+            // 2. Género:
+            TxtInfoGenre.Text = string.IsNullOrEmpty(game.Genre) ? "--" : game.Genre;
 
-            // Formatear calificación de comunidad a un solo decimal (ej. 3.6)
-            string formattedCommunityRating = "--";
-            if (!string.IsNullOrEmpty(game.CommunityRating))
+            // 3. Modo de Juego:
+            string playMode = "Un Jugador";
+            if (game.Cooperative)
             {
-                if (double.TryParse(game.CommunityRating, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double commRating) ||
-                    double.TryParse(game.CommunityRating, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out commRating))
-                {
-                    formattedCommunityRating = commRating.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    formattedCommunityRating = game.CommunityRating;
-                }
+                playMode = "Cooperativo";
             }
-            TxtInfoCommunityRating.Text = formattedCommunityRating;
-            TxtInfoCommunityVotes.Text = $"({game.CommunityRatingCount} votos)";
+            else if (game.MaxPlayers.HasValue && game.MaxPlayers.Value > 1)
+            {
+                playMode = $"Multijugador ({game.MaxPlayers.Value} jugadores)";
+            }
+            TxtInfoPlayMode.Text = playMode;
 
-            // Mostrar/Ocultar botones de URL si existen
-            BtnWikiUrl.IsVisible = !string.IsNullOrEmpty(game.WikipediaURL);
-            BtnVideoUrl.IsVisible = !string.IsNullOrEmpty(game.VideoURL);
-
-            TxtInfoProgress.Text = game.PlayStatus;
+            // 4. Progress:
+            TxtInfoProgress.Text = string.IsNullOrEmpty(game.PlayStatus) ? "No Jugado" : game.PlayStatus;
             TxtInfoProgress.Foreground = game.PlayStatus switch
             {
                 "Completado" => Avalonia.Media.Brushes.LightGreen,
                 "Jugando" => Avalonia.Media.Brushes.LightSkyBlue,
                 _ => Avalonia.Media.Brushes.Orange
             };
-            
+
+            // 5. Región:
+            TxtInfoRegion.Text = string.IsNullOrEmpty(game.Region) ? "--" : game.Region;
+
+            // 6. Estado:
+            TxtInfoStatus.Text = !string.IsNullOrEmpty(game.RomPath) ? "ROM importado" : "No instalado";
+
+            // 7. Portable:
+            TxtInfoPortable.Text = "No";
+
+            // 8. Archivo:
             TxtInfoFile.Text = string.IsNullOrEmpty(game.RomPath) ? "--" : Path.GetFileName(game.RomPath);
+
+            // 9. Última vez jugado:
             TxtInfoLastPlayed.Text = game.LastPlayed?.ToString("dd/MM/yyyy HH:mm") ?? "Nunca";
+
+            // 10. Fecha de Lanzamiento:
+            string releaseDateStr = "--";
+            if (!string.IsNullOrEmpty(game.ReleaseDate))
+            {
+                if (DateTime.TryParse(game.ReleaseDate, out DateTime releaseDateVal))
+                {
+                    releaseDateStr = releaseDateVal.ToString("dd/MM/yyyy");
+                }
+                else
+                {
+                    releaseDateStr = game.ReleaseDate;
+                }
+            }
+            else if (game.Year > 0)
+            {
+                releaseDateStr = $"01/01/{game.Year}";
+            }
+            TxtInfoReleaseDate.Text = releaseDateStr;
+
+            // 11. Tipo de Lanzamiento:
+            TxtInfoReleaseType.Text = string.IsNullOrEmpty(game.ReleaseType) ? "Released" : game.ReleaseType;
+
+            // 12. Cantidad Máx. de Jugadores:
+            TxtInfoMaxPlayers.Text = game.MaxPlayers.HasValue ? game.MaxPlayers.Value.ToString() : "--";
+
+            // Mostrar/Ocultar botones de URL si existen
+            BtnWikiUrl.IsVisible = !string.IsNullOrEmpty(game.WikipediaURL);
+            BtnVideoUrl.IsVisible = !string.IsNullOrEmpty(game.VideoURL);
 
             // Descripción
             TxtInfoDescription.Text = string.IsNullOrEmpty(game.Description) ? "Sin descripción disponible." : game.Description;
@@ -3713,10 +3783,109 @@ public partial class MainWindow : Window
     {
         if (_selectedGame != null && _selectedGame.Id != 0)
         {
-            GestorJuegos.Utils.SoundHelper.PlayBack();
+            GestorJuegos.Utils.SoundHelper.PlaySelect();
+            
+            // Replicar el diálogo de confirmación exacto de LaunchBox
+            string platformName = _selectedGame.Platform != null ? _selectedGame.Platform.Name : "Desconocida";
+            TxtDeleteConfirmMessage.Text = $"¿Estás seguro que deseas borrar permanentemente {platformName} {_selectedGame.Name}?";
+            
+            // Por defecto, desmarcar el checkbox de borrar multimedia asociada
+            ChkDeleteAssociatedMedia.IsChecked = false;
+            
+            // Mostrar la ventana modal estilo LaunchBox
+            OverlayDeleteConfirm.IsVisible = true;
+        }
+    }
+
+    private void BtnCloseDeleteConfirm_Click(object? sender, RoutedEventArgs e)
+    {
+        GestorJuegos.Utils.SoundHelper.PlayBack();
+        OverlayDeleteConfirm.IsVisible = false;
+    }
+
+    private void BtnDeleteConfirmNo_Click(object? sender, RoutedEventArgs e)
+    {
+        GestorJuegos.Utils.SoundHelper.PlayBack();
+        OverlayDeleteConfirm.IsVisible = false;
+    }
+
+    private void BtnDeleteConfirmYes_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame != null && _selectedGame.Id != 0)
+        {
+            GestorJuegos.Utils.SoundHelper.PlaySelect();
+            
+            bool deleteMedia = ChkDeleteAssociatedMedia.IsChecked ?? false;
+            
+            // Si el checkbox "Delete associated media" está marcado, borramos también las imágenes de CoversDb
+            if (deleteMedia)
+            {
+                try
+                {
+                    using (var coversContext = new GestorJuegos.Data.CoversDbContext())
+                    {
+                        var extraImages = coversContext.Images.Where(i => i.GameId == _selectedGame.Id).ToList();
+                        if (extraImages.Any()) coversContext.Images.RemoveRange(extraImages);
+                        coversContext.SaveChanges();
+                    }
+                }
+                catch { }
+            }
+
+            // Ejecutar el borrado principal del juego (que borra el juego y la portada principal)
             _gameService.DeleteGame(_selectedGame.Id);
+            
+            // Cerrar modal y recargar
+            OverlayDeleteConfirm.IsVisible = false;
             LoadGames();
             PnlGameDetails.IsVisible = false;
+        }
+    }
+
+    private void MenuOpenFolder_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame != null && !string.IsNullOrEmpty(_selectedGame.RomPath))
+        {
+            string? dir = Path.GetDirectoryName(_selectedGame.RomPath);
+            if (Directory.Exists(dir))
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo(dir) { UseShellExecute = true });
+                }
+                catch { }
+            }
+        }
+    }
+
+    private void MenuDelete_Click(object? sender, RoutedEventArgs e)
+    {
+        BtnDelete_Click(sender, e);
+    }
+
+    private void MenuPlayStatus_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null) return;
+        if (sender is MenuItem menuItem && menuItem.Tag is string status)
+        {
+            GestorJuegos.Utils.SoundHelper.PlaySelect();
+            _selectedGame.PlayStatus = status;
+            _gameService.UpdateGame(_selectedGame);
+            
+            // Refrescar UI del bloque de información
+            TxtInfoProgress.Text = status;
+            TxtInfoProgress.Foreground = status switch
+            {
+                "Completado" => Avalonia.Media.Brushes.LightGreen,
+                "Jugando" => Avalonia.Media.Brushes.LightSkyBlue,
+                _ => Avalonia.Media.Brushes.Orange
+            };
+            
+            // Actualizar Tooltip del botón flotante de progreso
+            ToolTip.SetTip(BtnProgressQuick, status);
+            
+            // Recargar listas para sincronizar
+            LoadGames();
         }
     }
 

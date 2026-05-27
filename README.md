@@ -19,7 +19,15 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 *   **Corrección de Importación**: Solucionados fallos críticos de traducción LINQ durante el escaneo de juegos mediante el uso de evaluación local (`AsEnumerable`).
 *   **Registro de Errores**: Implementado log detallado en `import_error_log.txt` para diagnóstico preciso de fallos durante el proceso de importación.
 *   **Alineación LaunchBox**: Soporte total para metadatos avanzados, hardware de plataformas y nombres alternativos.
-*   **Corrección de Calificación de Comunidad**: Solucionado el problema de solapamiento en el panel de detalles para evitar que etiquetas largas y valores amplios de calificación se superpongan en la UI (usando `DockPanel.Dock="Right"` y `TextTrimming="CharacterEllipsis"`). Además, se implementó el parseo y redondeo de la calificación a un decimal (ej. `3.6` en lugar de `3,6084742268041`), emulando perfectamente la estética de LaunchBox.
+*   **Corrección de Calificación de Comunidad**: Solucionado el problema de solapamiento en el panel de detalles para evitar que etiquetas largas y valores amplios de calificación se superpongan en la UI (usando `DockPanel.Dock="Right"` y `TextTrimming="CharacterEllipsis"`). Además, se implementó el parseo y redondeo de la calificación a un decimal (ej. `3.6` en lugar de `3,6084742268041`), emulando perfectamente la estética de LaunchBox, incorporando un fallback automático para que el indicador de estrellas y la calificación de la cabecera (bajo el banner) muestre de forma dinámica la calificación de la comunidad si el usuario aún no ha valorado el juego personalmente.
+*   **Réplica Exacta de Metadatos de LaunchBox**: Reestructurado por completo el bloque informativo para incluir exactamente las 12 columnas oficiales en el orden y denominación nativa de LaunchBox, añadiendo soporte y lógica de cálculo dinámico para `Modo de Juego`, `Progress`, `Región`, `Estado`, `Portable`, `Fecha de Lanzamiento` y `Tipo de Lanzamiento`.
+*   **Acciones y Diálogos Premium estilo LaunchBox**: 
+    - Implementados ToolTips interactivos detallados en el badge de estrellas de la cabecera (con desglose de calificación personal, promedio de comunidad a 2 decimales y votos totales) y en el botón de progreso rápido.
+    - Se rediseñó el banner de acciones rápidas añadiendo un selector desplegable de estado (`BtnProgressQuick`) y un menú de más opciones (`•••`) con "Borrar" en color rojo.
+    - Desarrollado el cuadro de diálogo de confirmación de borrado modal (`OverlayDeleteConfirm`) idéntico a LaunchBox, que incluye un mensaje personalizado para cada juego, los botones "Yes" y "No" estilizados, y el checkbox funcional "Delete associated media" que elimina por completo los archivos extra e imágenes asociadas del juego de `GestorCovers.db`.
+
+
+
 
 
 ### v1.1.2.5-Dev (Actual)

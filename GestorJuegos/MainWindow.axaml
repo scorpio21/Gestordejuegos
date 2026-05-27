@@ -599,7 +599,7 @@
                                     </Border>
 
                                     <!-- Calificación por Estrellas (Abajo Izquierda) -->
-                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="15,0,0,12">
+                                    <StackPanel Name="PnlRatingContainer" Orientation="Horizontal" Spacing="5" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="15,0,0,12">
                                         <TextBlock Name="TxtInfoRatingText" Text="0.0" Foreground="#38bdf8" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
                                         <TextBlock Name="TxtInfoRatingStars" Text="☆☆☆☆☆" Foreground="#38bdf8" FontSize="12" VerticalAlignment="Center"/>
                                     </StackPanel>
@@ -607,17 +607,44 @@
                                     <!-- Acciones Flotantes Rápidas (Abajo Derecha) -->
                                     <Border Background="#600f172a" CornerRadius="18" Padding="3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,15,10" BorderBrush="#20ffffff" BorderThickness="1">
                                         <StackPanel Orientation="Horizontal" Spacing="2">
-                                            <Button Name="BtnEditGame" Background="Transparent" Foreground="White" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Editar Juego">
+                                            <!-- Botones invisibles de respaldo para mantener la compatibilidad con el enlazador de C# del constructor -->
+                                            <Button Name="BtnOpenFolder" IsVisible="False"/>
+                                            <Button Name="BtnDelete" IsVisible="False"/>
+
+                                            <Button Name="BtnEditGame" Background="Transparent" Foreground="White" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Editar">
                                                 <TextBlock Text="✏️" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
                                             </Button>
-                                            <Button Name="BtnFavoriteQuick" Background="Transparent" Foreground="#ef4444" Width="32" Height="32" CornerRadius="16" Padding="0" Click="BtnToggleFavorite_Click" ToolTip.Tip="Añadir a Favoritos">
+                                            <Button Name="BtnFavoriteQuick" Background="Transparent" Foreground="#ef4444" Width="32" Height="32" CornerRadius="16" Padding="0" Click="BtnToggleFavorite_Click" ToolTip.Tip="Favorito">
                                                 <TextBlock Name="TxtFavoriteIcon" Text="♡" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="15" FontWeight="Bold"/>
                                             </Button>
-                                            <Button Name="BtnOpenFolder" Background="Transparent" Foreground="White" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Abrir Carpeta">
-                                                <TextBlock Text="📁" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                            <Button Name="BtnProgressQuick" Background="Transparent" Foreground="#eab308" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Progreso">
+                                                <TextBlock Text="✹" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="15"/>
+                                                <Button.Flyout>
+                                                    <MenuFlyout>
+                                                        <MenuItem Header="No Jugado" Click="MenuPlayStatus_Click" Tag="No Jugado"/>
+                                                        <MenuItem Header="Jugando" Click="MenuPlayStatus_Click" Tag="Jugando"/>
+                                                        <MenuItem Header="Completado" Click="MenuPlayStatus_Click" Tag="Completado"/>
+                                                        <MenuItem Header="Abandonado" Click="MenuPlayStatus_Click" Tag="Abandonado"/>
+                                                    </MenuFlyout>
+                                                </Button.Flyout>
                                             </Button>
-                                            <Button Name="BtnDelete" Background="Transparent" Foreground="#ef4444" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Eliminar Juego">
-                                                <TextBlock Text="🗑️" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                            <Button Name="BtnMoreOptions" Background="Transparent" Foreground="White" Width="32" Height="32" CornerRadius="16" Padding="0" ToolTip.Tip="Más opciones">
+                                                <TextBlock Text="•••" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                                <Button.Flyout>
+                                                    <MenuFlyout>
+                                                        <MenuItem Header="Abrir Carpeta" Click="MenuOpenFolder_Click">
+                                                            <MenuItem.Icon>
+                                                                <TextBlock Text="📁" VerticalAlignment="Center"/>
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                        <Separator/>
+                                                        <MenuItem Header="Borrar" Click="MenuDelete_Click" Foreground="#ef4444">
+                                                            <MenuItem.Icon>
+                                                                <TextBlock Text="🗑️" Foreground="#ef4444" VerticalAlignment="Center"/>
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                    </MenuFlyout>
+                                                </Button.Flyout>
                                             </Button>
                                         </StackPanel>
                                     </Border>
@@ -761,50 +788,90 @@
                                                     </Grid>
 
                                                     <Border Background="#1e293b" Padding="15" CornerRadius="12" BorderBrush="#334155" BorderThickness="1">
-                                                        <StackPanel Spacing="10">
-                                                            <DockPanel>
-                                                                <TextBlock Name="TxtInfoEsrb" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
-                                                                <TextBlock Text="Clasificación ESRB" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                                            </DockPanel>
-                                                            <Separator Background="#15ffffff"/>
-                                                            <DockPanel>
-                                                                <TextBlock Name="TxtInfoMaxPlayers" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
-                                                                <TextBlock Text="Jugadores" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                                            </DockPanel>
-                                                            <Separator Background="#15ffffff"/>
-                                                            <DockPanel>
-                                                                <TextBlock Name="TxtInfoCooperative" Text="No" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
-                                                                <TextBlock Text="Cooperativo" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                                            </DockPanel>
-                                                            <Separator Background="#15ffffff"/>
-                                                            <DockPanel>
-                                                                <TextBlock Name="TxtInfoGenre" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
-                                                                <TextBlock Text="Género" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                                            </DockPanel>
-                                                            <Separator Background="#15ffffff"/>
-                                                            <DockPanel>
-                                                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="5">
-                                                                    <TextBlock Name="TxtInfoCommunityRating" Text="--" Foreground="#f59e0b" FontSize="12" FontWeight="Medium"/>
-                                                                    <TextBlock Name="TxtInfoCommunityVotes" Text="(0 votos)" Foreground="#64748b" FontSize="11" VerticalAlignment="Center"/>
-                                                                </StackPanel>
-                                                                <TextBlock Text="Calificación Comunidad" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                                            </DockPanel>
-                                                            <Separator Background="#15ffffff"/>
-                                                            <DockPanel>
-                                                                <TextBlock Name="TxtInfoProgress" Text="Pendiente" Foreground="#f59e0b" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
-                                                                <TextBlock Text="Progreso" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                                            </DockPanel>
-                                                            <Separator Background="#15ffffff"/>
-                                                            <DockPanel>
-                                                                <TextBlock Name="TxtInfoLastPlayed" Text="Nunca" Foreground="White" DockPanel.Dock="Right" FontSize="12"/>
-                                                                <TextBlock Text="Última vez jugado" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                                            </DockPanel>
-                                                            <Separator Background="#15ffffff"/>
-                                                            <DockPanel>
-                                                                <TextBlock Name="TxtInfoFile" Text="--" Foreground="#38bdf8" DockPanel.Dock="Right" FontSize="11" TextWrapping="Wrap" MaxWidth="180"/>
-                                                                <TextBlock Text="Archivo" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                                            </DockPanel>
-                                                        </StackPanel>
+                                                         <StackPanel Spacing="10">
+                                                             <!-- 1. Clasificación -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoEsrb" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                 <TextBlock Text="Clasificación" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+                                                             
+                                                             <!-- 2. Género -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoGenre" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                 <TextBlock Text="Género" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+
+                                                             <!-- 3. Modo de Juego -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoPlayMode" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                 <TextBlock Text="Modo de Juego" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+
+                                                             <!-- 4. Progress -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoProgress" Text="No Jugado" Foreground="#f59e0b" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                 <TextBlock Text="Progress" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+
+                                                             <!-- 5. Región -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoRegion" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                 <TextBlock Text="Región" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+
+                                                             <!-- 6. Estado -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoStatus" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                 <TextBlock Text="Estado" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+
+                                                             <!-- 7. Portable -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoPortable" Text="No" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                 <TextBlock Text="Portable" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+
+                                                             <!-- 8. Archivo -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoFile" Text="--" Foreground="#38bdf8" DockPanel.Dock="Right" FontSize="11" TextWrapping="Wrap" MaxWidth="180"/>
+                                                                 <TextBlock Text="Archivo" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+
+                                                             <!-- 9. Última vez jugado -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoLastPlayed" Text="Nunca" Foreground="White" DockPanel.Dock="Right" FontSize="12"/>
+                                                                 <TextBlock Text="Última vez jugado" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+
+                                                             <!-- 10. Fecha de Lanzamiento -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoReleaseDate" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                 <TextBlock Text="Fecha de Lanzamiento" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+
+                                                             <!-- 11. Tipo de Lanzamiento -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoReleaseType" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                 <TextBlock Text="Tipo de Lanzamiento" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                             <Separator Background="#15ffffff"/>
+
+                                                             <!-- 12. Cantidad Máx. de Jugadores -->
+                                                             <DockPanel>
+                                                                 <TextBlock Name="TxtInfoMaxPlayers" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                 <TextBlock Text="Cantidad Máx. de Jugadores" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                                             </DockPanel>
+                                                         </StackPanel>
                                                     </Border>
                                                 </StackPanel>
 
@@ -1307,6 +1374,47 @@
                         <Button Name="BtnAcceptConfirm" Content="ACEPTAR" Background="#ef4444" Foreground="White" Click="BtnAcceptConfirm_Click"/>
                     </StackPanel>
                 </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- Diálogo de Confirmación de Borrado estilo LaunchBox -->
+        <Border Name="OverlayDeleteConfirm" Background="#AA000000" IsVisible="False" ZIndex="400">
+            <Border Background="#252830" BorderBrush="#3f424a" BorderThickness="1" Width="480" CornerRadius="4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <DockPanel>
+                    <!-- Barra de Título del Diálogo -->
+                    <Border Background="#1f2128" Height="30" Padding="10,0" DockPanel.Dock="Top">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBlock Grid.Column="0" Text="LaunchBox" Foreground="#9ba1af" FontSize="11" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <Button Grid.Column="1" Name="BtnCloseDeleteConfirm" Background="Transparent" BorderThickness="0" Padding="5,0" Click="BtnCloseDeleteConfirm_Click">
+                                <TextBlock Text="✕" Foreground="#9ba1af" FontSize="10"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Botones de Acción Abajo (Barra de Botones) -->
+                    <Border Background="#1f2128" Height="50" Padding="15,0" BorderBrush="#3f424a" BorderThickness="0,1,0,0" DockPanel.Dock="Bottom">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" VerticalAlignment="Center">
+                            <Button Name="BtnDeleteConfirmYes" Content="Yes" Width="75" Height="25" Background="#2e3138" BorderBrush="#4f525a" BorderThickness="1" Foreground="White" FontSize="11" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnDeleteConfirmYes_Click"/>
+                            <Button Name="BtnDeleteConfirmNo" Content="No" Width="75" Height="25" Background="#2e3138" BorderBrush="#007acc" BorderThickness="1.5" Foreground="White" FontSize="11" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnDeleteConfirmNo_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Cuerpo del Diálogo -->
+                    <Border Padding="25">
+                        <Grid ColumnDefinitions="Auto, *">
+                            <!-- Icono de Pregunta -->
+                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18" Background="#007acc" Margin="0,0,20,0" VerticalAlignment="Top">
+                                <TextBlock Text="?" Foreground="White" FontWeight="Bold" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
+                            </Border>
+                            
+                            <!-- Contenido -->
+                            <StackPanel Grid.Column="1" Spacing="15" VerticalAlignment="Center">
+                                <TextBlock Name="TxtDeleteConfirmMessage" Text="¿Estás seguro que deseas borrar permanentemente Platform Game?" Foreground="White" FontSize="12" TextWrapping="Wrap" LineHeight="18"/>
+                                <CheckBox Name="ChkDeleteAssociatedMedia" Content="Delete associated media" Foreground="#9ba1af" FontSize="11" IsChecked="False"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DockPanel>
             </Border>
         </Border>
 
