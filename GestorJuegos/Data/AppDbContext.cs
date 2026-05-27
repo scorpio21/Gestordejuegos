@@ -10,6 +10,11 @@ namespace GestorJuegos.Data
         public DbSet<Game> Games { get; set; }
         public DbSet<Platform> Platforms { get; set; }
         public DbSet<PlatformCategory> PlatformCategories { get; set; }
+        public DbSet<GameImage> GameImages { get; set; }
+        public DbSet<GameAlternateTitle> GameAlternateTitles { get; set; }
+        public DbSet<PlatformAlternateName> PlatformAlternateNames { get; set; }
+        public DbSet<Emulator> Emulators { get; set; }
+        public DbSet<EmulatorPlatform> EmulatorPlatforms { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -19,7 +24,31 @@ namespace GestorJuegos.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Ya no hay datos semilla. La base de datos comenzará 100% en blanco.
+            // Configuraciones adicionales si son necesarias
+            modelBuilder.Entity<Game>()
+                .HasOne(g => g.Platform)
+                .WithMany(p => p.Games)
+                .HasForeignKey(g => g.PlatformId);
+
+            modelBuilder.Entity<GameAlternateTitle>()
+                .HasOne(at => at.Game)
+                .WithMany(g => g.AlternateTitles)
+                .HasForeignKey(at => at.GameId);
+
+            modelBuilder.Entity<PlatformAlternateName>()
+                .HasOne(pan => pan.Platform)
+                .WithMany(p => p.AlternateNames)
+                .HasForeignKey(pan => pan.PlatformId);
+
+            modelBuilder.Entity<EmulatorPlatform>()
+                .HasOne(ep => ep.Emulator)
+                .WithMany(e => e.SupportedPlatforms)
+                .HasForeignKey(ep => ep.EmulatorId);
+
+            modelBuilder.Entity<EmulatorPlatform>()
+                .HasOne(ep => ep.Platform)
+                .WithMany(p => p.CompatibleEmulators)
+                .HasForeignKey(ep => ep.PlatformId);
         }
     }
 }

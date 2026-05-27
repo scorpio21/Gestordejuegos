@@ -21,6 +21,7 @@ namespace GestorJuegos.Services
                     context.Database.EnsureCreated();
                     // Migraciones existentes...
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN SelectedArtType TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Languages TEXT NOT NULL DEFAULT ''"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Developer TEXT NOT NULL DEFAULT ''"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Publisher TEXT NOT NULL DEFAULT ''"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Description TEXT NOT NULL DEFAULT ''"); } catch { }
@@ -32,7 +33,23 @@ namespace GestorJuegos.Services
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN AdditionalRoms TEXT NOT NULL DEFAULT ''"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN IsFavorite INTEGER NOT NULL DEFAULT 0"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN PlayTime INTEGER NOT NULL DEFAULT 0"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN PlayCount INTEGER NOT NULL DEFAULT 0"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Rating INTEGER NOT NULL DEFAULT 0"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN PlayStatus TEXT NOT NULL DEFAULT 'No Jugado'"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN LastPlayed TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN DateAdded TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN ShortName TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Version TEXT NOT NULL DEFAULT ''"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN LaunchBoxDbId TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN ReleaseDate TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN ReleaseType TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN MaxPlayers INTEGER"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Cooperative INTEGER DEFAULT 0"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN VideoURL TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN WikipediaURL TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN ESRB TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN CommunityRating TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN CommunityRatingCount INTEGER DEFAULT 0"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN LastScanDate TEXT;"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Logo BLOB"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Icon BLOB"); } catch { }
@@ -47,6 +64,7 @@ namespace GestorJuegos.Services
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Display TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Media TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Notes TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Emulated INTEGER NOT NULL DEFAULT 1"); } catch { }
                     try { context.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS PlatformCategories (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT NOT NULL, Icon BLOB, Graphic BLOB);"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE PlatformCategories ADD COLUMN Notes TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("DELETE FROM Games WHERE PlatformId NOT IN (SELECT Id FROM Platforms)"); } catch { }
@@ -64,6 +82,50 @@ namespace GestorJuegos.Services
                 MigrateCoversToNewDb();
                 
                 _schemaUpdated = true;
+            }
+        }
+
+        private readonly LaunchBoxMetadataService _metadataService = new();
+
+        public void EnrichGameWithMetadata(Game game, string platformName)
+        {
+            var metadata = _metadataService.GetMetadata(game.Name, platformName);
+            if (metadata != null)
+            {
+                game.LaunchBoxDbId = metadata.DatabaseID.ToString();
+                game.Description = metadata.Description;
+                game.Year = metadata.ReleaseYear;
+                game.Developer = metadata.Developer;
+                game.Publisher = metadata.Publisher;
+                game.Genre = metadata.Genres;
+                
+                // Nuevos campos
+                game.ReleaseDate = metadata.ReleaseDate;
+                game.MaxPlayers = metadata.MaxPlayers;
+                game.Cooperative = metadata.Cooperative;
+                game.VideoURL = metadata.VideoURL;
+                game.WikipediaURL = metadata.WikipediaURL;
+                game.ESRB = metadata.ESRB;
+                game.CommunityRating = metadata.CommunityRating;
+                game.CommunityRatingCount = metadata.CommunityRatingCount;
+            }
+        }
+
+        public void EnrichPlatformWithMetadata(Platform platform)
+        {
+            var metadata = _metadataService.GetPlatformMetadata(platform.Name);
+            if (metadata != null)
+            {
+                platform.ReleaseDate = metadata.ReleaseDate;
+                platform.Developer = metadata.Developer;
+                platform.Manufacturer = metadata.Manufacturer;
+                platform.Cpu = metadata.Cpu;
+                platform.Memory = metadata.Memory;
+                platform.Graphics = metadata.Graphics;
+                platform.Sound = metadata.Sound;
+                platform.Display = metadata.Display;
+                platform.Media = metadata.Media;
+                platform.Notes = metadata.Notes;
             }
         }
 
@@ -133,6 +195,26 @@ namespace GestorJuegos.Services
 
                 try
                 {
+                    // Verificar si la columna Cover existe antes de intentar la migración
+                    bool hasCoverColumn = false;
+                    using (var checkCommand = connection.CreateCommand())
+                    {
+                        checkCommand.CommandText = "PRAGMA table_info(Games)";
+                        using (var reader = checkCommand.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (reader["name"].ToString() == "Cover")
+                                {
+                                    hasCoverColumn = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!hasCoverColumn) return;
+
                     using (var command = connection.CreateCommand())
                     {
                         // Seleccionamos los juegos que tienen datos en la columna Cover de la DB principal
@@ -284,6 +366,21 @@ namespace GestorJuegos.Services
             for (int i = 0; i < games.Count; i += batchSize)
             {
                 var batch = games.Skip(i).Take(batchSize).ToList();
+                
+                // Asegurar que campos obligatorios en DB tengan valor (evitar NOT NULL constraint failed)
+                foreach (var g in batch)
+                {
+                    if (g.ShortName == null) g.ShortName = string.Empty;
+                    if (g.Version == null) g.Version = string.Empty;
+                    if (g.SelectedArtType == null) g.SelectedArtType = string.Empty;
+                    if (g.Languages == null) g.Languages = string.Empty;
+                    if (g.AdditionalRoms == null) g.AdditionalRoms = string.Empty;
+                    if (g.OverrideEmulatorPath == null) g.OverrideEmulatorPath = string.Empty;
+                    if (g.OverrideLaunchArguments == null) g.OverrideLaunchArguments = string.Empty;
+                    if (g.Developer == null) g.Developer = string.Empty;
+                    if (g.Publisher == null) g.Publisher = string.Empty;
+                    if (g.Description == null) g.Description = string.Empty;
+                }
                 
                 // 1. Guardar primero en la DB principal para generar los IDs
                 using (var context = new AppDbContext())

@@ -1,4 +1,4 @@
-# 🎮 Gestor de Juegos (v1.1.2.5-Dev)
+# 🎮 Gestor de Juegos (v1.2.0-Dev)
 
 Organizador de colecciones de videojuegos para Windows, optimizado para grandes bibliotecas y uso con mando (Gamepad).
 
@@ -13,6 +13,14 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 - **Modo Mando**: Navegación completa optimizada para mandos mediante XInput.
 
 ## 📅 Historial de Versiones
+
+### v1.2.0-Dev (27 Mayo 2026)
+*   **Sincronización de Base de Datos**: Propiedades extendidas (`Languages`, `AdditionalRoms`, `OverrideEmulatorPath`, `OverrideLaunchArguments` y `SelectedArtType`) ahora se persisten en la DB principal para evitar inconsistencias.
+*   **Corrección de Importación**: Solucionados fallos críticos de traducción LINQ durante el escaneo de juegos mediante el uso de evaluación local (`AsEnumerable`).
+*   **Registro de Errores**: Implementado log detallado en `import_error_log.txt` para diagnóstico preciso de fallos durante el proceso de importación.
+*   **Alineación LaunchBox**: Soporte total para metadatos avanzados, hardware de plataformas y nombres alternativos.
+*   **Corrección de Calificación de Comunidad**: Solucionado el problema de solapamiento en el panel de detalles para evitar que etiquetas largas y valores amplios de calificación se superpongan en la UI (usando `DockPanel.Dock="Right"` y `TextTrimming="CharacterEllipsis"`). Además, se implementó el parseo y redondeo de la calificación a un decimal (ej. `3.6` en lugar de `3,6084742268041`), emulando perfectamente la estética de LaunchBox.
+
 
 ### v1.1.2.5-Dev (Actual)
 *   **Réplica de Detalles de Plataforma y Categorías (LaunchBox exacto)**: Reestructurado por completo el panel derecho de la aplicación para que al seleccionar una plataforma (como Amstrad CPC) o una categoría (como Computers) en el panel izquierdo, se visualicen sus estadísticas y metadatos con el mismo formato premium de LaunchBox.

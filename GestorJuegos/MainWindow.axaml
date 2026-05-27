@@ -748,11 +748,14 @@
                                                     <Grid ColumnDefinitions="*, Auto">
                                                         <TextBlock Grid.Column="0" Text="INFORMACIÓN" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy"/>
                                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" Opacity="0.7">
-                                                            <Button Background="Transparent" Padding="0" Click="BtnWiki_Click" ToolTip.Tip="Buscar en Wikipedia">
+                                                            <Button Name="BtnWikiUrl" Background="Transparent" Padding="0" Click="BtnWikiUrl_Click" ToolTip.Tip="Visitar Wikipedia del juego" IsVisible="False">
                                                                 <TextBlock Text="🌐" FontSize="14" Foreground="#38bdf8"/>
                                                             </Button>
-                                                            <Button Background="Transparent" Padding="0" Click="BtnYoutube_Click" ToolTip.Tip="Buscar en YouTube">
+                                                            <Button Name="BtnVideoUrl" Background="Transparent" Padding="0" Click="BtnVideoUrl_Click" ToolTip.Tip="Ver video/tráiler" IsVisible="False">
                                                                 <TextBlock Text="▶" Foreground="#ef4444" FontSize="14"/>
+                                                            </Button>
+                                                            <Button Background="Transparent" Padding="0" Click="BtnWiki_Click" ToolTip.Tip="Buscar en Wikipedia (Genérico)">
+                                                                <TextBlock Text="🔍" FontSize="14" Foreground="#94a3b8"/>
                                                             </Button>
                                                         </StackPanel>
                                                     </Grid>
@@ -760,53 +763,46 @@
                                                     <Border Background="#1e293b" Padding="15" CornerRadius="12" BorderBrush="#334155" BorderThickness="1">
                                                         <StackPanel Spacing="10">
                                                             <DockPanel>
-                                                                <TextBlock Text="Clasificación" Foreground="#64748b" FontSize="12"/>
-                                                                <TextBlock Name="TxtInfoRating" Text="Not Rated" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium"/>
+                                                                <TextBlock Name="TxtInfoEsrb" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                <TextBlock Text="Clasificación ESRB" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
                                                             </DockPanel>
                                                             <Separator Background="#15ffffff"/>
                                                             <DockPanel>
-                                                                <TextBlock Text="Género" Foreground="#64748b" FontSize="12"/>
-                                                                <TextBlock Name="TxtInfoGenre" Text="--" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium"/>
+                                                                <TextBlock Name="TxtInfoMaxPlayers" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                <TextBlock Text="Jugadores" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
                                                             </DockPanel>
                                                             <Separator Background="#15ffffff"/>
                                                             <DockPanel>
-                                                                <TextBlock Text="Series" Foreground="#64748b" FontSize="12"/>
-                                                                <TextBlock Name="TxtInfoSeries" Text="--" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium"/>
+                                                                <TextBlock Name="TxtInfoCooperative" Text="No" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                <TextBlock Text="Cooperativo" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
                                                             </DockPanel>
                                                             <Separator Background="#15ffffff"/>
                                                             <DockPanel>
-                                                                <TextBlock Text="Modo de Juego" Foreground="#64748b" FontSize="12"/>
-                                                                <TextBlock Name="TxtInfoPlayMode" Text="--" Foreground="White" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium" TextWrapping="Wrap" MaxWidth="180"/>
+                                                                <TextBlock Name="TxtInfoGenre" Text="--" Foreground="White" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                <TextBlock Text="Género" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
                                                             </DockPanel>
                                                             <Separator Background="#15ffffff"/>
                                                             <DockPanel>
-                                                                <TextBlock Text="Progreso" Foreground="#64748b" FontSize="12"/>
-                                                                <TextBlock Name="TxtInfoProgress" Text="Pendiente" Foreground="#f59e0b" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium"/>
+                                                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="5">
+                                                                    <TextBlock Name="TxtInfoCommunityRating" Text="--" Foreground="#f59e0b" FontSize="12" FontWeight="Medium"/>
+                                                                    <TextBlock Name="TxtInfoCommunityVotes" Text="(0 votos)" Foreground="#64748b" FontSize="11" VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                                <TextBlock Text="Calificación Comunidad" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
                                                             </DockPanel>
                                                             <Separator Background="#15ffffff"/>
                                                             <DockPanel>
-                                                                <TextBlock Text="Estado" Foreground="#64748b" FontSize="12"/>
-                                                                <TextBlock Name="TxtInfoStatus" Text="good" Foreground="#22c55e" HorizontalAlignment="Right" FontSize="12" FontWeight="Medium"/>
+                                                                <TextBlock Name="TxtInfoProgress" Text="Pendiente" Foreground="#f59e0b" DockPanel.Dock="Right" FontSize="12" FontWeight="Medium"/>
+                                                                <TextBlock Text="Progreso" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
                                                             </DockPanel>
                                                             <Separator Background="#15ffffff"/>
                                                             <DockPanel>
-                                                                <TextBlock Text="Fuente" Foreground="#64748b" FontSize="12"/>
-                                                                <TextBlock Name="TxtInfoSource" Text="MAME / Database" Foreground="White" HorizontalAlignment="Right" FontSize="11" Opacity="0.8"/>
+                                                                <TextBlock Name="TxtInfoLastPlayed" Text="Nunca" Foreground="White" DockPanel.Dock="Right" FontSize="12"/>
+                                                                <TextBlock Text="Última vez jugado" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
                                                             </DockPanel>
                                                             <Separator Background="#15ffffff"/>
                                                             <DockPanel>
-                                                                <TextBlock Text="Portable" Foreground="#64748b" FontSize="12"/>
-                                                                <TextBlock Name="TxtInfoPortable" Text="No" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
-                                                            </DockPanel>
-                                                            <Separator Background="#15ffffff"/>
-                                                            <DockPanel>
-                                                                <TextBlock Text="Archivo" Foreground="#64748b" FontSize="12"/>
-                                                                <TextBlock Name="TxtInfoFile" Text="--" Foreground="#38bdf8" HorizontalAlignment="Right" FontSize="11" TextWrapping="Wrap" MaxWidth="180"/>
-                                                            </DockPanel>
-                                                            <Separator Background="#15ffffff"/>
-                                                            <DockPanel>
-                                                                <TextBlock Text="Última vez jugado" Foreground="#64748b" FontSize="12"/>
-                                                                <TextBlock Name="TxtInfoLastPlayed" Text="Nunca" Foreground="White" HorizontalAlignment="Right" FontSize="12"/>
+                                                                <TextBlock Name="TxtInfoFile" Text="--" Foreground="#38bdf8" DockPanel.Dock="Right" FontSize="11" TextWrapping="Wrap" MaxWidth="180"/>
+                                                                <TextBlock Text="Archivo" Foreground="#64748b" FontSize="12" TextTrimming="CharacterEllipsis"/>
                                                             </DockPanel>
                                                         </StackPanel>
                                                     </Border>
@@ -1037,8 +1033,9 @@
                                             <TextBox Name="TxtName" PlaceholderText="Ej: Super Mario World"/>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5" VerticalAlignment="Bottom">
-                                            <Button Name="BtnSyncLaunchBox" Content="🔄 Sincronizar LaunchBox" Background="#3b82f6" Foreground="White" Click="BtnSyncLaunchBox_Click"/>
-                                            <Button Name="BtnSearchIgdb" Content="🔍 Buscar Vimm" Click="BtnSearchIgdb_Click"/>
+                                            <Button Name="BtnSyncMasterDbLocal" Content="🏠 BD Local" Background="#8b5cf6" Foreground="White" Click="BtnSyncMasterDbLocal_Click" ToolTip.Tip="Buscar metadatos en la base de datos local de RevisaDB"/>
+                                            <Button Name="BtnSyncLaunchBox" Content="🔄 XML" Background="#3b82f6" Foreground="White" Click="BtnSyncLaunchBox_Click" ToolTip.Tip="Sincronizar desde los archivos XML de LaunchBox"/>
+                                            <Button Name="BtnSearchIgdb" Content="🔍 Vimm" Click="BtnSearchIgdb_Click" ToolTip.Tip="Buscar en Vimm's Lair"/>
                                         </StackPanel>
                                     </Grid>
 

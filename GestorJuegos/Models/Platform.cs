@@ -7,16 +7,12 @@ namespace GestorJuegos.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string Category { get; set; } = "Consoles"; // Valor por defecto
+        public string Category { get; set; } = "Consoles";
         public string EmulatorPath { get; set; } = string.Empty;
         public string LaunchArguments { get; set; } = "\"{0}\"";
         public DateTime? LastScanDate { get; set; }
-        public List<Game> Games { get; set; } = new();
-
-        public byte[]? Logo { get; set; }
-        public byte[]? Icon { get; set; }
-        public byte[]? HardwareImage { get; set; }
-
+        
+        // Propiedades de LaunchBox
         public string? ReleaseDate { get; set; }
         public string? Developer { get; set; }
         public string? Manufacturer { get; set; }
@@ -27,5 +23,16 @@ namespace GestorJuegos.Models
         public string? Display { get; set; }
         public string? Media { get; set; }
         public string? Notes { get; set; }
+        public bool Emulated { get; set; } = true;
+
+        // Visuales
+        public byte[]? Logo { get; set; }
+        public byte[]? Icon { get; set; }
+        public byte[]? HardwareImage { get; set; }
+
+        // Relaciones
+        public List<Game> Games { get; set; } = new();
+        public List<PlatformAlternateName> AlternateNames { get; set; } = new();
+        public List<EmulatorPlatform> CompatibleEmulators { get; set; } = new();
     }
 }

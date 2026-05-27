@@ -8,61 +8,73 @@ namespace GestorJuegos.Models
 {
     public class Game : INotifyPropertyChanged
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string ShortName { get; set; } = string.Empty; // Identificador interno (ej: puckman)
-        public string? LaunchBoxDbId { get; set; } // ID vinculado a la DB de LaunchBox
-        public int Year { get; set; }
-        public string Genre { get; set; } = string.Empty;
-        public string Developer { get; set; } = string.Empty;
-        public string Publisher { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public int Rating { get; set; } = 0;
-        public string PlayStatus { get; set; } = "Pendiente";
-        public string Version { get; set; } = string.Empty;
-        public int PlayCount { get; set; } = 0;
-        public int PlayTime { get; set; } = 0;
-        public string Region { get; set; } = "🇺🇸 US"; // Default to US or none
+        private int _id;
+        private string _name = string.Empty;
+        private string _romPath = string.Empty;
+        private int _platformId;
+        private string _description = string.Empty;
+        private int _year;
+        private string _developer = string.Empty;
+        private string _publisher = string.Empty;
+        private string _genre = string.Empty;
+        private string _region = "World";
+        private int _rating;
+        private int _playCount;
+        private int _playTime;
+        private DateTime _dateAdded;
+        private DateTime? _lastPlayed;
+        private string _playStatus = "No Jugado";
+        private bool _isFavorite;
+        private string? _launchBoxDbId;
+
+        public int Id { get => _id; set { _id = value; OnPropertyChanged(); } }
+        public string Name { get => _name; set { _name = value; OnPropertyChanged(); } }
+        public string RomPath { get => _romPath; set { _romPath = value; OnPropertyChanged(); } }
+        public int PlatformId { get => _platformId; set { _platformId = value; OnPropertyChanged(); } }
+        public string Description { get => _description; set { _description = value; OnPropertyChanged(); } }
+        public int Year { get => _year; set { _year = value; OnPropertyChanged(); } }
+        public string Developer { get => _developer; set { _developer = value; OnPropertyChanged(); } }
+        public string Publisher { get => _publisher; set { _publisher = value; OnPropertyChanged(); } }
+        public string Genre { get => _genre; set { _genre = value; OnPropertyChanged(); } }
+        public string Region { get => _region; set { _region = value; OnPropertyChanged(); } }
+        public int Rating { get => _rating; set { _rating = value; OnPropertyChanged(); } }
+        public int PlayCount { get => _playCount; set { _playCount = value; OnPropertyChanged(); } }
+        public int PlayTime { get => _playTime; set { _playTime = value; OnPropertyChanged(); } }
+        public DateTime DateAdded { get => _dateAdded; set { _dateAdded = value; OnPropertyChanged(); } }
+        public DateTime? LastPlayed { get => _lastPlayed; set { _lastPlayed = value; OnPropertyChanged(); } }
+        public string PlayStatus { get => _playStatus; set { _playStatus = value; OnPropertyChanged(); } }
+        public bool IsFavorite { get => _isFavorite; set { _isFavorite = value; OnPropertyChanged(); } }
+        public string? LaunchBoxDbId { get => _launchBoxDbId; set { _launchBoxDbId = value; OnPropertyChanged(); } }
+
+        // --- Nuevos campos alineados con LaunchBox ---
+        public string? ReleaseDate { get; set; }
+        public string? ReleaseType { get; set; }
+        public int? MaxPlayers { get; set; }
+        public bool Cooperative { get; set; }
+        public string? VideoURL { get; set; }
+        public string? WikipediaURL { get; set; }
+        public string? ESRB { get; set; }
+        public string? CommunityRating { get; set; }
+        public int CommunityRatingCount { get; set; }
+
+        // --- Campos de compatibilidad (Ahora mapeados para persistencia) ---
+        public string SelectedArtType { get; set; } = string.Empty;
         public string Languages { get; set; } = string.Empty;
-        
-        private byte[]? _cover;
-        [NotMapped]
-        public byte[]? Cover 
-        { 
-            get => _cover; 
-            set 
-            { 
-                _cover = value; 
-                OnPropertyChanged(); 
-            } 
-        }
-
-        [NotMapped]
-        public string CoverType { get; set; } = "Box - Front";
-
-        [NotMapped]
-        public string GridSubtext
-        {
-            get
-            {
-                if (!string.IsNullOrWhiteSpace(Developer)) return Developer;
-                if (!string.IsNullOrWhiteSpace(Publisher)) return Publisher;
-                return Year > 0 ? Year.ToString() : string.Empty;
-            }
-        }
-
-        [NotMapped]
-        public List<GameImage> ExtraImages { get; set; } = new();
-        
-        public string RomPath { get; set; } = string.Empty;
-        public string SelectedArtType { get; set; } = string.Empty; // Nueva: Guarda el tipo elegido (ej: "Box 3D")
         public string AdditionalRoms { get; set; } = string.Empty;
-        public bool IsFavorite { get; set; } = false;
         public string OverrideEmulatorPath { get; set; } = string.Empty;
         public string OverrideLaunchArguments { get; set; } = string.Empty;
-        public DateTime? DateAdded { get; set; }
-        public int PlatformId { get; set; }
-        public Platform Platform { get; set; } = null!;
+
+        [NotMapped] public byte[]? Cover { get; set; }
+        [NotMapped] public string CoverType { get; set; } = "Box - Front";
+        [NotMapped] public List<GameImage> ExtraImages { get; set; } = new();
+        public string ShortName { get; set; } = string.Empty;
+        public string Version { get; set; } = string.Empty;
+        public Platform? Platform { get; set; }
+        [NotMapped] public string GridSubtext => $"{Year} | {Developer}";
+        
+        // Relaciones
+        public List<GameAlternateTitle> AlternateTitles { get; set; } = new();
+        public List<GameImage> Images { get; set; } = new();
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

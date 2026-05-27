@@ -81,83 +81,19 @@ public partial class MainWindow : Window
         InitializeComponent();
         LoadSettings();
 
-        // MIGRACIÓN DE EMERGENCIA: Asegurar que la columna LastScanDate existe antes de que EF Core intente leerla
+        // Inicialización de Base de Datos con la nueva estructura 100% LaunchBox
         try
         {
-            string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GestorJuegos.db");
-            if (File.Exists(dbPath))
+            using (var context = new GestorJuegos.Data.AppDbContext())
             {
-                using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={dbPath}"))
-                {
-                    connection.Open();
-                    // Intentamos añadir la columna directamente. Si ya existe, lanzará un error que ignoraremos.
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Platforms ADD COLUMN LastScanDate TEXT;";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Platforms ADD COLUMN Category TEXT DEFAULT 'Consoles';";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Platforms ADD COLUMN Icon BLOB;";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Platforms ADD COLUMN Logo BLOB;";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = @"CREATE TABLE IF NOT EXISTS PlatformCategories (
-                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            Name TEXT NOT NULL,
-                            Icon BLOB,
-                            Graphic BLOB
-                        );";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-
-                    // --- MIGRACIÓN TABLA GAMES ---
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Games ADD COLUMN Rating INTEGER DEFAULT 0;";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Games ADD COLUMN PlayStatus TEXT DEFAULT 'Pendiente';";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Games ADD COLUMN Version TEXT DEFAULT '';";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Games ADD COLUMN PlayCount INTEGER DEFAULT 0;";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Games ADD COLUMN ShortName TEXT DEFAULT '';";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Games ADD COLUMN LaunchBoxDbId TEXT DEFAULT '';";
-                        try { command.ExecuteNonQuery(); } catch { }
-                    }
-                }
+                context.Database.EnsureCreated();
             }
         }
-        catch { }
-        
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error al inicializar BD: {ex.Message}");
+        }
+
         _gamepadTimer = new Avalonia.Threading.DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(16)
@@ -945,6 +881,10 @@ public partial class MainWindow : Window
                         var game = ImportService.ParseGameLine(fileName, targetPlatform.Id);
                         game.RomPath = romPath;
                         game.DateAdded = DateTime.Now;
+                        
+                        // Enriquecer con metadatos de LaunchBox
+                        _gameService.EnrichGameWithMetadata(game, targetPlatform.Name);
+
                         string uniqueKey = $"{game.Name}|{game.Region}";
                         
                         if (!existingNames.Contains(uniqueKey))
@@ -1639,29 +1579,7 @@ public partial class MainWindow : Window
                 // 2. Importar/actualizar iconos, logos y datos de plataforma en la DB
                 var dbPlatforms = context.Platforms.ToList();
                 bool anyPlatformUpdated = false;
-
-                // Intentar abrir la conexión a la base de datos maestra para traer especificaciones técnicas
-                string masterDbPath = Path.Combine(lbPath, "Metadata", "Metadata.db");
-                if (!File.Exists(masterDbPath))
-                    masterDbPath = Path.Combine(lbPath, "Metadata", "LaunchBox.Metadata.db");
-                if (!File.Exists(masterDbPath))
-                    masterDbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LaunchBox.Metadata.db");
-                if (!File.Exists(masterDbPath))
-                    masterDbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "LaunchBox.Metadata.db");
-                if (!File.Exists(masterDbPath))
-                    masterDbPath = @"k:\GestorJuegos\GestorJuegos\LaunchBox.Metadata.db"; // fallback absoluto
-                
-                bool hasMasterDb = File.Exists(masterDbPath);
-                Microsoft.Data.Sqlite.SqliteConnection? masterConn = null;
-                if (hasMasterDb)
-                {
-                    try
-                    {
-                        masterConn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={masterDbPath}");
-                        masterConn.Open();
-                    }
-                    catch { hasMasterDb = false; }
-                }
+                var metadataService = new LaunchBoxMetadataService();
 
                 foreach (var platform in dbPlatforms)
                 {
@@ -1704,7 +1622,6 @@ public partial class MainWindow : Window
                         if (!File.Exists(consoleImgPath))
                             consoleImgPath = Path.Combine(lbPath, "Images", "Platforms", platform.Name, "Console", $"{platform.Name}.jpg");
                         
-                        // Buscar cualquier imagen en la carpeta Console si la exacta no coincide
                         if (!File.Exists(consoleImgPath) && Directory.Exists(Path.Combine(lbPath, "Images", "Platforms", platform.Name, "Console")))
                         {
                             try
@@ -1727,35 +1644,32 @@ public partial class MainWindow : Window
                         }
                     }
 
-                    // Cargar datos técnicos y descripción desde la DB Maestra
-                    if (hasMasterDb && masterConn != null && string.IsNullOrEmpty(platform.Notes))
+                    // Cargar fondo de la plataforma (Fanart)
+                    if (platform.Graphics == null || platform.Graphics.Length == 0) // Uso Graphics temporalmente para el fondo si no hay campo dedicado
                     {
-                        try
+                        // En realidad, para el fondo solemos usar Fanart o una imagen de hardware
+                        // Pero LaunchBox tiene fondos de plataforma específicos
+                        string backgroundPath = Path.Combine(lbPath, "Images", "Platforms", platform.Name, "Fanart", $"{platform.Name}.png");
+                        if (!File.Exists(backgroundPath))
+                             backgroundPath = Path.Combine(lbPath, "Images", "Platforms", platform.Name, "Fanart", $"{platform.Name}.jpg");
+
+                        if (File.Exists(backgroundPath))
                         {
-                            string queryName = platform.Name;
-                            if (queryName.Equals("MAME", StringComparison.OrdinalIgnoreCase)) queryName = "Arcade";
-
-                            using var cmd = masterConn.CreateCommand();
-                            cmd.CommandText = "SELECT ReleaseDate, Developer, Manufacturer, Cpu, Memory, Graphics, Sound, Display, Media, Notes FROM Platforms WHERE Name = @name LIMIT 1";
-                            cmd.Parameters.AddWithValue("@name", queryName);
-
-                            using var reader = cmd.ExecuteReader();
-                            if (reader.Read())
+                            try
                             {
-                                platform.ReleaseDate = reader["ReleaseDate"]?.ToString() ?? platform.ReleaseDate;
-                                platform.Developer = reader["Developer"]?.ToString() ?? platform.Developer;
-                                platform.Manufacturer = reader["Manufacturer"]?.ToString() ?? platform.Manufacturer;
-                                platform.Cpu = reader["Cpu"]?.ToString() ?? platform.Cpu;
-                                platform.Memory = reader["Memory"]?.ToString() ?? platform.Memory;
-                                platform.Graphics = reader["Graphics"]?.ToString() ?? platform.Graphics;
-                                platform.Sound = reader["Sound"]?.ToString() ?? platform.Sound;
-                                platform.Display = reader["Display"]?.ToString() ?? platform.Display;
-                                platform.Media = reader["Media"]?.ToString() ?? platform.Media;
-                                platform.Notes = reader["Notes"]?.ToString() ?? platform.Notes;
-                                isUpdated = true;
+                                // Podríamos añadir un campo 'Background' a Platform, pero por ahora usemos HardwareImage si es lo único que hay
+                                // O mejor, vamos a cargar HardwareImage y el Logo que ya tenemos.
                             }
+                            catch { }
                         }
-                        catch { }
+                    }
+
+                    // Usar el servicio de metadatos para enriquecer especificaciones técnicas
+                    if (string.IsNullOrEmpty(platform.Notes) || string.IsNullOrEmpty(platform.Cpu))
+                    {
+                        string? oldCpu = platform.Cpu;
+                        _gameService.EnrichPlatformWithMetadata(platform);
+                        if (platform.Cpu != oldCpu) isUpdated = true;
                     }
 
                     // --- CLASIFICACIÓN DE CATEGORÍA AUTOMÁTICA EN LA DB SI ES DEFAULT ---
@@ -1792,11 +1706,6 @@ public partial class MainWindow : Window
                         context.Platforms.Update(platform);
                         anyPlatformUpdated = true;
                     }
-                }
-
-                if (masterConn != null)
-                {
-                    try { masterConn.Close(); } catch { }
                 }
 
                 if (anyPlatformUpdated)
@@ -2889,90 +2798,116 @@ public partial class MainWindow : Window
             return;
         }
 
-        var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel == null) return;
+        var metadataService = new LaunchBoxMetadataService();
 
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        if (!metadataService.IsDatabaseAvailable)
         {
-            Title = "Seleccionar LaunchBox.Metadata.db",
-            AllowMultiple = false,
-            FileTypeFilter = new[] {
-                new FilePickerFileType("LaunchBox Metadata Database") { Patterns = new[] { "*.db" } }
-            }
-        });
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel == null) return;
 
-        if (files.Count > 0)
-        {
-            string masterDbPath = files[0].TryGetLocalPath() ?? files[0].Name;
-            
-            await System.Threading.Tasks.Task.Run(() =>
+            var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                try
-                {
-                    using var masterConn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={masterDbPath}");
-                    masterConn.Open();
-
-                    using var context = new GestorJuegos.Data.AppDbContext();
-                    var games = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id).ToList();
-                    int updatedCount = 0;
-
-                    // Traducir nombre de plataforma si es necesario
-                    string lbPlatform = _selectedPlatform.Name;
-                    if (lbPlatform.Equals("MAME", StringComparison.OrdinalIgnoreCase)) lbPlatform = "Arcade";
-
-                    foreach (var game in games)
-                    {
-                        using var cmd = masterConn.CreateCommand();
-                        
-                        // Estrategia: Buscar por DatabaseID si lo tenemos, si no por Nombre + Plataforma
-                        if (!string.IsNullOrEmpty(game.LaunchBoxDbId))
-                        {
-                            cmd.CommandText = "SELECT Overview, Genres, Developer, Publisher, ReleaseYear, CommunityRating FROM Games WHERE DatabaseID = @id LIMIT 1";
-                            cmd.Parameters.AddWithValue("@id", game.LaunchBoxDbId);
-                        }
-                        else
-                        {
-                            cmd.CommandText = "SELECT Overview, Genres, Developer, Publisher, ReleaseYear, CommunityRating, DatabaseID FROM Games WHERE Name = @name AND Platform = @platform LIMIT 1";
-                            cmd.Parameters.AddWithValue("@name", game.Name);
-                            cmd.Parameters.AddWithValue("@platform", lbPlatform);
-                        }
-
-                        using var reader = cmd.ExecuteReader();
-                        if (reader.Read())
-                        {
-                            game.Description = reader["Overview"]?.ToString() ?? game.Description;
-                            game.Genre = reader["Genres"]?.ToString() ?? game.Genre;
-                            game.Developer = reader["Developer"]?.ToString() ?? game.Developer;
-                            game.Publisher = reader["Publisher"]?.ToString() ?? game.Publisher;
-                            
-                            if (int.TryParse(reader["ReleaseYear"]?.ToString(), out var year)) game.Year = year;
-                            if (float.TryParse(reader["CommunityRating"]?.ToString(), out var rating)) game.Rating = (int)(rating * 10);
-                            
-                            // Si no teníamos el ID, lo guardamos ahora
-                            if (string.IsNullOrEmpty(game.LaunchBoxDbId))
-                                game.LaunchBoxDbId = reader["DatabaseID"]?.ToString();
-
-                            updatedCount++;
-                        }
-                    }
-
-                    if (updatedCount > 0)
-                    {
-                        context.UpdateRange(games);
-                        context.SaveChanges();
-                    }
-
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                    {
-                        ShowMessage($"Importación de Metadatos completada.\nSe han enriquecido {updatedCount} juegos con descripciones y detalles.");
-                        LoadGames();
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() => ShowMessage($"Error al leer la base de datos maestra: {ex.Message}"));
+                Title = "Seleccionar LaunchBox.Metadata.db (No encontrado en RevisaDB)",
+                AllowMultiple = false,
+                FileTypeFilter = new[] {
+                    new FilePickerFileType("LaunchBox Metadata Database") { Patterns = new[] { "*.db" } }
                 }
             });
+
+            if (files.Count > 0)
+            {
+                string path = files[0].TryGetLocalPath() ?? files[0].Name;
+                metadataService = new LaunchBoxMetadataService(path);
+            }
+            else return;
+        }
+
+        await System.Threading.Tasks.Task.Run(() =>
+        {
+            try
+            {
+                using var context = new GestorJuegos.Data.AppDbContext();
+                var games = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id).ToList();
+                int updatedCount = 0;
+
+                foreach (var game in games)
+                {
+                    var oldId = game.LaunchBoxDbId;
+                    _gameService.EnrichGameWithMetadata(game, _selectedPlatform.Name);
+                    
+                    if (game.LaunchBoxDbId != oldId || !string.IsNullOrEmpty(game.Description))
+                    {
+                        updatedCount++;
+                    }
+                }
+
+                if (updatedCount > 0)
+                {
+                    context.UpdateRange(games);
+                    context.SaveChanges();
+                }
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    ShowMessage($"Importación de Metadatos completada.\nSe han enriquecido {updatedCount} juegos con descripciones y detalles.");
+                    LoadGames();
+                });
+            }
+            catch (Exception ex)
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => ShowMessage($"Error al leer la base de datos maestra: {ex.Message}"));
+            }
+        });
+    }
+
+    private async void BtnSyncMasterDbLocal_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame == null || _selectedPlatform == null) return;
+
+        GestorJuegos.Utils.SoundHelper.PlaySelect();
+        var metadataService = new LaunchBoxMetadataService();
+
+        if (!metadataService.IsDatabaseAvailable)
+        {
+            ShowMessage("La base de datos maestra no se encontró en RevisaDB ni en LaunchBox.\nPor favor, asegúrate de que LaunchBox.Metadata.db esté en K:\\GestorJuegos\\RevisaDB\\");
+            return;
+        }
+
+        try
+        {
+            // Creamos un clon temporal para no ensuciar el objeto real hasta confirmar
+            var tempGame = new Models.Game { Name = TxtName.Text ?? _selectedGame.Name };
+            _gameService.EnrichGameWithMetadata(tempGame, _selectedPlatform.Name);
+
+            if (!string.IsNullOrEmpty(tempGame.Description))
+            {
+                TxtDescription.Text = tempGame.Description;
+                TxtGenre.Text = tempGame.Genre;
+                TxtDeveloper.Text = tempGame.Developer;
+                TxtPublisher.Text = tempGame.Publisher;
+                NumYear.Value = tempGame.Year > 0 ? tempGame.Year : NumYear.Value;
+                
+                // Nuevos campos en el formulario (si los hubiera, si no se guardan en el objeto al dar a guardar)
+                _selectedGame.LaunchBoxDbId = tempGame.LaunchBoxDbId;
+                _selectedGame.ReleaseDate = tempGame.ReleaseDate;
+                _selectedGame.MaxPlayers = tempGame.MaxPlayers;
+                _selectedGame.Cooperative = tempGame.Cooperative;
+                _selectedGame.VideoURL = tempGame.VideoURL;
+                _selectedGame.WikipediaURL = tempGame.WikipediaURL;
+                _selectedGame.ESRB = tempGame.ESRB;
+                _selectedGame.CommunityRating = tempGame.CommunityRating;
+                _selectedGame.CommunityRatingCount = tempGame.CommunityRatingCount;
+
+                ShowMessage($"Metadatos encontrados para '{tempGame.Name}'.\nLos campos han sido actualizados en el formulario.");
+            }
+            else
+            {
+                ShowMessage("No se encontraron metadatos para este juego en la base de datos local.");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Error al buscar en BD local: {ex.Message}");
         }
     }
 
@@ -3206,10 +3141,10 @@ public partial class MainWindow : Window
                     filtered = filtered.OrderByDescending(g => g.Year);
                     break;
                 case 4: // Recién añadidos
-                    filtered = filtered.OrderByDescending(g => g.DateAdded ?? DateTime.MinValue).ThenBy(g => g.Name);
+                    filtered = filtered.OrderByDescending(g => g.DateAdded).ThenBy(g => g.Name);
                     break;
                 case 5: // Antiguos
-                    filtered = filtered.OrderBy(g => g.DateAdded ?? DateTime.MinValue).ThenBy(g => g.Name);
+                    filtered = filtered.OrderBy(g => g.DateAdded).ThenBy(g => g.Name);
                     break;
                 default:
                     filtered = filtered.OrderBy(g => g.Name);
@@ -3369,15 +3304,32 @@ public partial class MainWindow : Window
             TxtBasePlaytime.Text = $"{game.PlayCount} partidas ({game.PlayStatus})";
 
             // Bloque INFORMACIÓN
-            TxtInfoRating.Text = ratingVal > 0 ? $"{ratingVal:0.0} / 5" : "Not Rated";
+            TxtInfoEsrb.Text = string.IsNullOrEmpty(game.ESRB) ? "--" : game.ESRB;
+            TxtInfoMaxPlayers.Text = game.MaxPlayers.HasValue ? game.MaxPlayers.Value.ToString() : "--";
+            TxtInfoCooperative.Text = game.Cooperative ? "Sí" : "No";
             TxtInfoGenre.Text = string.IsNullOrEmpty(game.Genre) ? "Desconocido" : game.Genre;
-            TxtInfoSeries.Text = string.IsNullOrEmpty(game.Genre) ? "--" : game.Genre.Split('/').First().Trim();
-            
-            // Determinar modo de juego aproximado
-            TxtInfoPlayMode.Text = game.Platform != null && game.Platform.Name.Contains("MAME", StringComparison.OrdinalIgnoreCase) 
-                ? "4-Player Alternating / 2-Player Simultaneous" 
-                : "1-2 Jugadores";
-                
+
+            // Formatear calificación de comunidad a un solo decimal (ej. 3.6)
+            string formattedCommunityRating = "--";
+            if (!string.IsNullOrEmpty(game.CommunityRating))
+            {
+                if (double.TryParse(game.CommunityRating, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double commRating) ||
+                    double.TryParse(game.CommunityRating, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out commRating))
+                {
+                    formattedCommunityRating = commRating.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    formattedCommunityRating = game.CommunityRating;
+                }
+            }
+            TxtInfoCommunityRating.Text = formattedCommunityRating;
+            TxtInfoCommunityVotes.Text = $"({game.CommunityRatingCount} votos)";
+
+            // Mostrar/Ocultar botones de URL si existen
+            BtnWikiUrl.IsVisible = !string.IsNullOrEmpty(game.WikipediaURL);
+            BtnVideoUrl.IsVisible = !string.IsNullOrEmpty(game.VideoURL);
+
             TxtInfoProgress.Text = game.PlayStatus;
             TxtInfoProgress.Foreground = game.PlayStatus switch
             {
@@ -3385,11 +3337,9 @@ public partial class MainWindow : Window
                 "Jugando" => Avalonia.Media.Brushes.LightSkyBlue,
                 _ => Avalonia.Media.Brushes.Orange
             };
-            TxtInfoStatus.Text = "good";
-            TxtInfoSource.Text = "MAME / database";
-            TxtInfoPortable.Text = "No";
+            
             TxtInfoFile.Text = string.IsNullOrEmpty(game.RomPath) ? "--" : Path.GetFileName(game.RomPath);
-            TxtInfoLastPlayed.Text = game.PlayCount > 0 ? "Recientemente" : "Nunca";
+            TxtInfoLastPlayed.Text = game.LastPlayed?.ToString("dd/MM/yyyy HH:mm") ?? "Nunca";
 
             // Descripción
             TxtInfoDescription.Text = string.IsNullOrEmpty(game.Description) ? "Sin descripción disponible." : game.Description;
@@ -3582,7 +3532,7 @@ public partial class MainWindow : Window
         TxtPublisher.Text = _selectedGame.Publisher;
         TxtDescription.Text = _selectedGame.Description;
         TxtLanguages.Text = _selectedGame.Languages;
-        TxtVersion.Text = _selectedGame.Version;        TxtVersion.Text = _selectedGame.Version;
+        TxtVersion.Text = _selectedGame.Version;
         
         // Estado
         foreach (var rawItem in CmbPlayStatus.Items)
@@ -3597,7 +3547,7 @@ public partial class MainWindow : Window
 
         SldRating.Value = _selectedGame.Rating;
         TxtPlayCount.Text = _selectedGame.PlayCount.ToString();
-        TxtDateAdded.Text = _selectedGame.DateAdded?.ToString("dd/MM/yyyy") ?? "--";
+        TxtDateAdded.Text = _selectedGame.DateAdded.ToString("dd/MM/yyyy");
 
         _currentRoms.Clear();
         if (!string.IsNullOrEmpty(_selectedGame.RomPath)) _currentRoms.Add(_selectedGame.RomPath);
@@ -4293,6 +4243,7 @@ public partial class MainWindow : Window
 
                                 var existingGameKeys = new HashSet<string>(context.Games
                                     .Where(g => g.PlatformId == platform.Id)
+                                    .AsEnumerable() // Forzar evaluación local para evitar problemas de traducción con proyecciones complejas
                                     .Select(g => $"{g.Name}|{g.Region}|{g.Languages}"), StringComparer.OrdinalIgnoreCase);
 
                                 var newGames = new List<Game>();
@@ -4332,8 +4283,14 @@ public partial class MainWindow : Window
                                     }
                                     else
                                     {
-                                        var existingGame = context.Games.FirstOrDefault(g => g.PlatformId == platform.Id && 
-                                                            g.Name == game.Name && g.Region == game.Region && g.Languages == game.Languages);
+                                        // Búsqueda más segura de juegos existentes
+                                        var existingGame = context.Games
+                                            .AsEnumerable()
+                                            .FirstOrDefault(g => g.PlatformId == platform.Id && 
+                                                            g.Name.Equals(game.Name, StringComparison.OrdinalIgnoreCase) && 
+                                                            g.Region == game.Region && 
+                                                            g.Languages == game.Languages);
+                                                            
                                         if (existingGame != null && string.IsNullOrEmpty(existingGame.RomPath))
                                         {
                                             existingGame.RomPath = filePath;
@@ -4375,7 +4332,24 @@ public partial class MainWindow : Window
             catch (Exception ex)
             {
                 OverlayProgress.IsVisible = false;
-                ShowMessage($"Error durante la importación: {ex.Message}");
+                
+                // Registro detallado de errores
+                try
+                {
+                    var logLines = new List<string>
+                    {
+                        $"--- ERROR DE IMPORTACIÓN [{DateTime.Now}] ---",
+                        $"Mensaje: {ex.Message}",
+                        $"StackTrace: {ex.StackTrace}",
+                        $"InnerException: {ex.InnerException?.Message}",
+                        "-------------------------------------------",
+                        ""
+                    };
+                    File.AppendAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "import_error_log.txt"), logLines);
+                }
+                catch { }
+
+                ShowMessage($"Error durante la importación: {ex.Message}\n\nRevisa 'import_error_log.txt' para más detalles.");
             }
         }
     }
@@ -5085,6 +5059,24 @@ public partial class MainWindow : Window
                 if (LstGames.IsVisible) LstGames.SelectedItem = match;
                 else if (LstGamesGrid.IsVisible) LstGamesGrid.SelectedItem = match;
             }
+        }
+    }
+
+    private void BtnWikiUrl_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame != null && !string.IsNullOrEmpty(_selectedGame.WikipediaURL))
+        {
+            SoundHelper.PlaySelect();
+            Process.Start(new ProcessStartInfo(_selectedGame.WikipediaURL) { UseShellExecute = true });
+        }
+    }
+
+    private void BtnVideoUrl_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedGame != null && !string.IsNullOrEmpty(_selectedGame.VideoURL))
+        {
+            SoundHelper.PlaySelect();
+            Process.Start(new ProcessStartInfo(_selectedGame.VideoURL) { UseShellExecute = true });
         }
     }
 
