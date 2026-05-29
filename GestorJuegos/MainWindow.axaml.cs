@@ -21,6 +21,7 @@ public partial class MainWindow : Window
 {
     private readonly GameService _gameService;
     private Platform? _selectedPlatform;
+    private string? _selectedCategory;
     private Game? _selectedGame;
     private byte[]? _currentCover;
     private readonly VimmVaultService _vimmService;
@@ -30,6 +31,13 @@ public partial class MainWindow : Window
     private System.Collections.ObjectModel.ObservableCollection<string> _currentRoms = new();
     private System.Threading.CancellationTokenSource? _cts;
     private Action? _onConfirmAction;
+
+    // Variables del nuevo menú horizontal
+    private string _currentSortField = "Name";
+    private bool _isSortAscending = true;
+    private bool _showFavoriteBadge = true;
+    private bool _showRegionBadge = true;
+    private bool _showStatusBadge = true;
 
     private List<string> LoadDrossPatterns()
     {
@@ -167,7 +175,7 @@ public partial class MainWindow : Window
             }
         };
 
-        BtnAppMenu.Click += (s, e) => { /* El Flyout se abre solo */ };
+        UpdateMenuCheckmarks();
         BtnToggleFilters.Click += BtnToggleFilters_Click;
         BtnApplyFilters.Click += BtnApplyFilters_Click;
         BtnClearFilters.Click += BtnClearFilters_Click;
@@ -1376,33 +1384,23 @@ public partial class MainWindow : Window
                     categoryNodes[cat.Name] = catNode;
                 }
 
-                // Asegurar las 3 categorías principales en el diccionario por si acaso
-                string[] mainCats = new[] { "Computers", "Consoles", "Handhelds" };
-                foreach (var mc in mainCats)
-                {
-                    if (!categoryNodes.ContainsKey(mc))
-                    {
-                        string emoji = mc == "Computers" ? "🖥️" : (mc == "Handhelds" ? "📟" : "🎮");
-                        categoryNodes[mc] = new SidebarNode
-                        {
-                            Name = mc,
-                            Tag = ("CATEGORY", mc),
-                            ResortIcon = emoji,
-                            IsExpanded = true
-                        };
-                    }
-                }
-
                 // Clasificar plataformas en sus respectivas categorías
                 foreach (var platform in platforms.OrderBy(p => p.Name))
                 {
                     int pCount = gamesCount.ContainsKey(platform.Name) ? gamesCount[platform.Name] : 0;
                     string categoryName = platform.Category;
 
-                    // Si por alguna razón no es de las 3, por defecto va a Consoles
-                    if (categoryName != "Computers" && categoryName != "Handhelds" && categoryName != "Consoles")
+                    // Si la categoría no está en nuestro diccionario (raro si dbCategories está completa, pero por seguridad)
+                    if (!categoryNodes.ContainsKey(categoryName))
                     {
-                        categoryName = "Consoles";
+                        string emoji = categoryName == "Computers" ? "🖥️" : (categoryName == "Handhelds" ? "📟" : "🎮");
+                        categoryNodes[categoryName] = new SidebarNode
+                        {
+                            Name = categoryName,
+                            Tag = ("CATEGORY", categoryName),
+                            ResortIcon = emoji,
+                            IsExpanded = true
+                        };
                     }
 
                     var childNode = new SidebarNode
@@ -1418,12 +1416,15 @@ public partial class MainWindow : Window
                     categoryNodes[categoryName].Children.Add(childNode);
                 }
 
-                // Calcular el total de juegos por categoría sumando sus hijos y añadir categorías al árbol
-                foreach (var mc in mainCats)
+                // Añadir al árbol solo las categorías que tengan hijos (plataformas)
+                foreach (var catEntry in categoryNodes.OrderBy(c => c.Key))
                 {
-                    var catNode = categoryNodes[mc];
-                    catNode.Count = catNode.Children.Sum(child => child.Count);
-                    sidebarNodes.Add(catNode);
+                    var catNode = catEntry.Value;
+                    if (catNode.Children.Count > 0)
+                    {
+                        catNode.Count = catNode.Children.Sum(child => child.Count);
+                        sidebarNodes.Add(catNode);
+                    }
                 }
             }
             else if (viewIndex == 1) // --- VISTA: PLATAFORMAS (Lista plana) ---
@@ -1740,6 +1741,7 @@ public partial class MainWindow : Window
             using var context = new GestorJuegos.Data.AppDbContext();
             var query = context.Games.Include(g => g.Platform).AsQueryable();
 
+            _selectedCategory = null;
             if (item.Tag is string simpleTag)
             {
                 if (simpleTag == "ALL") { /* No filter */ }
@@ -1753,6 +1755,7 @@ public partial class MainWindow : Window
                 }
                 else if (filter.Item1 == "CATEGORY") 
                 { 
+                    _selectedCategory = filter.Item2;
                     // Filtrar por todas las plataformas que correspondan a esta categoría
                     var platformNames = context.Platforms
                         .Where(p => p.Category == filter.Item2)
@@ -2264,6 +2267,16 @@ public partial class MainWindow : Window
 
         using var context = new GestorJuegos.Data.AppDbContext();
         context.Database.EnsureCreated();
+
+        try
+        {
+            int allGamesCount = context.Games.Count();
+            if (TxtGameStatusInfo != null)
+            {
+                TxtGameStatusInfo.Text = $"Mostrando 0 de {allGamesCount} del total de juegos.";
+            }
+        }
+        catch { }
     }
 
     private void MenuExportDB_Click(object? sender, RoutedEventArgs e)
@@ -2792,9 +2805,9 @@ public partial class MainWindow : Window
 
     private async void MenuSyncMasterDb_Click(object? sender, RoutedEventArgs e)
     {
-        if (_selectedPlatform == null)
+        if (_selectedPlatform == null && string.IsNullOrEmpty(_selectedCategory))
         {
-            ShowMessage("Por favor, selecciona primero la plataforma en el menú lateral.");
+            ShowMessage("Por favor, selecciona primero una plataforma o categoría en el menú lateral.");
             return;
         }
 
@@ -2827,30 +2840,53 @@ public partial class MainWindow : Window
             try
             {
                 using var context = new GestorJuegos.Data.AppDbContext();
-                var games = context.Games.Where(g => g.PlatformId == _selectedPlatform.Id).ToList();
-                int updatedCount = 0;
+                var platformsToSync = new List<Platform>();
 
-                foreach (var game in games)
+                if (!string.IsNullOrEmpty(_selectedCategory))
                 {
-                    var oldId = game.LaunchBoxDbId;
-                    _gameService.EnrichGameWithMetadata(game, _selectedPlatform.Name);
-                    
-                    if (game.LaunchBoxDbId != oldId || !string.IsNullOrEmpty(game.Description))
-                    {
-                        updatedCount++;
-                    }
+                    platformsToSync = context.Platforms.Where(p => p.Category == _selectedCategory).ToList();
+                }
+                else if (_selectedPlatform != null)
+                {
+                    platformsToSync = new List<Platform> { context.Platforms.First(p => p.Id == _selectedPlatform.Id) };
                 }
 
-                if (updatedCount > 0)
+                int updatedCount = 0;
+                int totalProcessed = 0;
+
+                foreach (var platform in platformsToSync)
                 {
-                    context.UpdateRange(games);
-                    context.SaveChanges();
+                    var games = context.Games.Where(g => g.PlatformId == platform.Id).ToList();
+                    totalProcessed += games.Count;
+
+                    foreach (var game in games)
+                    {
+                        var oldId = game.LaunchBoxDbId;
+                        _gameService.EnrichGameWithMetadata(game, platform.Name);
+                        
+                        if (game.LaunchBoxDbId != oldId || !string.IsNullOrEmpty(game.Description))
+                        {
+                            updatedCount++;
+                        }
+                    }
+
+                    if (games.Any())
+                    {
+                        context.UpdateRange(games);
+                        context.SaveChanges();
+                    }
                 }
 
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
-                    ShowMessage($"Importación de Metadatos completada.\nSe han enriquecido {updatedCount} juegos con descripciones y detalles.");
-                    LoadGames();
+                    string scope = !string.IsNullOrEmpty(_selectedCategory) ? $"la categoría '{_selectedCategory}'" : $"la plataforma '{_selectedPlatform?.Name}'";
+                    ShowMessage($"Importación de Metadatos para {scope} completada.\nSe han enriquecido {updatedCount} juegos de {totalProcessed} procesados.");
+                    
+                    // Refrescar la vista actual
+                    if (TvSidebar.SelectedItem is SidebarNode node)
+                    {
+                        TvSidebar_SelectionChanged(null, new SelectionChangedEventArgs(null, new List<object>(), new List<object>()));
+                    }
                 });
             }
             catch (Exception ex)
@@ -3123,31 +3159,64 @@ public partial class MainWindow : Window
             filtered = filtered.Where(g => g.Year == (int)NumFilterYear.Value);
         }
 
-        // Aplicar Ordenación
-        if (CmbSortOrder != null)
+        // Aplicar Ordenación Dinámica y Generalizada
+        if (!string.IsNullOrEmpty(_currentSortField))
         {
-            switch (CmbSortOrder.SelectedIndex)
+            switch (_currentSortField)
             {
-                case 0: // Nombre (A-Z)
-                    filtered = filtered.OrderBy(g => g.Name);
+                case "Name":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.Name) : filtered.OrderByDescending(g => g.Name);
                     break;
-                case 1: // Nombre (Z-A)
-                    filtered = filtered.OrderByDescending(g => g.Name);
+                case "Year":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.Year) : filtered.OrderByDescending(g => g.Year);
                     break;
-                case 2: // Año (Asc)
-                    filtered = filtered.OrderBy(g => g.Year);
+                case "DateAdded":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.DateAdded).ThenBy(g => g.Name) : filtered.OrderByDescending(g => g.DateAdded).ThenBy(g => g.Name);
                     break;
-                case 3: // Año (Desc)
-                    filtered = filtered.OrderByDescending(g => g.Year);
+                case "Developer":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.Developer) : filtered.OrderByDescending(g => g.Developer);
                     break;
-                case 4: // Recién añadidos
-                    filtered = filtered.OrderByDescending(g => g.DateAdded).ThenBy(g => g.Name);
+                case "IsFavorite":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.IsFavorite) : filtered.OrderByDescending(g => g.IsFavorite);
                     break;
-                case 5: // Antiguos
-                    filtered = filtered.OrderBy(g => g.DateAdded).ThenBy(g => g.Name);
+                case "Genre":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.Genre) : filtered.OrderByDescending(g => g.Genre);
+                    break;
+                case "LastPlayed":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.LastPlayed) : filtered.OrderByDescending(g => g.LastPlayed);
+                    break;
+                case "LaunchBoxDbId":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.LaunchBoxDbId) : filtered.OrderByDescending(g => g.LaunchBoxDbId);
+                    break;
+                case "MaxPlayers":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.MaxPlayers) : filtered.OrderByDescending(g => g.MaxPlayers);
+                    break;
+                case "Platform":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.Platform != null ? g.Platform.Name : "") : filtered.OrderByDescending(g => g.Platform != null ? g.Platform.Name : "");
+                    break;
+                case "PlayCount":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.PlayCount) : filtered.OrderByDescending(g => g.PlayCount);
+                    break;
+                case "PlayTime":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.PlayTime) : filtered.OrderByDescending(g => g.PlayTime);
+                    break;
+                case "Rating":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.Rating) : filtered.OrderByDescending(g => g.Rating);
+                    break;
+                case "Region":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.Region) : filtered.OrderByDescending(g => g.Region);
+                    break;
+                case "ReleaseDate":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.ReleaseDate) : filtered.OrderByDescending(g => g.ReleaseDate);
+                    break;
+                case "PlayStatus":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.PlayStatus) : filtered.OrderByDescending(g => g.PlayStatus);
+                    break;
+                case "Version":
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.Version) : filtered.OrderByDescending(g => g.Version);
                     break;
                 default:
-                    filtered = filtered.OrderBy(g => g.Name);
+                    filtered = _isSortAscending ? filtered.OrderBy(g => g.Name) : filtered.OrderByDescending(g => g.Name);
                     break;
             }
         }
@@ -3175,6 +3244,9 @@ public partial class MainWindow : Window
             string gameArtType = !string.IsNullOrEmpty(game.SelectedArtType) ? game.SelectedArtType : _settings.PreferredArtType;
             string artFolder = GetLaunchBoxFolderName(gameArtType);
             game.Cover = _gameService.GetGameThumbnail(game.Id, artFolder);
+            
+            // Si el toggle desactivó la visualización de favoritos, ocultamos visualmente en el listado
+            if (!_showFavoriteBadge) game.IsFavorite = false;
         }
 
         LstGames.ItemsSource = paginated;
@@ -3188,6 +3260,21 @@ public partial class MainWindow : Window
         TxtPageInfo.Text = $"Página {_currentPage} de {totalPages}";
         BtnPrevPage.IsEnabled = _currentPage > 1;
         BtnNextPage.IsEnabled = _currentPage < totalPages;
+
+        // Actualizar contador del menú superior horizontal en tiempo real
+        try
+        {
+            int allGamesCount = 0;
+            using (var context = new GestorJuegos.Data.AppDbContext())
+            {
+                allGamesCount = context.Games.Count();
+            }
+            if (TxtGameStatusInfo != null)
+            {
+                TxtGameStatusInfo.Text = $"Mostrando {totalItems} de {allGamesCount} del total de juegos.";
+            }
+        }
+        catch { }
     }
 
     private void TxtSearchGame_TextChanged(object? sender, TextChangedEventArgs e)
@@ -5254,5 +5341,192 @@ public partial class MainWindow : Window
         GestorJuegos.Utils.SoundHelper.PlayBack();
         OverlayConfirm.IsVisible = false;
         _onConfirmAction = null;
+    }
+
+    // --- NUEVO SISTEMA DE MENÚ HORIZONTAL Y ORDENACIÓN ---
+
+    private void UpdateMenuCheckmarks()
+    {
+        try
+        {
+            // 1. Actualizar checkmarks de ordenación
+            if (SortByName != null) SortByName.Icon = _currentSortField == "Name" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByYear != null) SortByYear.Icon = _currentSortField == "Year" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByDateAdded != null) SortByDateAdded.Icon = _currentSortField == "DateAdded" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByDeveloper != null) SortByDeveloper.Icon = _currentSortField == "Developer" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByIsFavorite != null) SortByIsFavorite.Icon = _currentSortField == "IsFavorite" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByGenre != null) SortByGenre.Icon = _currentSortField == "Genre" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByLastPlayed != null) SortByLastPlayed.Icon = _currentSortField == "LastPlayed" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByLaunchBoxDbId != null) SortByLaunchBoxDbId.Icon = _currentSortField == "LaunchBoxDbId" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByMaxPlayers != null) SortByMaxPlayers.Icon = _currentSortField == "MaxPlayers" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByPlayCount != null) SortByPlayCount.Icon = _currentSortField == "PlayCount" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByPlayTime != null) SortByPlayTime.Icon = _currentSortField == "PlayTime" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByRating != null) SortByRating.Icon = _currentSortField == "Rating" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByRegion != null) SortByRegion.Icon = _currentSortField == "Region" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByReleaseDate != null) SortByReleaseDate.Icon = _currentSortField == "ReleaseDate" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByPlayStatus != null) SortByPlayStatus.Icon = _currentSortField == "PlayStatus" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SortByVersion != null) SortByVersion.Icon = _currentSortField == "Version" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+
+            // Submenú de Ordenar Por (duplicado bajo "Ver" para redundancia cómoda)
+            if (SubSortByName != null) SubSortByName.Icon = _currentSortField == "Name" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByYear != null) SubSortByYear.Icon = _currentSortField == "Year" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByDateAdded != null) SubSortByDateAdded.Icon = _currentSortField == "DateAdded" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByDeveloper != null) SubSortByDeveloper.Icon = _currentSortField == "Developer" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByIsFavorite != null) SubSortByIsFavorite.Icon = _currentSortField == "IsFavorite" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByGenre != null) SubSortByGenre.Icon = _currentSortField == "Genre" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByLastPlayed != null) SubSortByLastPlayed.Icon = _currentSortField == "LastPlayed" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByLaunchBoxDbId != null) SubSortByLaunchBoxDbId.Icon = _currentSortField == "LaunchBoxDbId" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByMaxPlayers != null) SubSortByMaxPlayers.Icon = _currentSortField == "MaxPlayers" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByPlayCount != null) SubSortByPlayCount.Icon = _currentSortField == "PlayCount" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByPlayTime != null) SubSortByPlayTime.Icon = _currentSortField == "PlayTime" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByRating != null) SubSortByRating.Icon = _currentSortField == "Rating" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByRegion != null) SubSortByRegion.Icon = _currentSortField == "Region" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByReleaseDate != null) SubSortByReleaseDate.Icon = _currentSortField == "ReleaseDate" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByPlayStatus != null) SubSortByPlayStatus.Icon = _currentSortField == "PlayStatus" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubSortByVersion != null) SubSortByVersion.Icon = _currentSortField == "Version" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+
+            // Dirección
+            if (ChkSortAscending != null) ChkSortAscending.Text = _isSortAscending ? "✓" : "";
+
+            // 2. Actualizar checkmarks de grupo de imagen
+            string prefArt = _settings.PreferredArtType;
+            if (ArtTypeBackground != null) ArtTypeBackground.Icon = prefArt == "Background" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (ArtTypeBox != null) ArtTypeBox.Icon = prefArt == "Box" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (ArtTypeBox3D != null) ArtTypeBox3D.Icon = prefArt == "Box 3D" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (ArtTypeCartFront != null) ArtTypeCartFront.Icon = prefArt == "Cart - Front" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (ArtTypeCart3D != null) ArtTypeCart3D.Icon = prefArt == "Cart - 3D" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (ArtTypeClearLogo != null) ArtTypeClearLogo.Icon = prefArt == "Clear Logo" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (ArtTypeMarquee != null) ArtTypeMarquee.Icon = prefArt == "Marquee" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (ArtTypeSnap != null) ArtTypeSnap.Icon = prefArt == "Snap" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+
+            // Submenú de Grupo de Imagen (bajo "Ver")
+            if (SubArtTypeBackground != null) SubArtTypeBackground.Icon = prefArt == "Background" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubArtTypeBox != null) SubArtTypeBox.Icon = prefArt == "Box" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubArtTypeBox3D != null) SubArtTypeBox3D.Icon = prefArt == "Box 3D" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubArtTypeCartFront != null) SubArtTypeCartFront.Icon = prefArt == "Cart - Front" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubArtTypeCart3D != null) SubArtTypeCart3D.Icon = prefArt == "Cart - 3D" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubArtTypeClearLogo != null) SubArtTypeClearLogo.Icon = prefArt == "Clear Logo" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubArtTypeMarquee != null) SubArtTypeMarquee.Icon = prefArt == "Marquee" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+            if (SubArtTypeSnap != null) SubArtTypeSnap.Icon = prefArt == "Snap" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
+
+            // 3. Vistas e interfaces
+            if (ChkViewGrid != null) ChkViewGrid.Text = LstGamesGrid != null && LstGamesGrid.IsVisible ? "✓" : "";
+            if (ChkViewList != null) ChkViewList.Text = LstGames != null && LstGames.IsVisible ? "✓" : "";
+            if (ChkShowFilters != null) ChkShowFilters.Text = PnlFilters != null && PnlFilters.IsVisible ? "✓" : "";
+
+            // 4. Insignias
+            if (ChkBadgeFavorite != null) ChkBadgeFavorite.Text = _showFavoriteBadge ? "✓" : "";
+            if (ChkBadgeRegion != null) ChkBadgeRegion.Text = _showRegionBadge ? "✓" : "";
+            if (ChkBadgePlayStatus != null) ChkBadgePlayStatus.Text = _showStatusBadge ? "✓" : "";
+        }
+        catch { }
+    }
+
+    private void SetSortField(string field)
+    {
+        SoundHelper.PlaySelect();
+        _currentSortField = field;
+        _currentPage = 1;
+        UpdateMenuCheckmarks();
+        ApplySearchFilter();
+    }
+
+    private void MenuSortTitle_Click(object? sender, RoutedEventArgs e) => SetSortField("Name");
+    private void MenuSortYear_Click(object? sender, RoutedEventArgs e) => SetSortField("Year");
+    private void MenuSortDateAdded_Click(object? sender, RoutedEventArgs e) => SetSortField("DateAdded");
+    private void MenuSortDeveloper_Click(object? sender, RoutedEventArgs e) => SetSortField("Developer");
+    private void MenuSortFavorite_Click(object? sender, RoutedEventArgs e) => SetSortField("IsFavorite");
+    private void MenuSortGenre_Click(object? sender, RoutedEventArgs e) => SetSortField("Genre");
+    private void MenuSortLastPlayed_Click(object? sender, RoutedEventArgs e) => SetSortField("LastPlayed");
+    private void MenuSortLaunchBoxDbId_Click(object? sender, RoutedEventArgs e) => SetSortField("LaunchBoxDbId");
+    private void MenuSortMaxPlayers_Click(object? sender, RoutedEventArgs e) => SetSortField("MaxPlayers");
+    private void MenuSortPlayCount_Click(object? sender, RoutedEventArgs e) => SetSortField("PlayCount");
+    private void MenuSortPlayTime_Click(object? sender, RoutedEventArgs e) => SetSortField("PlayTime");
+    private void MenuSortRating_Click(object? sender, RoutedEventArgs e) => SetSortField("Rating");
+    private void MenuSortRegion_Click(object? sender, RoutedEventArgs e) => SetSortField("Region");
+    private void MenuSortReleaseDate_Click(object? sender, RoutedEventArgs e) => SetSortField("ReleaseDate");
+    private void MenuSortPlayStatus_Click(object? sender, RoutedEventArgs e) => SetSortField("PlayStatus");
+    private void MenuSortVersion_Click(object? sender, RoutedEventArgs e) => SetSortField("Version");
+
+    private void MenuSortAscending_Click(object? sender, RoutedEventArgs e)
+    {
+        SoundHelper.PlaySelect();
+        _isSortAscending = !_isSortAscending;
+        _currentPage = 1;
+        UpdateMenuCheckmarks();
+        ApplySearchFilter();
+    }
+
+    private void SetArtType(string type)
+    {
+        SoundHelper.PlaySelect();
+        _settings.PreferredArtType = type;
+        SaveSettings();
+        _currentPage = 1;
+        UpdateMenuCheckmarks();
+        ApplySearchFilter();
+    }
+
+    private void MenuArtTypeBackground_Click(object? sender, RoutedEventArgs e) => SetArtType("Background");
+    private void MenuArtTypeBox_Click(object? sender, RoutedEventArgs e) => SetArtType("Box");
+    private void MenuArtTypeBox3D_Click(object? sender, RoutedEventArgs e) => SetArtType("Box 3D");
+    private void MenuArtTypeCartFront_Click(object? sender, RoutedEventArgs e) => SetArtType("Cart - Front");
+    private void MenuArtTypeCart3D_Click(object? sender, RoutedEventArgs e) => SetArtType("Cart - 3D");
+    private void MenuArtTypeClearLogo_Click(object? sender, RoutedEventArgs e) => SetArtType("Clear Logo");
+    private void MenuArtTypeMarquee_Click(object? sender, RoutedEventArgs e) => SetArtType("Marquee");
+    private void MenuArtTypeSnap_Click(object? sender, RoutedEventArgs e) => SetArtType("Snap");
+
+    private void MenuViewGrid_Click(object? sender, RoutedEventArgs e)
+    {
+        BtnViewGrid_Click(null, new RoutedEventArgs());
+        UpdateMenuCheckmarks();
+    }
+
+    private void MenuViewList_Click(object? sender, RoutedEventArgs e)
+    {
+        BtnViewList_Click(null, new RoutedEventArgs());
+        UpdateMenuCheckmarks();
+    }
+
+    private void MenuToggleFilters_Click(object? sender, RoutedEventArgs e)
+    {
+        BtnToggleFilters_Click(null, new RoutedEventArgs());
+        UpdateMenuCheckmarks();
+    }
+
+    private void MenuShowStats_Click(object? sender, RoutedEventArgs e)
+    {
+        SoundHelper.PlaySelect();
+        ShowFullStats();
+    }
+
+    private void MenuManagePlatforms_Click(object? sender, RoutedEventArgs e)
+    {
+        SoundHelper.PlaySelect();
+        BtnManagePlatforms_Click(null, new RoutedEventArgs());
+    }
+
+    private void MenuBadgeFavorite_Click(object? sender, RoutedEventArgs e)
+    {
+        SoundHelper.PlaySelect();
+        _showFavoriteBadge = !_showFavoriteBadge;
+        UpdateMenuCheckmarks();
+        ApplySearchFilter();
+    }
+
+    private void MenuBadgeRegion_Click(object? sender, RoutedEventArgs e)
+    {
+        SoundHelper.PlaySelect();
+        _showRegionBadge = !_showRegionBadge;
+        UpdateMenuCheckmarks();
+        ApplySearchFilter();
+    }
+
+    private void MenuBadgePlayStatus_Click(object? sender, RoutedEventArgs e)
+    {
+        SoundHelper.PlaySelect();
+        _showStatusBadge = !_showStatusBadge;
+        UpdateMenuCheckmarks();
+        ApplySearchFilter();
     }
 }
