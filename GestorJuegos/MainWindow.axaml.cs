@@ -2835,6 +2835,17 @@ public partial class MainWindow : Window
             else return;
         }
 
+        // Configurar UI de progreso
+        _cts = new System.Threading.CancellationTokenSource();
+        OverlayProgress.IsVisible = true;
+        TxtProgressTitle.Text = "Importando Metadatos de LaunchBox";
+        TxtProgressDetail.Text = "Iniciando proceso...";
+        ProgBarImport.Value = 0;
+        ProgBarImport.Minimum = 0;
+        
+        var cancelHandler = new EventHandler<RoutedEventArgs>((s, args) => _cts.Cancel());
+        BtnCancelProgress.Click += cancelHandler;
+
         await System.Threading.Tasks.Task.Run(() =>
         {
             try
@@ -2853,45 +2864,86 @@ public partial class MainWindow : Window
 
                 int updatedCount = 0;
                 int totalProcessed = 0;
+                int currentGameIndex = 0;
 
+                // Primero contar el total de juegos para el progreso
+                var allGamesToUpdate = new List<(Game game, string platformName)>();
                 foreach (var platform in platformsToSync)
                 {
                     var games = context.Games.Where(g => g.PlatformId == platform.Id).ToList();
-                    totalProcessed += games.Count;
+                    foreach (var g in games) allGamesToUpdate.Add((g, platform.Name));
+                }
 
-                    foreach (var game in games)
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => 
+                {
+                    ProgBarImport.Maximum = allGamesToUpdate.Count;
+                    TxtProgressDetail.Text = $"Preparando {allGamesToUpdate.Count} juegos...";
+                });
+
+                foreach (var item in allGamesToUpdate)
+                {
+                    if (_cts.IsCancellationRequested) break;
+
+                    currentGameIndex++;
+                    var game = item.game;
+                    var platformName = item.platformName;
+
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => 
                     {
-                        var oldId = game.LaunchBoxDbId;
-                        _gameService.EnrichGameWithMetadata(game, platform.Name);
-                        
-                        if (game.LaunchBoxDbId != oldId || !string.IsNullOrEmpty(game.Description))
-                        {
-                            updatedCount++;
-                        }
+                        ProgBarImport.Value = currentGameIndex;
+                        TxtProgressDetail.Text = $"[{currentGameIndex}/{allGamesToUpdate.Count}] {game.Name}";
+                    });
+
+                    var oldId = game.LaunchBoxDbId;
+                    _gameService.EnrichGameWithMetadata(game, platformName);
+                    
+                    if (game.LaunchBoxDbId != oldId || !string.IsNullOrEmpty(game.Description))
+                    {
+                        updatedCount++;
                     }
 
-                    if (games.Any())
+                    // Guardar cada 50 juegos para no saturar y no perder progreso si se cancela
+                    if (currentGameIndex % 50 == 0)
                     {
-                        context.UpdateRange(games);
+                        context.UpdateRange(allGamesToUpdate.Take(currentGameIndex).Select(x => x.game));
                         context.SaveChanges();
                     }
                 }
 
+                // Guardado final
+                if (!_cts.IsCancellationRequested)
+                {
+                    context.UpdateRange(allGamesToUpdate.Select(x => x.game));
+                    context.SaveChanges();
+                }
+
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
-                    string scope = !string.IsNullOrEmpty(_selectedCategory) ? $"la categoría '{_selectedCategory}'" : $"la plataforma '{_selectedPlatform?.Name}'";
-                    ShowMessage($"Importación de Metadatos para {scope} completada.\nSe han enriquecido {updatedCount} juegos de {totalProcessed} procesados.");
+                    OverlayProgress.IsVisible = false;
+                    BtnCancelProgress.Click -= cancelHandler;
+
+                    if (_cts.IsCancellationRequested)
+                    {
+                        ShowMessage("Proceso cancelado por el usuario.");
+                    }
+                    else
+                    {
+                        string scope = !string.IsNullOrEmpty(_selectedCategory) ? $"la categoría '{_selectedCategory}'" : $"la plataforma '{_selectedPlatform?.Name}'";
+                        ShowMessage($"Importación de Metadatos para {scope} completada.\nSe han enriquecido {updatedCount} juegos de {allGamesToUpdate.Count} procesados.");
+                    }
                     
                     // Refrescar la vista actual
-                    if (TvSidebar.SelectedItem is SidebarNode node)
-                    {
-                        TvSidebar_SelectionChanged(null, new SelectionChangedEventArgs(null, new List<object>(), new List<object>()));
-                    }
+                    TvSidebar_SelectionChanged(null, new SelectionChangedEventArgs(null, new List<object>(), new List<object>()));
                 });
             }
             catch (Exception ex)
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => ShowMessage($"Error al leer la base de datos maestra: {ex.Message}"));
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => 
+                {
+                    OverlayProgress.IsVisible = false;
+                    BtnCancelProgress.Click -= cancelHandler;
+                    ShowMessage($"Error al leer la base de datos maestra: {ex.Message}");
+                });
             }
         });
     }
