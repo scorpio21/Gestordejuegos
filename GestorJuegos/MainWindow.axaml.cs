@@ -1501,26 +1501,82 @@ public partial class MainWindow : Window
 
             if (viewIndex == 0) // --- VISTA: CATEGORÍA DE PLATAFORMA (Estilo LaunchBox capturas) ---
             {
-                // Cargar categorías guardadas en la base de datos
+                // Asegurar categorías por defecto persistidas si la tabla está vacía
                 var dbCategories = context.PlatformCategories.ToList();
-
-                // Asegurar categorías por defecto en memoria si no hay nada en la DB
                 if (dbCategories.Count == 0)
                 {
-                    dbCategories.Add(new PlatformCategory { Name = "Computers" });
-                    dbCategories.Add(new PlatformCategory { Name = "Consoles" });
-                    dbCategories.Add(new PlatformCategory { Name = "Handhelds" });
+                    var defaultCats = new List<PlatformCategory>
+                    {
+                        new PlatformCategory { Name = "Computers" },
+                        new PlatformCategory { Name = "Consoles" },
+                        new PlatformCategory { Name = "Handhelds" },
+                        new PlatformCategory { Name = "Arcade" }
+                    };
+                    context.PlatformCategories.AddRange(defaultCats);
+                    context.SaveChanges();
+                    dbCategories = context.PlatformCategories.ToList();
                 }
 
                 // Cargar estadísticas y objetos de plataformas
                 var platforms = context.Platforms.ToList();
+
+                // Asegurar que cualquier categoría existente en la tabla de plataformas esté registrada en PlatformCategories
+                var platformCategoriesInUse = platforms
+                    .Select(p => p.Category)
+                    .Where(cat => !string.IsNullOrEmpty(cat))
+                    .Distinct()
+                    .ToList();
+
+                bool dbChanged = false;
+                foreach (var catName in platformCategoriesInUse)
+                {
+                    if (!dbCategories.Any(c => c.Name.Equals(catName, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        var newCat = new PlatformCategory { Name = catName };
+                        
+                        // Intentar cargar recursos de LaunchBox inmediatamente si la ruta es válida
+                        if (!string.IsNullOrEmpty(lbPath) && Directory.Exists(lbPath))
+                        {
+                            // Icono pixel-art
+                            string iconPath = Path.Combine(lbPath, "Images", "Platform Icons", "Platform Categories", $"{catName}.png");
+                            if (File.Exists(iconPath))
+                            {
+                                try { newCat.Icon = File.ReadAllBytes(iconPath); } catch { }
+                            }
+                            
+                            // Clear Logo
+                            string graphicPath = Path.Combine(lbPath, "Images", "Platform Categories", catName, "Clear Logo", $"{catName}.png");
+                            if (File.Exists(graphicPath))
+                            {
+                                try { newCat.Graphic = File.ReadAllBytes(graphicPath); } catch { }
+                            }
+                        }
+
+                        // Notas/descripción por defecto según la categoría
+                        if (catName.Equals("Arcade", StringComparison.OrdinalIgnoreCase))
+                        {
+                            newCat.Notes = "Arcade games are coin-operated entertainment machines, typically installed in public businesses such as restaurants, bars, and amusement arcades. They reached their golden age from the late 1970s to the mid-1980s, offering high-quality graphics and immersive hardware for their time.";
+                        }
+
+                        context.PlatformCategories.Add(newCat);
+                        dbCategories.Add(newCat);
+                        dbChanged = true;
+                    }
+                }
+                if (dbChanged)
+                {
+                    context.SaveChanges();
+                }
+
                 var gamesCount = _gameService.GetGamesCountByPlatform() ?? new Dictionary<string, int>();
 
                 // Crear los nodos de categoría
                 var categoryNodes = new Dictionary<string, SidebarNode>();
                 foreach (var cat in dbCategories.OrderBy(c => c.Name))
                 {
-                    string emoji = cat.Name == "Computers" ? "🖥️" : (cat.Name == "Handhelds" ? "📟" : "🎮");
+                    string emoji = cat.Name == "Computers" ? "🖥️" : 
+                                   (cat.Name == "Handhelds" ? "📟" : 
+                                   (cat.Name == "Arcade" ? "🕹️" : "🎮"));
                     var catNode = new SidebarNode
                     {
                         Name = cat.Name,
@@ -1675,8 +1731,10 @@ public partial class MainWindow : Window
             {
                 using var context = new GestorJuegos.Data.AppDbContext();
 
-                // 1. Importar/actualizar iconos y gráficos de categorías principales
-                string[] categories = new[] { "Computers", "Consoles", "Handhelds" };
+                // 1. Importar/actualizar iconos y gráficos de todas las categorías en la DB
+                var categories = context.PlatformCategories.Select(c => c.Name).ToList();
+                if (!categories.Contains("Arcade")) categories.Add("Arcade");
+
                 foreach (var catName in categories)
                 {
                     var dbCat = context.PlatformCategories.FirstOrDefault(c => c.Name == catName);
@@ -1978,6 +2036,7 @@ public partial class MainWindow : Window
         // Limpiar controles
         ImgPlatformLogo.Source = null;
         ImgPlatformHardware.Source = null;
+        if (BrdPlatformHardware != null) BrdPlatformHardware.IsVisible = false;
         TxtPlatformHardwarePlaceholder.IsVisible = false;
         TxtPlatformReleaseDate.IsVisible = false;
         TxtPlatDescription.Text = string.Empty;
@@ -2042,16 +2101,20 @@ public partial class MainWindow : Window
                             using var ms = new MemoryStream(platform.HardwareImage);
                             ImgPlatformHardware.Source = new Bitmap(ms);
                             ImgPlatformHardware.IsVisible = true;
+                            if (BrdPlatformHardware != null) BrdPlatformHardware.IsVisible = true;
+                            TxtPlatformHardwarePlaceholder.IsVisible = false;
                         }
                         catch 
                         { 
                             ImgPlatformHardware.IsVisible = false;
+                            if (BrdPlatformHardware != null) BrdPlatformHardware.IsVisible = true;
                             TxtPlatformHardwarePlaceholder.IsVisible = true; 
                         }
                     }
                     else
                     {
                         ImgPlatformHardware.IsVisible = false;
+                        if (BrdPlatformHardware != null) BrdPlatformHardware.IsVisible = true;
                         TxtPlatformHardwarePlaceholder.IsVisible = true;
                     }
 
@@ -2131,6 +2194,7 @@ public partial class MainWindow : Window
                 }
 
                 ImgPlatformHardware.IsVisible = false;
+                if (BrdPlatformHardware != null) BrdPlatformHardware.IsVisible = false;
                 TxtPlatformHardwarePlaceholder.IsVisible = false;
                 TxtPlatformReleaseDate.IsVisible = false;
 

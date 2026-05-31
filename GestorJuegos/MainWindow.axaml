@@ -1114,7 +1114,7 @@
                                 </Panel>
 
                                 <!-- Imagen central de hardware (Foto física de la consola) -->
-                                <Border Background="#101e293b" CornerRadius="10" ClipToBounds="True" Height="220" BoxShadow="0 4 12 0 #50000000" Margin="15,10">
+                                <Border Name="BrdPlatformHardware" Background="#101e293b" CornerRadius="10" ClipToBounds="True" Height="220" BoxShadow="0 4 12 0 #50000000" Margin="15,10">
                                     <Panel>
                                         <Image Name="ImgPlatformHardware" Stretch="Uniform" Margin="15"/>
                                         <TextBlock Name="TxtPlatformHardwarePlaceholder" Text="Sin foto del sistema" Foreground="#64748b" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False"/>
