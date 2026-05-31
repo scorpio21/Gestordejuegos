@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:models="clr-namespace:GestorJuegos.Models"
+        xmlns:local="clr-namespace:GestorJuegos"
         mc:Ignorable="d" d:DesignWidth="950" d:DesignHeight="700"
         x:Class="GestorJuegos.OpcionesWindow"
         Title="Opciones"
@@ -768,12 +769,12 @@
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Grid ColumnDefinitions="1.2*, *, *, 0.8*, 0.8*, 1.2*" Margin="0,2">
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleFields}" SelectedItem="{Binding Field, Mode=TwoWay}" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch"/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleComparisons}" SelectedItem="{Binding Comparison, Mode=TwoWay}" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch"/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleValueTypes}" SelectedItem="{Binding ValueType, Mode=TwoWay}" Grid.Column="2" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleFields}" SelectedItem="{Binding Field, Mode=TwoWay}" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleComparisons}" SelectedItem="{Binding Comparison, Mode=TwoWay}" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleValueTypes}" SelectedItem="{Binding ValueType, Mode=TwoWay}" Grid.Column="2" Margin="2" HorizontalAlignment="Stretch"/>
                                             <TextBox Text="{Binding CustomValue, Mode=TwoWay}" Grid.Column="3" Margin="2" PlaceholderText="Valor..."/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleWeights}" SelectedItem="{Binding Weight, Mode=TwoWay}" Grid.Column="4" Margin="2" HorizontalAlignment="Stretch"/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleTargetGames}" SelectedItem="{Binding TargetGames, Mode=TwoWay}" Grid.Column="5" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleWeights}" SelectedItem="{Binding Weight, Mode=TwoWay}" Grid.Column="4" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleTargetGames}" SelectedItem="{Binding TargetGames, Mode=TwoWay}" Grid.Column="5" Margin="2" HorizontalAlignment="Stretch"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
@@ -808,12 +809,12 @@
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Grid ColumnDefinitions="1.2*, *, *, 0.8*, 0.8*, 1.2*" Margin="0,2">
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleFields}" SelectedItem="{Binding Field, Mode=TwoWay}" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch"/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleComparisons}" SelectedItem="{Binding Comparison, Mode=TwoWay}" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch"/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleValueTypes}" SelectedItem="{Binding ValueType, Mode=TwoWay}" Grid.Column="2" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleFields}" SelectedItem="{Binding Field, Mode=TwoWay}" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleComparisons}" SelectedItem="{Binding Comparison, Mode=TwoWay}" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleValueTypes}" SelectedItem="{Binding ValueType, Mode=TwoWay}" Grid.Column="2" Margin="2" HorizontalAlignment="Stretch"/>
                                             <TextBox Text="{Binding CustomValue, Mode=TwoWay}" Grid.Column="3" Margin="2" PlaceholderText="Valor..."/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleWeights}" SelectedItem="{Binding Weight, Mode=TwoWay}" Grid.Column="4" Margin="2" HorizontalAlignment="Stretch"/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleTargetGames}" SelectedItem="{Binding TargetGames, Mode=TwoWay}" Grid.Column="5" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleWeights}" SelectedItem="{Binding Weight, Mode=TwoWay}" Grid.Column="4" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleTargetGames}" SelectedItem="{Binding TargetGames, Mode=TwoWay}" Grid.Column="5" Margin="2" HorizontalAlignment="Stretch"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
@@ -848,12 +849,12 @@
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Grid ColumnDefinitions="1.2*, *, *, 0.8*, 0.8*, 1.2*" Margin="0,2">
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleFields}" SelectedItem="{Binding Field, Mode=TwoWay}" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch"/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleComparisons}" SelectedItem="{Binding Comparison, Mode=TwoWay}" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch"/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleValueTypes}" SelectedItem="{Binding ValueType, Mode=TwoWay}" Grid.Column="2" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleFields}" SelectedItem="{Binding Field, Mode=TwoWay}" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleComparisons}" SelectedItem="{Binding Comparison, Mode=TwoWay}" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleValueTypes}" SelectedItem="{Binding ValueType, Mode=TwoWay}" Grid.Column="2" Margin="2" HorizontalAlignment="Stretch"/>
                                             <TextBox Text="{Binding CustomValue, Mode=TwoWay}" Grid.Column="3" Margin="2" PlaceholderText="Valor..."/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleWeights}" SelectedItem="{Binding Weight, Mode=TwoWay}" Grid.Column="4" Margin="2" HorizontalAlignment="Stretch"/>
-                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleTargetGames}" SelectedItem="{Binding TargetGames, Mode=TwoWay}" Grid.Column="5" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleWeights}" SelectedItem="{Binding Weight, Mode=TwoWay}" Grid.Column="4" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[local:OpcionesWindow].RuleTargetGames}" SelectedItem="{Binding TargetGames, Mode=TwoWay}" Grid.Column="5" Margin="2" HorizontalAlignment="Stretch"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
