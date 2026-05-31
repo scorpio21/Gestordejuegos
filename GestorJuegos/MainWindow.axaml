@@ -424,7 +424,7 @@
                             </StackPanel>
                         </Border>
                         
-                        <Button Name="BtnAddGame" Content="+ Añadir" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="8" Padding="15,8"/>
+                        <Button Name="BtnAddGame" Content="+ Añadir" Background="{DynamicResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="8" Padding="15,8"/>
                         <Button Name="BtnShowStats" Content="📊" Background="#334155" Foreground="White" CornerRadius="8" Padding="12,8" ToolTip.Tip="Estadísticas"/>
                         <Button Name="BtnManagePlatforms" Content="⚙️" Background="#334155" Foreground="White" CornerRadius="8" Padding="12,8" ToolTip.Tip="Gestionar Plataformas"/>
                         <Button Name="BtnHelpMenu" Content="AYUDA" Background="#334155" Foreground="White" FontWeight="Bold" CornerRadius="8" Padding="12,8" ToolTip.Tip="Ayuda y Acerca de...">
@@ -506,7 +506,7 @@
                                 <TextBlock Text="Región:" Margin="0,0,10,0" VerticalAlignment="Center"/><ComboBox Name="CmbFilterRegion" SelectedIndex="0" Margin="0,0,20,0"><ComboBoxItem Content="Todas"/><ComboBoxItem Content="🇺🇸 US"/><ComboBoxItem Content="🇪🇺 EU"/><ComboBoxItem Content="🇪🇸 ES"/><ComboBoxItem Content="🇯🇵 JP"/></ComboBox>
                                 <TextBlock Text="Año:" Margin="0,0,10,0" VerticalAlignment="Center"/><NumericUpDown Name="NumFilterYear" Minimum="0" Maximum="2100" Width="100" Margin="0,0,20,0"/>
                                 <TextBlock Text="Orden:" Margin="0,0,10,0" VerticalAlignment="Center"/><ComboBox Name="CmbSortOrder" SelectedIndex="0"><ComboBoxItem Content="Nombre (A-Z)"/><ComboBoxItem Content="Año (Asc)"/><ComboBoxItem Content="Recién añadidos"/></ComboBox>
-                                <Button Name="BtnApplyFilters" Content="Aplicar" Margin="20,0,5,0" Background="{StaticResource AccentBrush}" Foreground="White"/>
+                                <Button Name="BtnApplyFilters" Content="Aplicar" Margin="20,0,5,0" Background="{DynamicResource AccentBrush}" Foreground="White"/>
                                 <Button Name="BtnClearFilters" Content="Limpiar" Background="#334155" Foreground="White"/>
                             </WrapPanel>
                         </Border>
@@ -1647,40 +1647,6 @@
             </Border>
         </Border>
 
-        <Border Name="OverlaySettings" Background="#AA000000" IsVisible="False" ZIndex="100">
-            <Border Background="#1e293b" Width="500" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <StackPanel Spacing="15">
-                    <TextBlock Text="Ruta de LaunchBox" Foreground="#64748b" FontSize="12"/>
-                    <DockPanel>
-                        <Button Name="BtnBrowseLb" Content="..." DockPanel.Dock="Right" Click="BtnBrowseLb_Click"/>
-                        <TextBox Name="CfgLbPath" Text="{Binding #CfgLbPath.Text}"/>
-                    </DockPanel>
-
-                    <TextBlock Text="Tipo de Arte Preferido" Foreground="#64748b" FontSize="12"/>
-                    <ComboBox Name="CfgArtType" HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Advert"/>
-                        <ComboBoxItem Content="Artwork Preview"/>
-                        <ComboBoxItem Content="Background"/>
-                        <ComboBoxItem Content="Box"/>
-                        <ComboBoxItem Content="Box Full"/>
-                        <ComboBoxItem Content="Box 3D"/>                        <ComboBoxItem Content="Cabinet"/>
-                        <ComboBoxItem Content="Logos"/>
-                        <ComboBoxItem Content="Marquee"/>
-                        <ComboBoxItem Content="Snap"/>
-                        <ComboBoxItem Content="System Logo"/>
-                        <ComboBoxItem Content="Title"/>
-                    </ComboBox>
-
-                    <CheckBox Name="CfgAutoImportCovers" Content="Importar carátulas automáticamente"/>
-                    <CheckBox Name="CfgEnableSoundEffects" Content="Activar efectos de sonido (SFX)"/>
-
-                    <Grid ColumnDefinitions="*,*" Margin="0,10,0,0">
-                        <Button Name="BtnCancelSettings" Content="CANCELAR" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,5,0" Click="BtnCancelSettings_Click"/>
-                        <Button Name="BtnSaveSettings" Content="GUARDAR" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,0,0,0" Background="#10b981" Click="BtnSaveSettings_Click"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-        </Border>
         <Border Name="OverlayKeyboard" Background="#AA000000" IsVisible="False" ZIndex="500">
             <Border Background="#0f172a" Width="800" Padding="20" CornerRadius="15"><StackPanel Spacing="20"><TextBox Name="TxtKeyboardInput"/><Grid Name="GridKeyboard"/></StackPanel></Border>
         </Border>
@@ -1750,3 +1716,4 @@
 
     </Grid>
 </Window>
+

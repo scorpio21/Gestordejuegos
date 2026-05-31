@@ -14,6 +14,24 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
+### v1.2.0.1-Dev (31 Mayo 2026)
+*   **Nueva Ventana de Opciones estilo LaunchBox**: Diseñada e implementada la ventana de diálogo modal `OpcionesWindow` que replica exactamente la interfaz estética de LaunchBox (panel izquierdo con TreeView jerárquico de categorías y panel derecho de ajustes dinámicos). Soporta y vincula las siguientes configuraciones de forma persistente a `AppSettings` y al archivo `appsettings.json`:
+    - Ruta de instalación de LaunchBox (`AppSettings.LaunchBoxPath`) mediante un TextBox y buscador de directorios asíncrono.
+    - Efectos de sonido integrados (`AppSettings.EnableSoundEffects`), aplicando los cambios de audio inmediatamente al guardar.
+    - Tipo de carátula o arte multimedia preferido por defecto (`AppSettings.PreferredArtType`) e importación automática de carátulas (`AppSettings.AutoImportCovers`).
+    - **Personalización Completa de Temas con Cambio en Caliente**: Añadida la categoría completa `Tema de la ventana principal` en el TreeView, con subpaneles funcionales:
+      - **Tematización**: Selector dropdown que soporta temas como `"Neon Deluxe Arcade LB"` y `"Old Default"`. Redefine en caliente los pinceles de recursos de Avalonia (`AccentBrush`, `DeepDarkBrush`, `PanelBrush`, `BorderBrush`) a tonos neón retro-arcade (rosa neón, cian neón, negro tech profundo) de forma instantánea al hacer clic en "Aceptar", sin necesidad de reiniciar la app.
+      - **Colores**: Formulario interactivo con 8 códigos hexadecimales personalizables para adaptar fondos, bordes de menú, ventanas y texto.
+      - **Características**: Grupo de 7 checkboxes de control que regulan el coloreado visual de divisores, barras de desplazamiento y fondos difuminados.
+      - **Fuentes**: Botones de selección tipográfica para personalizar fuentes de juego, barra lateral y detalles, acompañados de un botón para reestablecer valores por defecto.
+    - **Activación y Vinculación Funcional de 5 Nuevas Categorías**:
+      - **Depuración**: Activación y almacenamiento persistente de registros detallados (`AppSettings.EnableDebugLogs`).
+      - **Notificaciones**: Selector de sistema de notificación (`AppSettings.NotificationSystem`) para alternar entre cuadros de mensaje y bandeja de sistema.
+      - **Importaciones automatizadas**: Opción para habilitar el escaneo automático de ROMs en segundo plano (`AppSettings.EnableAutomaticRomImports`).
+      - **Save Management (Gestión de Partidas Guardadas)**: Sistema modular completo con control de habilitación en cascada dinámico y reactivo en tiempo real para copias automáticas al cerrar, respaldos periódicos y límite de versiones configurable con control numérico.
+      - **Aplicaciones de inicio**: Grid interactivo premium con agregación y remoción de programas mediante un selector asíncrono de ejecutables `.exe` (`OpenFilePickerAsync`) con parámetros y configuración de múltiples instancias.
+    - Estructuración modular limpia que evita inflar la ventana principal y cumple rigurosamente con la **Política de Cero Advertencias**.
+
 ### v1.2.0-Dev (27 Mayo 2026)
 *   **Sincronización de Base de Datos**: Propiedades extendidas (`Languages`, `AdditionalRoms`, `OverrideEmulatorPath`, `OverrideLaunchArguments` y `SelectedArtType`) ahora se persisten en la DB principal para evitar inconsistencias.
 *   **Corrección de Importación**: Solucionados fallos críticos de traducción LINQ durante el escaneo de juegos mediante el uso de evaluación local (`AsEnumerable`).

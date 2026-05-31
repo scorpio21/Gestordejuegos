@@ -67,8 +67,56 @@ public partial class MainWindow : Window
                 _settings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
             }
             SoundHelper.IsEnabled = _settings.EnableSoundEffects;
+            ApplyTheme();
         }
         catch { _settings = new AppSettings(); }
+    }
+
+    private void ApplyTheme()
+    {
+        try
+        {
+            if (_settings.Theme == "Neon Deluxe Arcade LB")
+            {
+                this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#ff007f"); // Rosa Neón
+                this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#0b0c10"); // Negro Tech
+                this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#161920"); // Gris Neón Profundo
+                this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#00f3ff"); // Cian Neón
+            }
+            else if (_settings.Theme == "Old Default")
+            {
+                this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#3b82f6"); // Azul Clásico
+                this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#111827"); // Gris Carbón
+                this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1f2937"); // Slate Oscuro
+                this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#374151"); // Gris Medio
+            }
+            else
+            {
+                // Tema por defecto o personalizado
+                if (_settings.ColorTheme == "Personalizado")
+                {
+                    this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorSelectedBg);
+                    this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorDarkBg);
+                    this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorLightBg);
+                    this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorBorderWindow);
+                }
+                else
+                {
+                    this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#10b981"); // Verde Esmeralda
+                    this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#0f172a"); // Azul Oscuro
+                    this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1e293b"); // Slate Azulado
+                    this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#334155"); // Azul Grisáceo
+                }
+            }
+        }
+        catch
+        {
+            // Fallback robusto en caso de error
+            this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#10b981");
+            this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#0f172a");
+            this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1e293b");
+            this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#334155");
+        }
     }
 
     private void SaveSettings()
@@ -4937,61 +4985,19 @@ public partial class MainWindow : Window
     }
 
     // --- CONFIGURACIÓN ---
-    private void MenuSettings_Click(object? sender, RoutedEventArgs e)
+    private async void MenuSettings_Click(object? sender, RoutedEventArgs e)
     {
         SoundHelper.PlaySelect();
-        CfgLbPath.Text = _settings.LaunchBoxPath;
-        CfgAutoImportCovers.IsChecked = _settings.AutoImportCovers;
-        CfgEnableSoundEffects.IsChecked = _settings.EnableSoundEffects;
         
-        // Seleccionar el tipo de arte en el combo
-        foreach (var rawItem in CfgArtType.Items)
+        var optionsWin = new OpcionesWindow(_settings);
+        var result = await optionsWin.ShowDialog<bool>(this);
+        if (result)
         {
-            if (rawItem is ComboBoxItem item && item.Content?.ToString() == _settings.PreferredArtType)
-            {
-                CfgArtType.SelectedItem = item;
-                break;
-            }
+            SoundHelper.IsEnabled = _settings.EnableSoundEffects;
+            ApplyTheme();
+            ApplySearchFilter(); // Refrescar el listado con el nuevo tipo de arte preferido
+            ShowMessage("Configuración guardada correctamente.");
         }
-        if (CfgArtType.SelectedItem == null && CfgArtType.Items.Count > 0) CfgArtType.SelectedIndex = 0;
-
-        OverlaySettings.IsVisible = true;
-    }
-
-    private async void BtnBrowseLb_Click(object? sender, RoutedEventArgs e)
-    {
-        SoundHelper.PlaySelect();
-        var topLevel = GetTopLevel(this);
-        if (topLevel == null) return;
-
-        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-        {
-            Title = "Seleccionar Carpeta de LaunchBox",
-            AllowMultiple = false
-        });
-
-        if (folders.Count > 0)
-        {
-            CfgLbPath.Text = folders[0].Path.LocalPath;
-        }
-    }
-
-    private void BtnCancelSettings_Click(object? sender, RoutedEventArgs e)
-    {
-        OverlaySettings.IsVisible = false;
-    }
-
-    private void BtnSaveSettings_Click(object? sender, RoutedEventArgs e)
-    {
-        _settings.LaunchBoxPath = CfgLbPath.Text ?? "";
-        _settings.AutoImportCovers = CfgAutoImportCovers.IsChecked ?? false;
-        _settings.EnableSoundEffects = CfgEnableSoundEffects.IsChecked ?? true;
-        _settings.PreferredArtType = (CfgArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Boxes";
-        
-        SaveSettings();
-        OverlaySettings.IsVisible = false;
-        ApplySearchFilter(); // Refrescar el listado con el nuevo tipo de arte preferido
-        ShowMessage("Configuración guardada correctamente.");
     }
 
     private void MenuBatchScrapeVimm_Click(object? sender, RoutedEventArgs e)

@@ -1,0 +1,501 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:GestorJuegos.Models"
+        mc:Ignorable="d" d:DesignWidth="950" d:DesignHeight="700"
+        x:Class="GestorJuegos.OpcionesWindow"
+        Title="Opciones"
+        Width="950"
+        Height="700"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#20222a"
+        RequestedThemeVariant="Dark"
+        Icon="/img/iconoventana.png">
+
+    <Window.Styles>
+        <!-- Estilo General de TreeViewItem para estética LaunchBox -->
+        <Style Selector="TreeViewItem">
+            <Setter Property="Foreground" Value="#d1d5db"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Padding" Value="4,3"/>
+            <Setter Property="Margin" Value="2,1"/>
+        </Style>
+        <Style Selector="TreeViewItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
+            <Setter Property="Background" Value="#3a5180"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="TreeViewItem:pointerover /template/ ContentPresenter#PART_HeaderPresenter">
+            <Setter Property="Background" Value="#2f3b5c"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Estilo de Botón Premium -->
+        <Style Selector="Button.OptionBtn">
+            <Setter Property="Background" Value="#2c2e35"/>
+            <Setter Property="BorderBrush" Value="#4f525a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="15,6"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Button.OptionBtn:pointerover">
+            <Setter Property="Background" Value="#3a3d47"/>
+            <Setter Property="BorderBrush" Value="#6c707c"/>
+        </Style>
+        <Style Selector="Button.OptionBtn:pressed">
+            <Setter Property="Background" Value="#1d1e22"/>
+        </Style>
+
+        <!-- Inputs generales -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#1b1c21"/>
+            <Setter Property="BorderBrush" Value="#4f525a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#3a5180"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#1b1c21"/>
+            <Setter Property="BorderBrush" Value="#4f525a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="#d1d5db"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="*, 55">
+        <!-- 1. CONTENIDO PRINCIPAL (Dividido en dos paneles) -->
+        <Grid Grid.Row="0" ColumnDefinitions="260, 1, *">
+            <!-- PANEL IZQUIERDO: Árbol de navegación (TreeView) -->
+            <Border Grid.Column="0" Background="#282a32" BorderBrush="#3f424a" BorderThickness="0,0,1,0">
+                <ScrollViewer Margin="5,10">
+                    <TreeView Name="TvCategories" Background="Transparent" BorderThickness="0" SelectionChanged="TvCategories_SelectionChanged">
+                        <TreeViewItem Header="General" Tag="General" IsExpanded="True">
+                            <TreeViewItem Header="Depuración" Tag="Depuracion"/>
+                            <TreeViewItem Header="Notificaciones" Tag="Notificaciones"/>
+                            <TreeViewItem Header="Importaciones automatizadas" Tag="Importaciones"/>
+                            <TreeViewItem Header="Save Management" Tag="SaveManagement"/>
+                            <TreeViewItem Header="Aplicaciones de inicio" Tag="AppsInicio"/>
+                            <TreeViewItem Header="Bandeja de Sistema" Tag="General"/>
+                            <TreeViewItem Header="Actualizaciones" Tag="General"/>
+                            <TreeViewItem Header="Reproducción de vídeo" Tag="General"/>
+                            <TreeViewItem Header="Sonido" Tag="Sonido"/>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Datos" Tag="Datos" IsExpanded="True">
+                            <TreeViewItem Header="Copias de Seguridad" Tag="Placeholder"/>
+                            <TreeViewItem Header="Game Progress Automation" Tag="Placeholder"/>
+                            <TreeViewItem Header="Game Progress Organization" Tag="Placeholder"/>
+                            <TreeViewItem Header="Prioridades de Región" Tag="Placeholder"/>
+                            <TreeViewItem Header="Rutas de Datos" Tag="Rutas"/>
+                            <TreeViewItem Header="Buscar" Tag="Placeholder"/>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Juegos Relacionados" Tag="Placeholder">
+                            <TreeViewItem Header="Juegos Similares" Tag="Placeholder"/>
+                            <TreeViewItem Header="Juegos recomendados" Tag="Placeholder"/>
+                            <TreeViewItem Header="Puertos posibles" Tag="Placeholder"/>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Media" Tag="Media" IsExpanded="True">
+                            <TreeViewItem Header="Automatic Imports Media" Tag="Media"/>
+                            <TreeViewItem Header="Prioridades del Frente de la Caja" Tag="Media"/>
+                            <TreeViewItem Header="Prioridades de la Caja 3D" Tag="Media"/>
+                            <TreeViewItem Header="Prioridades del Frente del Cartucho" Tag="Media"/>
+                            <TreeViewItem Header="Prioridades del Fondo" Tag="Media"/>
+                            <TreeViewItem Header="Vista" Tag="Media"/>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Visuales" Tag="Placeholder" IsExpanded="True">
+                            <TreeViewItem Header="Fondos" Tag="Placeholder"/>
+                            <TreeViewItem Header="Cajas" Tag="Placeholder"/>
+                            <TreeViewItem Header="Tema de la ventana principal" Tag="TemaPrincipal" IsExpanded="True">
+                                <TreeViewItem Header="Colores" Tag="Colores"/>
+                                <TreeViewItem Header="Características" Tag="Caracteristicas"/>
+                                <TreeViewItem Header="Fuentes" Tag="Fuentes"/>
+                            </TreeViewItem>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Integraciones" Tag="Placeholder">
+                            <TreeViewItem Header="Retro Achievements (Logros)" Tag="Placeholder"/>
+                            <TreeViewItem Header="Steam" Tag="Placeholder"/>
+                        </TreeViewItem>
+                    </TreeView>
+                </ScrollViewer>
+            </Border>
+
+            <!-- LÍNEA DIVISORIA SUTIL -->
+            <Border Grid.Column="1" Background="#3f424a"/>
+
+            <!-- PANEL DERECHO: Ajustes dinámicos -->
+            <Grid Grid.Column="2" RowDefinitions="40, *">
+                <!-- TÍTULO DE LA SECCIÓN SELECCIONADA -->
+                <Border Grid.Row="0" Background="#282a32" BorderBrush="#3f424a" BorderThickness="0,0,0,1" Padding="15,0">
+                    <TextBlock Name="TxtSectionTitle" Text="General" Foreground="White" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- CONTENEDOR DE PANELES -->
+                <ScrollViewer Grid.Row="1" Padding="25">
+                    <Panel>
+                        <!-- PANEL 1: GENERAL -->
+                        <StackPanel Name="PnlGeneral" Spacing="15" IsVisible="True">
+                            <!-- Idioma -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Lenguaje:" Foreground="#9ba1af" FontSize="11"/>
+                                <ComboBox Name="CmbLanguage" SelectedIndex="0" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="Español"/>
+                                    <ComboBoxItem Content="English"/>
+                                    <ComboBoxItem Content="Français"/>
+                                    <ComboBoxItem Content="Deutsch"/>
+                                </ComboBox>
+                                <TextBlock Text="Ten en cuenta que debes cerrar y reiniciar la aplicación para aplicar los cambios de idioma." 
+                                           Foreground="#64748b" FontSize="10" FontStyle="Italic" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <Border Height="1" Background="#3f424a" Margin="0,5"/>
+
+                            <!-- Opciones Generales Checkboxes -->
+                            <CheckBox Name="ChkWelcomeScreen" Content="Mostrar pantalla de bienvenida durante la carga" IsChecked="True"/>
+                            <CheckBox Name="ChkDeleteRom" Content="Permitir eliminar ROM al eliminar juegos" IsChecked="False"/>
+                            <CheckBox Name="ChkShareData" Content="Share optional usage data to help us make GestorJuegos even more awesome!" IsChecked="True"/>
+                            <TextBlock Text="Click here to review our privacy policy." Foreground="#38bdf8" FontSize="11" Cursor="Hand" Margin="20,-5,0,0"/>
+
+                            <Border Height="1" Background="#3f424a" Margin="0,5"/>
+
+                            <!-- Minimizar al iniciar -->
+                            <CheckBox Name="ChkMinimizeOnLaunch" Content="Minimiza GestorJuegos al iniciar juegos (solo si la pantalla de inicio está desactivada)" IsChecked="False"/>
+                            <CheckBox Name="ChkRestoreOnClose" Content="Restaura GestorJuegos al finalizar juegos (solo si la pantalla de inicio está desactivada)" IsChecked="False"/>
+                        </StackPanel>
+
+                        <!-- PANEL 2: SONIDO (FUNCIONAL) -->
+                        <StackPanel Name="PnlSonido" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Efectos de Sonido" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Controla los sonidos y la respuesta auditiva al navegar por la interfaz de tu biblioteca de juegos." 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <Border Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1">
+                                <StackPanel Spacing="10">
+                                    <CheckBox Name="ChkEnableSoundEffects" Content="Activar efectos de sonido en la interfaz (Sound Effects)"/>
+                                    <TextBlock Text="Si está marcado, se reproducirán sonidos interactivos al hacer clic en botones, cambiar de plataforma o realizar selecciones en el menú." 
+                                               Foreground="#64748b" FontSize="10" TextWrapping="Wrap" Margin="22,0,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- PANEL 3: RUTAS DE DATOS (FUNCIONAL) -->
+                        <StackPanel Name="PnlRutas" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Rutas de Instalación y Directorios" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Especifica las rutas del sistema para integrar las herramientas de terceros. El Gestor de Juegos necesita la ruta de LaunchBox para sincronizar metadatos y arte correctamente." 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Ruta de instalación de LaunchBox:" Foreground="#9ba1af" FontSize="11"/>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBox Name="TxtLaunchBoxPath" Grid.Column="0" PlaceholderText="Ej: C:\Users\TuUsuario\LaunchBox"/>
+                                    <Button Name="BtnBrowseLb" Grid.Column="1" Content="Examinar..." Classes="OptionBtn" Margin="10,0,0,0" Click="BtnBrowseLb_Click"/>
+                                </Grid>
+                                <TextBlock Text="Esta carpeta debe contener los directorios 'Metadata' e 'Images' oficiales de LaunchBox para la importación y escaneo de carátulas." 
+                                           Foreground="#64748b" FontSize="10" FontStyle="Italic" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- PANEL 4: MEDIA (FUNCIONAL) -->
+                        <StackPanel Name="PnlMedia" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Configuración de Imágenes y Carátulas" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            
+                            <!-- Tipo de arte preferido -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Tipo de carátula preferido (Preferred Art Type):" Foreground="#9ba1af" FontSize="11"/>
+                                <ComboBox Name="CmbPreferredArtType" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="Advert"/>
+                                    <ComboBoxItem Content="Artwork Preview"/>
+                                    <ComboBoxItem Content="Background"/>
+                                    <ComboBoxItem Content="Box"/>
+                                    <ComboBoxItem Content="Box Full"/>
+                                    <ComboBoxItem Content="Box 3D"/>
+                                    <ComboBoxItem Content="Cabinet"/>
+                                    <ComboBoxItem Content="Logos"/>
+                                    <ComboBoxItem Content="Marquee"/>
+                                    <ComboBoxItem Content="Snap"/>
+                                    <ComboBoxItem Content="System Logo"/>
+                                    <ComboBoxItem Content="Title"/>
+                                </ComboBox>
+                                <TextBlock Text="Este tipo de imagen se utilizará por defecto al mostrar carátulas en la vista de rejilla y en la barra de navegación principal." 
+                                           Foreground="#64748b" FontSize="10" FontStyle="Italic" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <Border Height="1" Background="#3f424a" Margin="0,5"/>
+
+                            <!-- Importación Automática -->
+                            <StackPanel Spacing="8">
+                                <CheckBox Name="ChkAutoImportCovers" Content="Importar carátulas automáticamente (Auto Import Covers)"/>
+                                <TextBlock Text="Si está marcado, el sistema intentará descargar automáticamente portadas o metadatos faltantes al añadir nuevos juegos a tu colección." 
+                                           Foreground="#64748b" FontSize="10" TextWrapping="Wrap" Margin="22,0,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- PANEL 5: TEMA PRINCIPAL -->
+                        <StackPanel Name="PnlTemaPrincipal" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Tema de la ventana principal" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Selecciona el tema visual que deseas aplicar a la aplicación principal." 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Tema:" Foreground="#9ba1af" FontSize="11"/>
+                                <ComboBox Name="CmbTheme" SelectedIndex="0" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="Default"/>
+                                    <ComboBoxItem Content="Neon Deluxe Arcade LB"/>
+                                    <ComboBoxItem Content="Old Default"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- PANEL 6: COLORES -->
+                        <StackPanel Name="PnlColores" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Colores" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Tema de Color:" Foreground="#9ba1af" FontSize="11"/>
+                                <ComboBox Name="CmbColorTheme" SelectedIndex="0" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="Default"/>
+                                    <ComboBoxItem Content="Personalizado"/>
+                                </ComboBox>
+                            </StackPanel>
+                            
+                            <Border Height="1" Background="#3f424a" Margin="0,5"/>
+                            
+                            <Grid RowDefinitions="Auto, Auto, Auto, Auto" ColumnDefinitions="*, *" Margin="0,5">
+                                <!-- Fila 0 -->
+                                <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
+                                    <TextBlock Text="Fondo Claro:" Foreground="#9ba1af" FontSize="11"/>
+                                    <TextBox Name="TxtColorLightBg" Text="#1c1d22"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5" Margin="10,0,0,10">
+                                    <TextBlock Text="Fondo Oscuro:" Foreground="#9ba1af" FontSize="11"/>
+                                    <TextBox Name="TxtColorDarkBg" Text="#121316"/>
+                                </StackPanel>
+                                
+                                <!-- Fila 1 -->
+                                <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
+                                    <TextBlock Text="Fondo del Elemento Seleccionado:" Foreground="#9ba1af" FontSize="11"/>
+                                    <TextBox Name="TxtColorSelectedBg" Text="#3a5180"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5" Margin="10,0,0,10">
+                                    <TextBlock Text="Fondo del Elemento Destacado:" Foreground="#9ba1af" FontSize="11"/>
+                                    <TextBox Name="TxtColorHighlightedBg" Text="#2a2b30"/>
+                                </StackPanel>
+                                
+                                <!-- Fila 2 -->
+                                <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
+                                    <TextBlock Text="Borde del Elemento destacado:" Foreground="#9ba1af" FontSize="11"/>
+                                    <TextBox Name="TxtColorBorderHighlight" Text="#2c2e35"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5" Margin="10,0,0,10">
+                                    <TextBlock Text="Borde de Ventana:" Foreground="#9ba1af" FontSize="11"/>
+                                    <TextBox Name="TxtColorBorderWindow" Text="#5f626a"/>
+                                </StackPanel>
+                                
+                                <!-- Fila 3 -->
+                                <StackPanel Grid.Row="3" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
+                                    <TextBlock Text="Borde del Menú:" Foreground="#9ba1af" FontSize="11"/>
+                                    <TextBox Name="TxtColorBorderMenu" Text="#2c2e35"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="3" Grid.Column="1" Spacing="5" Margin="10,0,0,10">
+                                    <TextBlock Text="Primer plano (texto):" Foreground="#9ba1af" FontSize="11"/>
+                                    <TextBox Name="TxtColorForeground" Text="#ffffff"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- PANEL 7: CARACTERÍSTICAS -->
+                        <StackPanel Name="PnlCaracteristicas" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Características" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            
+                            <CheckBox Name="ChkScrollImmediately" Content="Actualizar la posición de desplazamiento inmediatamente al arrastrar la barra de desplazamiento (solo afecta a la vista)"/>
+                            <CheckBox Name="ChkColorGameDividers" Content="Colorear Divisores de Juegos"/>
+                            <CheckBox Name="ChkColorScrollbar" Content="Colorear Barra de Desplazamiento"/>
+                            <CheckBox Name="ChkColorGameSelections" Content="Colorear Selecciones de Juegos"/>
+                            <CheckBox Name="ChkColorPopupDetails" Content="Colorear Ventana emergente con Detalles de Juegos"/>
+                            <CheckBox Name="ChkColorBlurBackground" Content="Colorear Fondo Difuminado"/>
+                            <CheckBox Name="ChkUseRandomColorTheme" Content="Usar Tema de Color Aleatorio al Iniciar"/>
+                        </StackPanel>
+
+                        <!-- PANEL 8: FUENTES -->
+                        <StackPanel Name="PnlFuentes" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Fuentes" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            
+                            <Grid RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="*, *" Margin="0,5">
+                                <Button Name="BtnGameFont" Grid.Row="0" Grid.Column="0" Content="Fuente de Juego" Classes="OptionBtn" HorizontalAlignment="Stretch" Margin="0,0,10,10" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                <Button Name="BtnSidebarFont" Grid.Row="0" Grid.Column="1" Content="Fuente de Barra Lateral" Classes="OptionBtn" HorizontalAlignment="Stretch" Margin="10,0,0,10" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                
+                                <Button Name="BtnLargeDetailsFont" Grid.Row="1" Grid.Column="0" Content="Fuente Grande para Detalles del Juego" Classes="OptionBtn" HorizontalAlignment="Stretch" Margin="0,0,10,10" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                <Button Name="BtnSmallDetailsFont" Grid.Row="1" Grid.Column="1" Content="Fuente Pequeña para Detalles del Juego" Classes="OptionBtn" HorizontalAlignment="Stretch" Margin="10,0,0,10" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                
+                                <Button Name="BtnTitleDetailsFont" Grid.Row="2" Grid.Column="0" Content="Fuente de Título para Detalles del Juego" Classes="OptionBtn" HorizontalAlignment="Stretch" Margin="0,0,10,10" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold"/>
+                            </Grid>
+                            
+                            <Border Height="1" Background="#3f424a" Margin="0,5"/>
+                            
+                            <Button Name="BtnResetFonts" Content="Reestablecer los valores predeterminados" Classes="OptionBtn" HorizontalAlignment="Left" Width="280" Click="BtnResetFonts_Click"/>
+                        </StackPanel>
+
+                        <!-- PANEL: DEPURACIÓN (NUEVO) -->
+                        <StackPanel Name="PnlDepuracion" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Depuración" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <CheckBox Name="ChkEnableDebugLogs" Content="Habilitar Registros de Depuración"/>
+                            <TextBlock Text="Al habilitar los registros de depuración, se crearán archivos de registro en su carpeta LaunchBox\Logs para cada inicio de LaunchBox o Big Box, lo que puede ser útil para depurar varias cosas.&#x0a;&#x0a;Ten en cuenta que habilitar los registros de depuración dará lugar a una pequeña disminución en el rendimiento, por lo que no se recomiendan para el uso diario. Además, los archivos de registro no se eliminan automáticamente, por lo que tendrás que limpiar la carpeta con el tiempo para evitar que su tamaño crezca constantemente." 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap" LineHeight="16"/>
+                        </StackPanel>
+
+                        <!-- PANEL: NOTIFICACIONES (NUEVO) -->
+                        <StackPanel Name="PnlNotificaciones" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Notificaciones" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Sistema de Notificación:" Foreground="#9ba1af" FontSize="11"/>
+                                <ComboBox Name="CmbNotificationSystem" SelectedIndex="0" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="Cuadros de mensaje"/>
+                                    <ComboBoxItem Content="Bandeja de sistema"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <TextBlock Text="Esta configuración cambia qué sistema usa LaunchBox para mostrar notificaciones. Las notificaciones también se podrán ver a través del centro de notificaciones, independientemente del sistema seleccionado." 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap" LineHeight="16"/>
+                        </StackPanel>
+
+                        <!-- PANEL: IMPORTACIONES AUTOMATIZADAS (NUEVO) -->
+                        <StackPanel Name="PnlImportacionesAuto" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Importaciones automatizadas" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <CheckBox Name="ChkEnableAutomaticRomImports" Content="Enable Automatic ROM Imports"/>
+                            <TextBlock Text="This feature will automatically scan for new ROMs on startup and while the application is open. This will import ROMs for both existing and new platforms." 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap" LineHeight="16"/>
+                        </StackPanel>
+
+                        <!-- PANEL: SAVE MANAGEMENT (NUEVO) -->
+                        <StackPanel Name="PnlSaveManagement" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Save Management" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            
+                            <CheckBox Name="ChkEnableSaveManagement" Content="Enable Save Management"/>
+                            <TextBlock Text="Enabling save management allows the app to track game saves and save state files for games in your library." 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap" LineHeight="16"/>
+                            
+                            <Border Name="BrdSaveBackupOptions" Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1" IsEnabled="False" Margin="15,0,0,0">
+                                <StackPanel Spacing="10">
+                                    <CheckBox Name="ChkEnableAutoSaveBackups" Content="Enable Automatic Save Backups"/>
+                                    
+                                    <StackPanel Name="PnlBackupSubOptions" Spacing="10" Margin="20,0,0,0" IsEnabled="False">
+                                        <CheckBox Name="ChkBackupOnGameClose" Content="Backup Saves on Game Close"/>
+                                        <CheckBox Name="ChkEnablePeriodicBackups" Content="Enable Periodic Background Backups"/>
+                                        
+                                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,5,0,0">
+                                            <TextBlock Text="Max Backup Versions per Game:" Foreground="#d1d5db" FontSize="12" VerticalAlignment="Center"/>
+                                            <NumericUpDown Name="NumMaxBackupVersions" Minimum="1" Maximum="100" Value="25" Width="120" FontSize="12"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,5,0,0">
+                                        <Button Name="BtnBackupNow" Content="Backup Now" Classes="OptionBtn"/>
+                                        <TextBlock Text="Last scan: Not yet run" Foreground="#64748b" FontSize="11" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Maintenance Tools -->
+                            <Border Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Maintenance Tools" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                    <TextBlock Text="These tools rebuild or clean LaunchBox save metadata. They do not delete save files, but they can change save records and badges." 
+                                               Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,5,0,0">
+                                        <Button Name="BtnRepairSaveMetadata" Content="Repair Save Metadata" Classes="OptionBtn"/>
+                                        <Button Name="BtnClearSaveMetadata" Content="Clear All and Re-scan Save Metadata" Classes="OptionBtn"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- PANEL: APLICACIONES DE INICIO (NUEVO) -->
+                        <StackPanel Name="PnlAppsInicio" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Aplicaciones de inicio" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Inicia las siguientes aplicaciones cuando se inicien LaunchBox y/o Big Box:" 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <!-- Cabecera de la Tabla -->
+                            <Border Background="#282a32" BorderBrush="#3f424a" BorderThickness="1" CornerRadius="3,3,0,0" Padding="10,8">
+                                <Grid ColumnDefinitions="2*, 2*, 1.2*, 1.2*">
+                                    <TextBlock Grid.Column="0" Text="Ruta de la Aplicación" Foreground="#9ba1af" FontSize="11" FontWeight="Bold"/>
+                                    <TextBlock Grid.Column="1" Text="Parámetros de línea de comando" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="10,0,0,0"/>
+                                    <TextBlock Grid.Column="2" Text="¿Comenzar con?" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="10,0,0,0"/>
+                                    <TextBlock Grid.Column="3" Text="¿Permitir instancias?" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="10,0,0,0"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Lista de Aplicaciones -->
+                            <ListBox Name="LstStartupApps" Height="180" Background="#1b1c21" BorderBrush="#3f424a" BorderThickness="1,0,1,1" CornerRadius="0,0,3,3">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:StartupApplication">
+                                        <Grid ColumnDefinitions="2*, 2*, 1.2*, 1.2*">
+                                            <TextBlock Grid.Column="0" Text="{Binding AppPath}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding CommandLineArgs}" FontSize="11" VerticalAlignment="Center" Margin="10,0,0,0" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding StartWith}" FontSize="11" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                            <CheckBox Grid.Column="3" IsChecked="{Binding AllowMultipleInstances}" IsEnabled="False" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            
+                            <!-- Botones de Acción de Tabla -->
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button Name="BtnAddStartupApp" Content="Añadir Aplicación" Classes="OptionBtn" Width="180" Click="BtnAddStartupApp_Click"/>
+                                <Button Name="BtnRemoveStartupApp" Content="Remover aplicación" Classes="OptionBtn" Width="180" Click="BtnRemoveStartupApp_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- PANEL 9: PLACEHOLDER (PARA OTRAS OPCIONES NO VINCULADAS) -->
+                        <StackPanel Name="PnlPlaceholder" Spacing="20" IsVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="⚙️" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                            <TextBlock Text="Ajustes de LaunchBox Integrados" Foreground="White" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Esta sección contiene opciones avanzadas de LaunchBox que se configuran automáticamente para optimizar el rendimiento del Gestor de Juegos." 
+                                       Foreground="#9ba1af" FontSize="11" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="350" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Todos los parámetros de este panel están preconfigurados con los valores óptimos." 
+                                       Foreground="#64748b" FontSize="10" FontStyle="Italic" TextAlignment="Center" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Panel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <!-- 2. PIE DE VENTANA: Botones de Acción -->
+        <Border Grid.Row="1" Background="#1f2128" BorderBrush="#3f424a" BorderThickness="0,1,0,0" Padding="15,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Spacing="10">
+                <!-- Botón Aceptar -->
+                <Button Name="BtnAccept" Click="BtnAccept_Click" Width="105" Height="28" Background="#2e3138" BorderBrush="#007acc" BorderThickness="1.5" Foreground="White" CornerRadius="2">
+                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="✓" Foreground="#10b981" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="Aceptar" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Botón Cancelar -->
+                <Button Name="BtnCancel" Click="BtnCancel_Click" Width="105" Height="28" Background="#2e3138" BorderBrush="#4f525a" BorderThickness="1" Foreground="White" CornerRadius="2">
+                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="✕" Foreground="#ef4444" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" Margin="0,1,0,0"/>
+                        <TextBlock Text="Cancelar" FontSize="11" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
