@@ -115,6 +115,7 @@
         <SolidColorBrush x:Key="PanelBrush" Color="#1e293b"/>
         <SolidColorBrush x:Key="BorderBrush" Color="#334155"/>
         <SolidColorBrush x:Key="SecondaryTextBrush" Color="#64748b"/>
+        <Color x:Key="DeepDarkColor">#0f172a</Color>
         <SolidColorBrush x:Key="DeepDarkBrush" Color="#0f172a"/>
 
         <!-- Plantilla para Items de Sidebar -->
@@ -706,7 +707,7 @@
                                             <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
                                                 <GradientStop Offset="0" Color="Transparent"/>
                                                 <GradientStop Offset="0.75" Color="#150f172a"/>
-                                                <GradientStop Offset="1" Color="{DynamicResource DeepDarkBrush}"/>
+                                                <GradientStop Offset="1" Color="{DynamicResource DeepDarkColor}"/>
                                             </LinearGradientBrush>
                                         </Border.Background>
                                     </Border>
@@ -1075,7 +1076,7 @@
                                             <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
                                                 <GradientStop Offset="0" Color="Transparent"/>
                                                 <GradientStop Offset="0.8" Color="#150f172a"/>
-                                                <GradientStop Offset="1" Color="{DynamicResource DeepDarkBrush}"/>
+                                                <GradientStop Offset="1" Color="{DynamicResource DeepDarkColor}"/>
                                             </LinearGradientBrush>
                                         </Border.Background>
                                     </Border>

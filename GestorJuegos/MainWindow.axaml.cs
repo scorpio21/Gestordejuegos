@@ -117,7 +117,14 @@ public partial class MainWindow : Window
                                     {
                                         if (!string.IsNullOrWhiteSpace(colorPair.Value))
                                         {
-                                            this.Resources[colorPair.Key] = Avalonia.Media.Brush.Parse(colorPair.Value);
+                                            var parsedColor = Avalonia.Media.Color.Parse(colorPair.Value);
+                                            this.Resources[colorPair.Key] = new Avalonia.Media.SolidColorBrush(parsedColor);
+                                            
+                                            // Si es el fondo oscuro, registrar también el color crudo para los degradados
+                                            if (colorPair.Key == "DeepDarkBrush")
+                                            {
+                                                this.Resources["DeepDarkColor"] = parsedColor;
+                                            }
                                         }
                                     }
                                     themeLoaded = true;
@@ -146,27 +153,45 @@ public partial class MainWindow : Window
             {
                 if (themeName == "Old Default")
                 {
-                    this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#3b82f6"); // Azul Clásico
-                    this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#111827"); // Gris Carbón
-                    this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1f2937"); // Slate Oscuro
-                    this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#374151"); // Gris Medio
+                    var accentColor = Avalonia.Media.Color.Parse("#3b82f6");
+                    var deepDarkColor = Avalonia.Media.Color.Parse("#111827");
+                    var panelColor = Avalonia.Media.Color.Parse("#1f2937");
+                    var borderColor = Avalonia.Media.Color.Parse("#374151");
+
+                    this.Resources["AccentBrush"] = new Avalonia.Media.SolidColorBrush(accentColor);
+                    this.Resources["DeepDarkBrush"] = new Avalonia.Media.SolidColorBrush(deepDarkColor);
+                    this.Resources["DeepDarkColor"] = deepDarkColor;
+                    this.Resources["PanelBrush"] = new Avalonia.Media.SolidColorBrush(panelColor);
+                    this.Resources["BorderBrush"] = new Avalonia.Media.SolidColorBrush(borderColor);
                 }
                 else
                 {
                     // Tema por defecto o personalizado
                     if (_settings.ColorTheme == "Personalizado")
                     {
-                        this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorSelectedBg);
-                        this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorDarkBg);
-                        this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorLightBg);
-                        this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorBorderWindow);
+                        var accentColor = Avalonia.Media.Color.Parse(_settings.ColorSelectedBg);
+                        var deepDarkColor = Avalonia.Media.Color.Parse(_settings.ColorDarkBg);
+                        var panelColor = Avalonia.Media.Color.Parse(_settings.ColorLightBg);
+                        var borderColor = Avalonia.Media.Color.Parse(_settings.ColorBorderWindow);
+
+                        this.Resources["AccentBrush"] = new Avalonia.Media.SolidColorBrush(accentColor);
+                        this.Resources["DeepDarkBrush"] = new Avalonia.Media.SolidColorBrush(deepDarkColor);
+                        this.Resources["DeepDarkColor"] = deepDarkColor;
+                        this.Resources["PanelBrush"] = new Avalonia.Media.SolidColorBrush(panelColor);
+                        this.Resources["BorderBrush"] = new Avalonia.Media.SolidColorBrush(borderColor);
                     }
                     else
                     {
-                        this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#10b981"); // Verde Esmeralda
-                        this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#0f172a"); // Azul Oscuro
-                        this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1e293b"); // Slate Azulado
-                        this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#334155"); // Azul Grisáceo
+                        var accentColor = Avalonia.Media.Color.Parse("#10b981");
+                        var deepDarkColor = Avalonia.Media.Color.Parse("#0f172a");
+                        var panelColor = Avalonia.Media.Color.Parse("#1e293b");
+                        var borderColor = Avalonia.Media.Color.Parse("#334155");
+
+                        this.Resources["AccentBrush"] = new Avalonia.Media.SolidColorBrush(accentColor);
+                        this.Resources["DeepDarkBrush"] = new Avalonia.Media.SolidColorBrush(deepDarkColor);
+                        this.Resources["DeepDarkColor"] = deepDarkColor;
+                        this.Resources["PanelBrush"] = new Avalonia.Media.SolidColorBrush(panelColor);
+                        this.Resources["BorderBrush"] = new Avalonia.Media.SolidColorBrush(borderColor);
                     }
                 }
             }
@@ -174,10 +199,16 @@ public partial class MainWindow : Window
         catch
         {
             // Fallback robusto en caso de error crítico
-            this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#10b981");
-            this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#0f172a");
-            this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1e293b");
-            this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#334155");
+            var accentColor = Avalonia.Media.Color.Parse("#10b981");
+            var deepDarkColor = Avalonia.Media.Color.Parse("#0f172a");
+            var panelColor = Avalonia.Media.Color.Parse("#1e293b");
+            var borderColor = Avalonia.Media.Color.Parse("#334155");
+
+            this.Resources["AccentBrush"] = new Avalonia.Media.SolidColorBrush(accentColor);
+            this.Resources["DeepDarkBrush"] = new Avalonia.Media.SolidColorBrush(deepDarkColor);
+            this.Resources["DeepDarkColor"] = deepDarkColor;
+            this.Resources["PanelBrush"] = new Avalonia.Media.SolidColorBrush(panelColor);
+            this.Resources["BorderBrush"] = new Avalonia.Media.SolidColorBrush(borderColor);
         }
     }
 
