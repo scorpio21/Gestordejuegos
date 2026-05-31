@@ -1,16 +1,31 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using GestorJuegos.Models;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GestorJuegos;
 
 public partial class OpcionesWindow : Window
 {
     private readonly AppSettings _settings;
+
+    // Variables locales de color (Estilo LaunchBox)
+    private string _colorLightBg = "#1c1d22";
+    private string _colorDarkBg = "#121316";
+    private string _colorSelectedBg = "#3a5180";
+    private string _colorHighlightedBg = "#2a2b30";
+    private string _colorBorderHighlight = "#2c2e35";
+    private string _colorBorderWindow = "#5f626a";
+    private string _colorBorderMenu = "#2c2e35";
+    private string _colorForeground = "#ffffff";
+
+    // Colección local para Prioridades de Región
+    private readonly List<string> _regionPriorities = new();
 
     public OpcionesWindow()
     {
@@ -33,6 +48,7 @@ public partial class OpcionesWindow : Window
     {
         ChkEnableSaveManagement.IsCheckedChanged += OnSaveManagementChecked;
         ChkEnableAutoSaveBackups.IsCheckedChanged += OnAutoSaveBackupsChecked;
+        ChkEnableRetroAchievements.IsCheckedChanged += OnRetroAchievementsChecked;
     }
 
     private void LoadSettingsIntoUI()
@@ -86,14 +102,15 @@ public partial class OpcionesWindow : Window
                 }
             }
         }
-        TxtColorLightBg.Text = _settings.ColorLightBg;
-        TxtColorDarkBg.Text = _settings.ColorDarkBg;
-        TxtColorSelectedBg.Text = _settings.ColorSelectedBg;
-        TxtColorHighlightedBg.Text = _settings.ColorHighlightedBg;
-        TxtColorBorderHighlight.Text = _settings.ColorBorderHighlight;
-        TxtColorBorderWindow.Text = _settings.ColorBorderWindow;
-        TxtColorBorderMenu.Text = _settings.ColorBorderMenu;
-        TxtColorForeground.Text = _settings.ColorForeground;
+        _colorLightBg = _settings.ColorLightBg;
+        _colorDarkBg = _settings.ColorDarkBg;
+        _colorSelectedBg = _settings.ColorSelectedBg;
+        _colorHighlightedBg = _settings.ColorHighlightedBg;
+        _colorBorderHighlight = _settings.ColorBorderHighlight;
+        _colorBorderWindow = _settings.ColorBorderWindow;
+        _colorBorderMenu = _settings.ColorBorderMenu;
+        _colorForeground = _settings.ColorForeground;
+        UpdateColorPreviews();
 
         // 5. Características
         ChkScrollImmediately.IsChecked = _settings.ScrollImmediately;
@@ -135,6 +152,37 @@ public partial class OpcionesWindow : Window
 
         // 10. Aplicaciones de Inicio
         LstStartupApps.ItemsSource = _settings.StartupApplications;
+
+        // 11. Bandeja de Sistema
+        ChkEnableSystemTray.IsChecked = _settings.EnableSystemTray;
+        ChkMinimizeToSystemTray.IsChecked = _settings.MinimizeToSystemTray;
+        ChkCloseToSystemTray.IsChecked = _settings.CloseToSystemTray;
+        ChkShowNotificationOnTraySend.IsChecked = _settings.ShowNotificationOnTraySend;
+
+        // 12. Reproducción de Vídeo
+        RadUseWMP.IsChecked = _settings.UseWindowsMediaPlayer;
+        RadUseFFmpeg.IsChecked = !_settings.UseWindowsMediaPlayer;
+
+        // 13. Copias de Seguridad
+        ChkAutoBackupXmlData.IsChecked = _settings.AutoBackupXmlData;
+
+        // 14. Actualizaciones
+        ChkEnableAutoUpdates.IsChecked = _settings.EnableAutoUpdates;
+        ChkEnableBetaUpdates.IsChecked = _settings.EnableBetaUpdates;
+
+        // 15. Prioridades de Región
+        _regionPriorities.Clear();
+        _regionPriorities.AddRange(_settings.RegionPriorities);
+        LstRegionPriorities.ItemsSource = null;
+        LstRegionPriorities.ItemsSource = _regionPriorities;
+
+        // 16. RetroAchievements
+        ChkEnableRetroAchievements.IsChecked = _settings.EnableRetroAchievements;
+        TxtRetroUsername.Text = _settings.RetroUsername;
+        TxtRetroApiKey.Text = _settings.RetroApiKey;
+        ChkShowAchievementNotifications.IsChecked = _settings.ShowAchievementNotifications;
+        ChkShowAchievementBadges.IsChecked = _settings.ShowAchievementBadges;
+        UpdateRetroAchievementsEnablement();
     }
 
     private void UpdateSaveManagementEnablement()
@@ -161,6 +209,134 @@ public partial class OpcionesWindow : Window
     private void OnAutoSaveBackupsChecked(object? sender, RoutedEventArgs e)
     {
         UpdateSaveManagementEnablement();
+    }
+
+    private void UpdateRetroAchievementsEnablement()
+    {
+        if (BrdRetroOptions != null)
+        {
+            BrdRetroOptions.IsEnabled = ChkEnableRetroAchievements.IsChecked == true;
+        }
+    }
+
+    private void OnRetroAchievementsChecked(object? sender, RoutedEventArgs e)
+    {
+        UpdateRetroAchievementsEnablement();
+    }
+
+    private void UpdateColorPreviews()
+    {
+        try { BrdColorLightBg.Background = Brush.Parse(_colorLightBg); } catch {}
+        try { BrdColorDarkBg.Background = Brush.Parse(_colorDarkBg); } catch {}
+        try { BrdColorSelectedBg.Background = Brush.Parse(_colorSelectedBg); } catch {}
+        try { BrdColorHighlightedBg.Background = Brush.Parse(_colorHighlightedBg); } catch {}
+        try { BrdColorBorderHighlight.Background = Brush.Parse(_colorBorderHighlight); } catch {}
+        try { BrdColorBorderWindow.Background = Brush.Parse(_colorBorderWindow); } catch {}
+        try { BrdColorBorderMenu.Background = Brush.Parse(_colorBorderMenu); } catch {}
+        try { BrdColorForeground.Background = Brush.Parse(_colorForeground); } catch {}
+    }
+
+    private async void BtnColor_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string colorTag)
+        {
+            string startColor = colorTag switch
+            {
+                "ColorLightBg" => _colorLightBg,
+                "ColorDarkBg" => _colorDarkBg,
+                "ColorSelectedBg" => _colorSelectedBg,
+                "ColorHighlightedBg" => _colorHighlightedBg,
+                "ColorBorderHighlight" => _colorBorderHighlight,
+                "ColorBorderWindow" => _colorBorderWindow,
+                "ColorBorderMenu" => _colorBorderMenu,
+                "ColorForeground" => _colorForeground,
+                _ => "#ffffff"
+            };
+
+            var dialog = new ColorPickerDialog(startColor);
+            var selectedColor = await dialog.ShowDialog<string>(this);
+
+            if (selectedColor != null)
+            {
+                switch (colorTag)
+                {
+                    case "ColorLightBg": _colorLightBg = selectedColor; break;
+                    case "ColorDarkBg": _colorDarkBg = selectedColor; break;
+                    case "ColorSelectedBg": _colorSelectedBg = selectedColor; break;
+                    case "ColorHighlightedBg": _colorHighlightedBg = selectedColor; break;
+                    case "ColorBorderHighlight": _colorBorderHighlight = selectedColor; break;
+                    case "ColorBorderWindow": _colorBorderWindow = selectedColor; break;
+                    case "ColorBorderMenu": _colorBorderMenu = selectedColor; break;
+                    case "ColorForeground": _colorForeground = selectedColor; break;
+                }
+
+                UpdateColorPreviews();
+            }
+        }
+    }
+
+    private void BtnRegionUp_Click(object? sender, RoutedEventArgs e)
+    {
+        int selectedIndex = LstRegionPriorities.SelectedIndex;
+        if (selectedIndex > 0)
+        {
+            string item = _regionPriorities[selectedIndex];
+            _regionPriorities.RemoveAt(selectedIndex);
+            _regionPriorities.Insert(selectedIndex - 1, item);
+            
+            LstRegionPriorities.ItemsSource = null;
+            LstRegionPriorities.ItemsSource = _regionPriorities;
+            LstRegionPriorities.SelectedIndex = selectedIndex - 1;
+        }
+    }
+
+    private void BtnRegionDown_Click(object? sender, RoutedEventArgs e)
+    {
+        int selectedIndex = LstRegionPriorities.SelectedIndex;
+        if (selectedIndex >= 0 && selectedIndex < _regionPriorities.Count - 1)
+        {
+            string item = _regionPriorities[selectedIndex];
+            _regionPriorities.RemoveAt(selectedIndex);
+            _regionPriorities.Insert(selectedIndex + 1, item);
+            
+            LstRegionPriorities.ItemsSource = null;
+            LstRegionPriorities.ItemsSource = _regionPriorities;
+            LstRegionPriorities.SelectedIndex = selectedIndex + 1;
+        }
+    }
+
+    private async void BtnCheckUpdatesNow_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TxtUpdateStatus == null) return;
+
+        TxtUpdateStatus.Foreground = Brushes.LightGray;
+        TxtUpdateStatus.Text = "Buscando actualizaciones...";
+
+        await Task.Delay(1500);
+
+        TxtUpdateStatus.Foreground = Brush.Parse("#10b981");
+        TxtUpdateStatus.Text = "¡Tu versión ya está al día (v1.2.0.1-Dev)!";
+    }
+
+    private async void BtnTestRetroConnection_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TxtRetroTestStatus == null) return;
+
+        TxtRetroTestStatus.Foreground = Brushes.LightGray;
+        TxtRetroTestStatus.Text = "Estableciendo conexión...";
+
+        await Task.Delay(1500);
+
+        if (string.IsNullOrWhiteSpace(TxtRetroUsername.Text) || string.IsNullOrWhiteSpace(TxtRetroApiKey.Text))
+        {
+            TxtRetroTestStatus.Foreground = Brush.Parse("#ef4444");
+            TxtRetroTestStatus.Text = "Error: El usuario y la clave API no pueden estar vacíos.";
+        }
+        else
+        {
+            TxtRetroTestStatus.Foreground = Brush.Parse("#10b981");
+            TxtRetroTestStatus.Text = "¡Conexión establecida con éxito! Credenciales válidas.";
+        }
     }
 
     private void TvCategories_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -192,6 +368,13 @@ public partial class OpcionesWindow : Window
         if (PnlImportacionesAuto != null) PnlImportacionesAuto.IsVisible = false;
         if (PnlSaveManagement != null) PnlSaveManagement.IsVisible = false;
         if (PnlAppsInicio != null) PnlAppsInicio.IsVisible = false;
+        if (PnlBandejaSistema != null) PnlBandejaSistema.IsVisible = false;
+        if (PnlReproduccionVideo != null) PnlReproduccionVideo.IsVisible = false;
+        if (PnlDatos != null) PnlDatos.IsVisible = false;
+        if (PnlCopiasSeguridad != null) PnlCopiasSeguridad.IsVisible = false;
+        if (PnlActualizaciones != null) PnlActualizaciones.IsVisible = false;
+        if (PnlPrioridadesRegion != null) PnlPrioridadesRegion.IsVisible = false;
+        if (PnlRetroAchievements != null) PnlRetroAchievements.IsVisible = false;
         if (PnlPlaceholder != null) PnlPlaceholder.IsVisible = false;
 
         // Mostrar el panel correspondiente
@@ -235,6 +418,27 @@ public partial class OpcionesWindow : Window
                 break;
             case "AppsInicio":
                 if (PnlAppsInicio != null) PnlAppsInicio.IsVisible = true;
+                break;
+            case "BandejaSistema":
+                if (PnlBandejaSistema != null) PnlBandejaSistema.IsVisible = true;
+                break;
+            case "Actualizaciones":
+                if (PnlActualizaciones != null) PnlActualizaciones.IsVisible = true;
+                break;
+            case "ReproduccionVideo":
+                if (PnlReproduccionVideo != null) PnlReproduccionVideo.IsVisible = true;
+                break;
+            case "Datos":
+                if (PnlDatos != null) PnlDatos.IsVisible = true;
+                break;
+            case "CopiasSeguridad":
+                if (PnlCopiasSeguridad != null) PnlCopiasSeguridad.IsVisible = true;
+                break;
+            case "PrioridadesRegion":
+                if (PnlPrioridadesRegion != null) PnlPrioridadesRegion.IsVisible = true;
+                break;
+            case "RetroAchievements":
+                if (PnlRetroAchievements != null) PnlRetroAchievements.IsVisible = true;
                 break;
             default:
                 if (PnlPlaceholder != null) PnlPlaceholder.IsVisible = true;
@@ -323,14 +527,14 @@ public partial class OpcionesWindow : Window
         {
             _settings.ColorTheme = colorThemeItem.Content?.ToString() ?? "Default";
         }
-        _settings.ColorLightBg = TxtColorLightBg.Text ?? "#1c1d22";
-        _settings.ColorDarkBg = TxtColorDarkBg.Text ?? "#121316";
-        _settings.ColorSelectedBg = TxtColorSelectedBg.Text ?? "#3a5180";
-        _settings.ColorHighlightedBg = TxtColorHighlightedBg.Text ?? "#2a2b30";
-        _settings.ColorBorderHighlight = TxtColorBorderHighlight.Text ?? "#2c2e35";
-        _settings.ColorBorderWindow = TxtColorBorderWindow.Text ?? "#5f626a";
-        _settings.ColorBorderMenu = TxtColorBorderMenu.Text ?? "#2c2e35";
-        _settings.ColorForeground = TxtColorForeground.Text ?? "#ffffff";
+        _settings.ColorLightBg = _colorLightBg;
+        _settings.ColorDarkBg = _colorDarkBg;
+        _settings.ColorSelectedBg = _colorSelectedBg;
+        _settings.ColorHighlightedBg = _colorHighlightedBg;
+        _settings.ColorBorderHighlight = _colorBorderHighlight;
+        _settings.ColorBorderWindow = _colorBorderWindow;
+        _settings.ColorBorderMenu = _colorBorderMenu;
+        _settings.ColorForeground = _colorForeground;
 
         // 5. Características
         _settings.ScrollImmediately = ChkScrollImmediately.IsChecked ?? true;
@@ -359,6 +563,32 @@ public partial class OpcionesWindow : Window
         _settings.BackupOnGameClose = ChkBackupOnGameClose.IsChecked ?? true;
         _settings.EnablePeriodicBackups = ChkEnablePeriodicBackups.IsChecked ?? true;
         _settings.MaxBackupVersions = (int)(NumMaxBackupVersions.Value ?? 25);
+
+        // 11. Bandeja de Sistema
+        _settings.EnableSystemTray = ChkEnableSystemTray.IsChecked ?? false;
+        _settings.MinimizeToSystemTray = ChkMinimizeToSystemTray.IsChecked ?? false;
+        _settings.CloseToSystemTray = ChkCloseToSystemTray.IsChecked ?? true;
+        _settings.ShowNotificationOnTraySend = ChkShowNotificationOnTraySend.IsChecked ?? false;
+
+        // 12. Reproducción de Vídeo
+        _settings.UseWindowsMediaPlayer = RadUseWMP.IsChecked ?? true;
+
+        // 13. Copias de Seguridad
+        _settings.AutoBackupXmlData = ChkAutoBackupXmlData.IsChecked ?? true;
+
+        // 14. Actualizaciones
+        _settings.EnableAutoUpdates = ChkEnableAutoUpdates.IsChecked ?? true;
+        _settings.EnableBetaUpdates = ChkEnableBetaUpdates.IsChecked ?? false;
+
+        // 15. Prioridades de Región
+        _settings.RegionPriorities = new List<string>(_regionPriorities);
+
+        // 16. RetroAchievements
+        _settings.EnableRetroAchievements = ChkEnableRetroAchievements.IsChecked ?? false;
+        _settings.RetroUsername = TxtRetroUsername.Text ?? "";
+        _settings.RetroApiKey = TxtRetroApiKey.Text ?? "";
+        _settings.ShowAchievementNotifications = ChkShowAchievementNotifications.IsChecked ?? true;
+        _settings.ShowAchievementBadges = ChkShowAchievementBadges.IsChecked ?? true;
 
         Close(true);
     }

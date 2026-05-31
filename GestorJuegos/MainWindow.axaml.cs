@@ -4996,6 +4996,7 @@ public partial class MainWindow : Window
             SoundHelper.IsEnabled = _settings.EnableSoundEffects;
             ApplyTheme();
             ApplySearchFilter(); // Refrescar el listado con el nuevo tipo de arte preferido
+            SaveSettings();
             ShowMessage("Configuración guardada correctamente.");
         }
     }

@@ -21,15 +21,21 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
     - Tipo de carátula o arte multimedia preferido por defecto (`AppSettings.PreferredArtType`) e importación automática de carátulas (`AppSettings.AutoImportCovers`).
     - **Personalización Completa de Temas con Cambio en Caliente**: Añadida la categoría completa `Tema de la ventana principal` en el TreeView, con subpaneles funcionales:
       - **Tematización**: Selector dropdown que soporta temas como `"Neon Deluxe Arcade LB"` y `"Old Default"`. Redefine en caliente los pinceles de recursos de Avalonia (`AccentBrush`, `DeepDarkBrush`, `PanelBrush`, `BorderBrush`) a tonos neón retro-arcade (rosa neón, cian neón, negro tech profundo) de forma instantánea al hacer clic en "Aceptar", sin necesidad de reiniciar la app.
-      - **Colores**: Formulario interactivo con 8 códigos hexadecimales personalizables para adaptar fondos, bordes de menú, ventanas y texto.
+      - **Rediseño Completo de Colores (Bloques Cromáticos Interactivos)**: Reemplazados los cuadros de texto hexadecimales por botones rellenos con el color activo en tiempo real. Al pulsarlos, se despliega la nueva ventana modal independiente `ColorPickerDialog` para seleccionar colores mediante una paleta de 24 presets rápidos, deslizadores RGB analógicos o entrada de texto hexadecimal directa.
       - **Características**: Grupo de 7 checkboxes de control que regulan el coloreado visual de divisores, barras de desplazamiento y fondos difuminados.
       - **Fuentes**: Botones de selección tipográfica para personalizar fuentes de juego, barra lateral y detalles, acompañados de un botón para reestablecer valores por defecto.
-    - **Activación y Vinculación Funcional de 5 Nuevas Categorías**:
+    - **Activación y Vinculación Funcional de Categorías Avanzadas**:
       - **Depuración**: Activación y almacenamiento persistente de registros detallados (`AppSettings.EnableDebugLogs`).
       - **Notificaciones**: Selector de sistema de notificación (`AppSettings.NotificationSystem`) para alternar entre cuadros de mensaje y bandeja de sistema.
       - **Importaciones automatizadas**: Opción para habilitar el escaneo automático de ROMs en segundo plano (`AppSettings.EnableAutomaticRomImports`).
       - **Save Management (Gestión de Partidas Guardadas)**: Sistema modular completo con control de habilitación en cascada dinámico y reactivo en tiempo real para copias automáticas al cerrar, respaldos periódicos y límite de versiones configurable con control numérico.
       - **Aplicaciones de inicio**: Grid interactivo premium con agregación y remoción de programas mediante un selector asíncrono de ejecutables `.exe` (`OpenFilePickerAsync`) con parámetros y configuración de múltiples instancias.
+      - **Bandeja de Sistema**: 4 checkboxes funcionales para regular el System Tray (minimizado, cerrado, notificaciones de bandeja) y el texto nativo de advertencia sobre las notificaciones de Windows.
+      - **Reproducción de vídeo**: Selectores de tipo RadioButton agrupados para alternar el motor de vídeo preferido entre Windows Media Player y FFmpeg.
+      - **Datos (Cabecera)**: Panel informativo nativo que guía al usuario a seleccionar una subcategoría a la izquierda.
+      - **Copias de Seguridad (Datos)**: Checkbox funcional para habilitar respaldos automáticos de los archivos de metadatos XML de LaunchBox.
+      - **Prioridades de Región**: Lista interactiva (`ListBox`) con botones premium "▲ Subir" y "▼ Bajar" para reordenar dinámicamente y priorizar las regiones de metadatos.
+      - **RetroAchievements (Logros)**: Formulario de credenciales enmascaradas habilitado en cascada interactiva, incluyendo notificaciones y medallas visuales de logros, junto a un botón de testeo de conexión asíncrono con feedback visual inmediato.
     - Estructuración modular limpia que evita inflar la ventana principal y cumple rigurosamente con la **Política de Cero Advertencias**.
 
 ### v1.2.0-Dev (27 Mayo 2026)

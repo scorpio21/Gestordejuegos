@@ -66,5 +66,34 @@ namespace GestorJuegos.Models
 
         // --- Aplicaciones de Inicio ---
         public List<StartupApplication> StartupApplications { get; set; } = new List<StartupApplication>();
+
+        // --- Bandeja de Sistema (System Tray) ---
+        public bool EnableSystemTray { get; set; } = false;
+        public bool MinimizeToSystemTray { get; set; } = false;
+        public bool CloseToSystemTray { get; set; } = true;
+        public bool ShowNotificationOnTraySend { get; set; } = false;
+
+        // --- Reproducción de Vídeo ---
+        public bool UseWindowsMediaPlayer { get; set; } = true;
+
+        // --- Copias de Seguridad ---
+        public bool AutoBackupXmlData { get; set; } = true;
+
+        // --- Actualizaciones ---
+        public bool EnableAutoUpdates { get; set; } = true;
+        public bool EnableBetaUpdates { get; set; } = false;
+
+        // --- Prioridades de Región ---
+        public List<string> RegionPriorities { get; set; } = new List<string> 
+        { 
+            "United States", "Europe", "Japan", "World", "United Kingdom", "Spain", "France", "Germany", "Australia" 
+        };
+
+        // --- RetroAchievements ---
+        public bool EnableRetroAchievements { get; set; } = false;
+        public string RetroUsername { get; set; } = "";
+        public string RetroApiKey { get; set; } = "";
+        public bool ShowAchievementNotifications { get; set; } = true;
+        public bool ShowAchievementBadges { get; set; } = true;
     }
 }

@@ -95,16 +95,16 @@
                             <TreeViewItem Header="Importaciones automatizadas" Tag="Importaciones"/>
                             <TreeViewItem Header="Save Management" Tag="SaveManagement"/>
                             <TreeViewItem Header="Aplicaciones de inicio" Tag="AppsInicio"/>
-                            <TreeViewItem Header="Bandeja de Sistema" Tag="General"/>
-                            <TreeViewItem Header="Actualizaciones" Tag="General"/>
-                            <TreeViewItem Header="Reproducción de vídeo" Tag="General"/>
+                            <TreeViewItem Header="Bandeja de Sistema" Tag="BandejaSistema"/>
+                            <TreeViewItem Header="Actualizaciones" Tag="Actualizaciones"/>
+                            <TreeViewItem Header="Reproducción de vídeo" Tag="ReproduccionVideo"/>
                             <TreeViewItem Header="Sonido" Tag="Sonido"/>
                         </TreeViewItem>
                         <TreeViewItem Header="Datos" Tag="Datos" IsExpanded="True">
-                            <TreeViewItem Header="Copias de Seguridad" Tag="Placeholder"/>
+                            <TreeViewItem Header="Copias de Seguridad" Tag="CopiasSeguridad"/>
                             <TreeViewItem Header="Game Progress Automation" Tag="Placeholder"/>
                             <TreeViewItem Header="Game Progress Organization" Tag="Placeholder"/>
-                            <TreeViewItem Header="Prioridades de Región" Tag="Placeholder"/>
+                            <TreeViewItem Header="Prioridades de Región" Tag="PrioridadesRegion"/>
                             <TreeViewItem Header="Rutas de Datos" Tag="Rutas"/>
                             <TreeViewItem Header="Buscar" Tag="Placeholder"/>
                         </TreeViewItem>
@@ -131,7 +131,7 @@
                             </TreeViewItem>
                         </TreeViewItem>
                         <TreeViewItem Header="Integraciones" Tag="Placeholder">
-                            <TreeViewItem Header="Retro Achievements (Logros)" Tag="Placeholder"/>
+                            <TreeViewItem Header="Retro Achievements (Logros)" Tag="RetroAchievements"/>
                             <TreeViewItem Header="Steam" Tag="Placeholder"/>
                         </TreeViewItem>
                     </TreeView>
@@ -282,41 +282,57 @@
                                 <!-- Fila 0 -->
                                 <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
                                     <TextBlock Text="Fondo Claro:" Foreground="#9ba1af" FontSize="11"/>
-                                    <TextBox Name="TxtColorLightBg" Text="#1c1d22"/>
+                                    <Button Name="BtnColorLightBg" Click="BtnColor_Click" Tag="ColorLightBg" HorizontalAlignment="Stretch" Height="36" Padding="0" Background="Transparent" BorderBrush="#4f525a" BorderThickness="1" CornerRadius="3">
+                                        <Border Name="BrdColorLightBg" Background="#1c1d22" CornerRadius="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                    </Button>
                                 </StackPanel>
                                 <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5" Margin="10,0,0,10">
                                     <TextBlock Text="Fondo Oscuro:" Foreground="#9ba1af" FontSize="11"/>
-                                    <TextBox Name="TxtColorDarkBg" Text="#121316"/>
+                                    <Button Name="BtnColorDarkBg" Click="BtnColor_Click" Tag="ColorDarkBg" HorizontalAlignment="Stretch" Height="36" Padding="0" Background="Transparent" BorderBrush="#4f525a" BorderThickness="1" CornerRadius="3">
+                                        <Border Name="BrdColorDarkBg" Background="#121316" CornerRadius="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                    </Button>
                                 </StackPanel>
                                 
                                 <!-- Fila 1 -->
                                 <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
                                     <TextBlock Text="Fondo del Elemento Seleccionado:" Foreground="#9ba1af" FontSize="11"/>
-                                    <TextBox Name="TxtColorSelectedBg" Text="#3a5180"/>
+                                    <Button Name="BtnColorSelectedBg" Click="BtnColor_Click" Tag="ColorSelectedBg" HorizontalAlignment="Stretch" Height="36" Padding="0" Background="Transparent" BorderBrush="#4f525a" BorderThickness="1" CornerRadius="3">
+                                        <Border Name="BrdColorSelectedBg" Background="#3a5180" CornerRadius="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                    </Button>
                                 </StackPanel>
                                 <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5" Margin="10,0,0,10">
                                     <TextBlock Text="Fondo del Elemento Destacado:" Foreground="#9ba1af" FontSize="11"/>
-                                    <TextBox Name="TxtColorHighlightedBg" Text="#2a2b30"/>
+                                    <Button Name="BtnColorHighlightedBg" Click="BtnColor_Click" Tag="ColorHighlightedBg" HorizontalAlignment="Stretch" Height="36" Padding="0" Background="Transparent" BorderBrush="#4f525a" BorderThickness="1" CornerRadius="3">
+                                        <Border Name="BrdColorHighlightedBg" Background="#2a2b30" CornerRadius="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                    </Button>
                                 </StackPanel>
                                 
                                 <!-- Fila 2 -->
                                 <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
                                     <TextBlock Text="Borde del Elemento destacado:" Foreground="#9ba1af" FontSize="11"/>
-                                    <TextBox Name="TxtColorBorderHighlight" Text="#2c2e35"/>
+                                    <Button Name="BtnColorBorderHighlight" Click="BtnColor_Click" Tag="ColorBorderHighlight" HorizontalAlignment="Stretch" Height="36" Padding="0" Background="Transparent" BorderBrush="#4f525a" BorderThickness="1" CornerRadius="3">
+                                        <Border Name="BrdColorBorderHighlight" Background="#2c2e35" CornerRadius="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                    </Button>
                                 </StackPanel>
                                 <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5" Margin="10,0,0,10">
                                     <TextBlock Text="Borde de Ventana:" Foreground="#9ba1af" FontSize="11"/>
-                                    <TextBox Name="TxtColorBorderWindow" Text="#5f626a"/>
+                                    <Button Name="BtnColorBorderWindow" Click="BtnColor_Click" Tag="ColorBorderWindow" HorizontalAlignment="Stretch" Height="36" Padding="0" Background="Transparent" BorderBrush="#4f525a" BorderThickness="1" CornerRadius="3">
+                                        <Border Name="BrdColorBorderWindow" Background="#5f626a" CornerRadius="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                    </Button>
                                 </StackPanel>
                                 
                                 <!-- Fila 3 -->
                                 <StackPanel Grid.Row="3" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
                                     <TextBlock Text="Borde del Menú:" Foreground="#9ba1af" FontSize="11"/>
-                                    <TextBox Name="TxtColorBorderMenu" Text="#2c2e35"/>
+                                    <Button Name="BtnColorBorderMenu" Click="BtnColor_Click" Tag="ColorBorderMenu" HorizontalAlignment="Stretch" Height="36" Padding="0" Background="Transparent" BorderBrush="#4f525a" BorderThickness="1" CornerRadius="3">
+                                        <Border Name="BrdColorBorderMenu" Background="#2c2e35" CornerRadius="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                    </Button>
                                 </StackPanel>
                                 <StackPanel Grid.Row="3" Grid.Column="1" Spacing="5" Margin="10,0,0,10">
                                     <TextBlock Text="Primer plano (texto):" Foreground="#9ba1af" FontSize="11"/>
-                                    <TextBox Name="TxtColorForeground" Text="#ffffff"/>
+                                    <Button Name="BtnColorForeground" Click="BtnColor_Click" Tag="ColorForeground" HorizontalAlignment="Stretch" Height="36" Padding="0" Background="Transparent" BorderBrush="#4f525a" BorderThickness="1" CornerRadius="3">
+                                        <Border Name="BrdColorForeground" Background="#ffffff" CornerRadius="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                    </Button>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -463,14 +479,119 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <!-- PANEL 9: PLACEHOLDER (PARA OTRAS OPCIONES NO VINCULADAS) -->
+                        <!-- PANEL: BANDEJA DE SISTEMA -->
+                        <StackPanel Name="PnlBandejaSistema" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Bandeja de Sistema" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            
+                            <StackPanel Spacing="10" Margin="0,5">
+                                <CheckBox Name="ChkEnableSystemTray" Content="Enable System Tray"/>
+                                <CheckBox Name="ChkMinimizeToSystemTray" Content="Minimizar a la Bandeja de Sistema" Margin="20,0,0,0"/>
+                                <CheckBox Name="ChkCloseToSystemTray" Content="Cerrar a la Bandeja de Sistema" Margin="20,0,0,0"/>
+                                <CheckBox Name="ChkShowNotificationOnTraySend" Content="Mostrar notificación cuando LaunchBox se haya enviado a la bandeja del sistema" Margin="20,0,0,0"/>
+                            </StackPanel>
+
+                            <Border Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1" Margin="0,10,0,0">
+                                <TextBlock Text="Has deshabilitado las notificaciones. Perderás la visibilidad de cualquier indicación de mensaje mientras LaunchBox esté cerrado o minimizado en la bandeja del sistema. Para habilitar estas notificaciones, ve a Configuración de Windows, Sistema, Notificaciones y acciones y establece 'Recibir notificaciones de aplicaciones y otros remitentes' en Activado." 
+                                           Foreground="#64748b" FontSize="10.5" FontStyle="Italic" TextWrapping="Wrap" LineHeight="16"/>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- PANEL: REPRODUCCIÓN DE VÍDEO -->
+                        <StackPanel Name="PnlReproduccionVideo" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Reproducción de vídeo" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            
+                            <StackPanel Spacing="12" Margin="0,10">
+                                <RadioButton Name="RadUseWMP" Content="Usa Windows Media Player para la reproducción de video" GroupName="VideoEngineGroup" FontSize="12" Foreground="#d1d5db"/>
+                                <RadioButton Name="RadUseFFmpeg" Content="Use FFmpeg" GroupName="VideoEngineGroup" FontSize="12" Foreground="#d1d5db"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- PANEL: DATOS (PADRE) -->
+                        <StackPanel Name="PnlDatos" Spacing="20" IsVisible="False" VerticalAlignment="Top" Margin="0,10">
+                            <TextBlock Text="Datos" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Por favor selecciona una sub-página a la izquierda." Foreground="#9ba1af" FontSize="12"/>
+                        </StackPanel>
+
+                        <!-- PANEL: COPIAS DE SEGURIDAD -->
+                        <StackPanel Name="PnlCopiasSeguridad" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Copias de Seguridad" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            
+                            <CheckBox Name="ChkAutoBackupXmlData" Content="Realiza una copia de seguridad automática de los archivos de datos XML de LaunchBox (recomendado)" Margin="0,5"/>
+                        </StackPanel>
+
+                        <!-- PANEL: ACTUALIZACIONES -->
+                        <StackPanel Name="PnlActualizaciones" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Actualizaciones" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            
+                            <CheckBox Name="ChkEnableAutoUpdates" Content="Buscar actualizaciones automáticamente al iniciar"/>
+                            <CheckBox Name="ChkEnableBetaUpdates" Content="Notificarme cuando haya versiones beta disponibles" Margin="20,0,0,0"/>
+                            
+                            <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,10,0,0">
+                                <Button Name="BtnCheckUpdatesNow" Content="Buscar actualizaciones ahora" Classes="OptionBtn" Click="BtnCheckUpdatesNow_Click"/>
+                                <TextBlock Name="TxtUpdateStatus" Text="" Foreground="#10b981" FontSize="11" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            </StackPanel>
+
+                            <Border Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1" Margin="0,10,0,0">
+                                <TextBlock Text="El Gestor de Juegos buscará periódicamente nuevas versiones estables en el repositorio oficial para garantizar que dispongas de todas las mejoras de rendimiento y compatibilidad con mandos." 
+                                           Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap" LineHeight="16"/>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- PANEL: PRIORIDADES DE REGIÓN -->
+                        <StackPanel Name="PnlPrioridadesRegion" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Prioridades de Región" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Establece el orden de prioridad de región al seleccionar metadatos y carátulas de juegos con múltiples lanzamientos regionales:" 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                                <ListBox Name="LstRegionPriorities" Grid.Column="0" Height="220" Background="#1b1c21" BorderBrush="#3f424a" BorderThickness="1" CornerRadius="3">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" FontSize="12" Padding="5,2"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                                
+                                <StackPanel Grid.Column="1" Spacing="10" Margin="15,0,0,0" VerticalAlignment="Center">
+                                    <Button Name="BtnRegionUp" Content="▲ Subir" Classes="OptionBtn" Width="100" Click="BtnRegionUp_Click"/>
+                                    <Button Name="BtnRegionDown" Content="▼ Bajar" Classes="OptionBtn" Width="100" Click="BtnRegionDown_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- PANEL: RETROACHIEVEMENTS -->
+                        <StackPanel Name="PnlRetroAchievements" Spacing="15" IsVisible="False">
+                            <TextBlock Text="RetroAchievements" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            
+                            <CheckBox Name="ChkEnableRetroAchievements" Content="Habilitar integración con RetroAchievements"/>
+                            
+                            <Border Name="BrdRetroOptions" Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1" IsEnabled="False" Margin="15,0,0,0">
+                                <StackPanel Spacing="12">
+                                    <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="130, *">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Nombre de Usuario:" Foreground="#d1d5db" FontSize="11" VerticalAlignment="Center" Margin="0,0,0,10"/>
+                                        <TextBox Name="TxtRetroUsername" Grid.Row="0" Grid.Column="1" PlaceholderText="Usuario de RetroAchievements" Margin="0,0,0,10"/>
+                                        
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Token API / Clave:" Foreground="#d1d5db" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBox Name="TxtRetroApiKey" Grid.Row="1" Grid.Column="1" PasswordChar="●" PlaceholderText="Token API oficial"/>
+                                    </Grid>
+                                    
+                                    <CheckBox Name="ChkShowAchievementNotifications" Content="Mostrar notificación en pantalla al desbloquear un logro"/>
+                                    <CheckBox Name="ChkShowAchievementBadges" Content="Mostrar medallas de logros en la ficha del juego"/>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,5,0,0">
+                                        <Button Name="BtnTestRetroConnection" Content="Probar conexión" Classes="OptionBtn" Click="BtnTestRetroConnection_Click"/>
+                                        <TextBlock Name="TxtRetroTestStatus" Text="" Foreground="#38bdf8" FontSize="11" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- PANEL: PLACEHOLDER -->
                         <StackPanel Name="PnlPlaceholder" Spacing="20" IsVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <TextBlock Text="⚙️" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
                             <TextBlock Text="Ajustes de LaunchBox Integrados" Foreground="White" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center"/>
                             <TextBlock Text="Esta sección contiene opciones avanzadas de LaunchBox que se configuran automáticamente para optimizar el rendimiento del Gestor de Juegos." 
                                        Foreground="#9ba1af" FontSize="11" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="350" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Todos los parámetros de este panel están preconfigurados con los valores óptimos." 
-                                       Foreground="#64748b" FontSize="10" FontStyle="Italic" TextAlignment="Center" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Panel>
                 </ScrollViewer>
