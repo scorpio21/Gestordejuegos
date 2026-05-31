@@ -102,16 +102,16 @@
                         </TreeViewItem>
                         <TreeViewItem Header="Datos" Tag="Datos" IsExpanded="True">
                             <TreeViewItem Header="Copias de Seguridad" Tag="CopiasSeguridad"/>
-                            <TreeViewItem Header="Game Progress Automation" Tag="Placeholder"/>
-                            <TreeViewItem Header="Game Progress Organization" Tag="Placeholder"/>
+                            <TreeViewItem Header="Game Progress Automation" Tag="ProgressAutomation"/>
+                            <TreeViewItem Header="Game Progress Organization" Tag="ProgressOrganization"/>
                             <TreeViewItem Header="Prioridades de Región" Tag="PrioridadesRegion"/>
                             <TreeViewItem Header="Rutas de Datos" Tag="Rutas"/>
-                            <TreeViewItem Header="Buscar" Tag="Placeholder"/>
+                            <TreeViewItem Header="Buscar" Tag="Buscar"/>
                         </TreeViewItem>
-                        <TreeViewItem Header="Juegos Relacionados" Tag="Placeholder">
-                            <TreeViewItem Header="Juegos Similares" Tag="Placeholder"/>
-                            <TreeViewItem Header="Juegos recomendados" Tag="Placeholder"/>
-                            <TreeViewItem Header="Puertos posibles" Tag="Placeholder"/>
+                        <TreeViewItem Header="Juegos Relacionados" Tag="JuegosRelacionados">
+                            <TreeViewItem Header="Juegos Similares" Tag="JuegosSimilares"/>
+                            <TreeViewItem Header="Juegos recomendados" Tag="JuegosRecomendados"/>
+                            <TreeViewItem Header="Puertos posibles" Tag="PuertosPosibles"/>
                         </TreeViewItem>
                         <TreeViewItem Header="Media" Tag="Media" IsExpanded="True">
                             <TreeViewItem Header="Automatic Imports Media" Tag="Media"/>
@@ -546,8 +546,8 @@
                             <Grid ColumnDefinitions="*, Auto" Margin="0,5">
                                 <ListBox Name="LstRegionPriorities" Grid.Column="0" Height="220" Background="#1b1c21" BorderBrush="#3f424a" BorderThickness="1" CornerRadius="3">
                                     <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding}" FontSize="12" Padding="5,2"/>
+                                        <DataTemplate x:DataType="models:RegionPriorityItem">
+                                            <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding RegionName}" FontSize="12" Margin="5,2"/>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
@@ -584,6 +584,280 @@
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
+                        </StackPanel>
+
+                        <!-- PANEL: GAME PROGRESS AUTOMATION (NUEVO) -->
+                        <StackPanel Name="PnlProgressAutomation" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Game Progress Automation" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Configure cómo se actualiza automáticamente el estado de progreso de tus juegos en función de tu actividad y logros:" 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <CheckBox Name="ChkEnableProgressAutomation" Content="Habilitar automatización del progreso de juego"/>
+                            
+                            <Border Name="BrdProgressAutomationOptions" Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1">
+                                <StackPanel Spacing="12">
+                                    <!-- Predeterminado -->
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Estado predeterminado de juego importado/nuevo:" Foreground="#d1d5db" FontSize="11"/>
+                                        <ComboBox Name="CmbProgAutoDefault" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                    
+                                    <Border Height="1" Background="#3f424a" Margin="0,5"/>
+                                    
+                                    <!-- Tiempo de Juego -->
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Si el tiempo de juego es de al menos (minutos):" Foreground="#d1d5db" FontSize="11"/>
+                                        <Grid ColumnDefinitions="*, *">
+                                            <NumericUpDown Name="NumProgAutoPlaytimeMin" Minimum="1" Maximum="10000" Value="30" Grid.Column="0" Margin="0,0,10,0"/>
+                                            <ComboBox Name="CmbProgAutoPlaytimeVal" Grid.Column="1" HorizontalAlignment="Stretch"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    
+                                    <!-- Logros Obtenidos -->
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Si se obtiene cualquier logro, establecer estado a:" Foreground="#d1d5db" FontSize="11"/>
+                                        <ComboBox Name="CmbProgAutoEarnedAchVal" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Inactividad -->
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Si no se ha jugado en (días), establecer estado a:" Foreground="#d1d5db" FontSize="11"/>
+                                        <Grid ColumnDefinitions="*, *">
+                                            <NumericUpDown Name="NumProgAutoInactiveDays" Minimum="1" Maximum="365" Value="30" Grid.Column="0" Margin="0,0,10,0"/>
+                                            <ComboBox Name="CmbProgAutoInactiveVal" Grid.Column="1" HorizontalAlignment="Stretch"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    
+                                    <Border Height="1" Background="#3f424a" Margin="0,5"/>
+                                    
+                                    <!-- Logros Completados / Masterizado -->
+                                    <Grid RowDefinitions="Auto, Auto, Auto, Auto" ColumnDefinitions="*, *">
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
+                                            <TextBlock Text="Si se vence en Softcore:" Foreground="#d1d5db" FontSize="11"/>
+                                            <ComboBox Name="CmbProgAutoSoftcoreBeatenVal" HorizontalAlignment="Stretch"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5" Margin="10,0,0,10">
+                                            <TextBlock Text="Si se vence en Hardcore:" Foreground="#d1d5db" FontSize="11"/>
+                                            <ComboBox Name="CmbProgAutoHardcoreBeatenVal" HorizontalAlignment="Stretch"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
+                                            <TextBlock Text="Si se completa Softcore:" Foreground="#d1d5db" FontSize="11"/>
+                                            <ComboBox Name="CmbProgAutoSoftcoreCompleteVal" HorizontalAlignment="Stretch"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5" Margin="10,0,0,10">
+                                            <TextBlock Text="Si se completa Hardcore:" Foreground="#d1d5db" FontSize="11"/>
+                                            <ComboBox Name="CmbProgAutoHardcoreMasteredVal" HorizontalAlignment="Stretch"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <Border Height="1" Background="#3f424a" Margin="0,5"/>
+                                    
+                                    <!-- Filtro de Estados -->
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Incluir solo juegos que tengan estos estados (separados por coma):" Foreground="#d1d5db" FontSize="11"/>
+                                        <TextBox Name="TxtProgAutoIncludeStatuses" PlaceholderText="Ej: Not Started / Want to Play"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- PANEL: GAME PROGRESS ORGANIZATION (NUEVO) -->
+                        <StackPanel Name="PnlProgressOrganization" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Game Progress Organization" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Organiza los grupos de estado y los estados que se asignan a los juegos de tu biblioteca:" 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <Grid ColumnDefinitions="*, 200" Margin="0,5">
+                                <TreeView Name="TvProgressOrg" Grid.Column="0" Height="260" Background="#1b1c21" BorderBrush="#3f424a" BorderThickness="1" CornerRadius="3"/>
+                                
+                                <StackPanel Grid.Column="1" Spacing="8" Margin="15,0,0,0">
+                                    <Button Name="BtnProgOrgUp" Content="▲ Subir" Classes="OptionBtn" HorizontalAlignment="Stretch" Click="BtnProgOrgUp_Click"/>
+                                    <Button Name="BtnProgOrgDown" Content="▼ Bajar" Classes="OptionBtn" HorizontalAlignment="Stretch" Click="BtnProgOrgDown_Click"/>
+                                    <Button Name="BtnProgOrgDelete" Content="✕ Eliminar" Classes="OptionBtn" HorizontalAlignment="Stretch" Click="BtnProgOrgDelete_Click"/>
+                                    
+                                    <Border Height="1" Background="#3f424a" Margin="0,5"/>
+                                    
+                                    <TextBox Name="TxtProgOrgNewItem" PlaceholderText="Nombre del grupo/estado..." Height="30"/>
+                                    <Button Name="BtnProgOrgAddGroup" Content="+ Añadir Grupo" Classes="OptionBtn" HorizontalAlignment="Stretch" Click="BtnProgOrgAddGroup_Click"/>
+                                    <Button Name="BtnProgOrgAddStatus" Content="+ Añadir Estado" Classes="OptionBtn" HorizontalAlignment="Stretch" Click="BtnProgOrgAddStatus_Click"/>
+                                    
+                                    <Border Height="1" Background="#3f424a" Margin="0,5"/>
+                                    
+                                    <Button Name="BtnProgOrgReset" Content="Restablecer" Classes="OptionBtn" HorizontalAlignment="Stretch" Click="BtnProgOrgReset_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- PANEL: BUSCAR (NUEVO) -->
+                        <StackPanel Name="PnlBuscar" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Buscar" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Configura las opciones de búsqueda y recuperación de metadatos de LaunchBox:" 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <Border Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1">
+                                <StackPanel Spacing="12">
+                                    <CheckBox Name="ChkEnableLaunchBoxMetadataSearch" Content="Habilitar búsqueda en la base de datos de LaunchBox"/>
+                                    <CheckBox Name="ChkLoadLaunchBoxRatings" Content="Cargar calificaciones oficiales de LaunchBox"/>
+                                    <CheckBox Name="ChkUseCommunityRatings" Content="Usar calificaciones promedio de la comunidad de LaunchBox"/>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,0,0,0">
+                                        <TextBlock Text="Mínimo de calificaciones de comunidad:" Foreground="#d1d5db" FontSize="11" VerticalAlignment="Center"/>
+                                        <NumericUpDown Name="NumMinCommunityRatings" Minimum="1" Maximum="10000" Value="5" Width="120" FontSize="12"/>
+                                    </StackPanel>
+                                    
+                                    <Border Height="1" Background="#3f424a" Margin="0,5"/>
+                                    
+                                    <CheckBox Name="ChkUseAdvancedSearchSyntax" Content="Usar sintaxis de búsqueda avanzada (AND, OR, NOT, comillas)"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- PANEL: JUEGOS RELACIONADOS (NUEVO) -->
+                        <StackPanel Name="PnlJuegosRelacionados" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Juegos Relacionados" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="El Gestor de Juegos puede buscar juegos similares, recomendar títulos y detectar posibles puertos para las ROMs de tu biblioteca." 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <Border Background="#1b1c21" Padding="20" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="Selecciona una opción de la izquierda para configurar las reglas específicas:" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="10,0,0,0">
+                                        <Ellipse Width="4" Height="4" Fill="#3a5180" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Juegos Similares: Reglas para determinar la afinidad general entre juegos." Foreground="#9ba1af" FontSize="11" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="10,0,0,0">
+                                        <Ellipse Width="4" Height="4" Fill="#3a5180" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Juegos recomendados: Criterios para recomendarte juegos excelentes que no has jugado." Foreground="#9ba1af" FontSize="11" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="10,0,0,0">
+                                        <Ellipse Width="4" Height="4" Fill="#3a5180" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Puertos posibles: Reglas para identificar versiones del mismo juego en otras plataformas." Foreground="#9ba1af" FontSize="11" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- PANEL: JUEGOS SIMILARES (NUEVO) -->
+                        <StackPanel Name="PnlJuegosSimilares" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Juegos Similares" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Establece los criterios para encontrar juegos similares en tu biblioteca o base de datos:" 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                                <CheckBox Name="ChkSimilarIncludeNonLibrary" Grid.Column="0" Content="Incluir juegos que no estén en la biblioteca activa"/>
+                                <Button Name="BtnResetSimilar" Grid.Column="1" Content="Revertir a Por Defecto" Classes="OptionBtn" Click="BtnResetSimilar_Click"/>
+                            </Grid>
+                            
+                            <!-- Cabecera de la Tabla -->
+                            <Border Background="#282a32" BorderBrush="#3f424a" BorderThickness="1" CornerRadius="3,3,0,0" Padding="10,8">
+                                <Grid ColumnDefinitions="1.2*, *, *, 0.8*, 0.8*, 1.2*">
+                                    <TextBlock Grid.Column="0" Text="Campo" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="1" Text="Comparación" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="2" Text="Tipo de Valor" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="3" Text="Valor" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="4" Text="Peso" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="5" Text="Juegos Destino" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Lista de Criterios -->
+                            <ListBox Name="LstSimilarCriteria" Height="250" Background="#1b1c21" BorderBrush="#3f424a" BorderThickness="1,0,1,1" CornerRadius="0,0,3,3" x:CompileBindings="False">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="1.2*, *, *, 0.8*, 0.8*, 1.2*" Margin="0,2">
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleFields}" SelectedItem="{Binding Field, Mode=TwoWay}" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleComparisons}" SelectedItem="{Binding Comparison, Mode=TwoWay}" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleValueTypes}" SelectedItem="{Binding ValueType, Mode=TwoWay}" Grid.Column="2" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <TextBox Text="{Binding CustomValue, Mode=TwoWay}" Grid.Column="3" Margin="2" PlaceholderText="Valor..."/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleWeights}" SelectedItem="{Binding Weight, Mode=TwoWay}" Grid.Column="4" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleTargetGames}" SelectedItem="{Binding TargetGames, Mode=TwoWay}" Grid.Column="5" Margin="2" HorizontalAlignment="Stretch"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+
+                        <!-- PANEL: JUEGOS RECOMENDADOS (NUEVO) -->
+                        <StackPanel Name="PnlJuegosRecomendados" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Juegos Recomendados" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Criterios para sugerirte nuevos juegos recomendados basados en tu biblioteca actual:" 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                                <CheckBox Name="ChkRecommendedIncludeNonLibrary" Grid.Column="0" Content="Incluir juegos que no estén en la biblioteca activa"/>
+                                <Button Name="BtnResetRecommended" Grid.Column="1" Content="Revertir a Por Defecto" Classes="OptionBtn" Click="BtnResetRecommended_Click"/>
+                            </Grid>
+                            
+                            <!-- Cabecera de la Tabla -->
+                            <Border Background="#282a32" BorderBrush="#3f424a" BorderThickness="1" CornerRadius="3,3,0,0" Padding="10,8">
+                                <Grid ColumnDefinitions="1.2*, *, *, 0.8*, 0.8*, 1.2*">
+                                    <TextBlock Grid.Column="0" Text="Campo" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="1" Text="Comparación" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="2" Text="Tipo de Valor" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="3" Text="Valor" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="4" Text="Peso" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="5" Text="Juegos Destino" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Lista de Criterios -->
+                            <ListBox Name="LstRecommendedCriteria" Height="250" Background="#1b1c21" BorderBrush="#3f424a" BorderThickness="1,0,1,1" CornerRadius="0,0,3,3" x:CompileBindings="False">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="1.2*, *, *, 0.8*, 0.8*, 1.2*" Margin="0,2">
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleFields}" SelectedItem="{Binding Field, Mode=TwoWay}" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleComparisons}" SelectedItem="{Binding Comparison, Mode=TwoWay}" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleValueTypes}" SelectedItem="{Binding ValueType, Mode=TwoWay}" Grid.Column="2" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <TextBox Text="{Binding CustomValue, Mode=TwoWay}" Grid.Column="3" Margin="2" PlaceholderText="Valor..."/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleWeights}" SelectedItem="{Binding Weight, Mode=TwoWay}" Grid.Column="4" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleTargetGames}" SelectedItem="{Binding TargetGames, Mode=TwoWay}" Grid.Column="5" Margin="2" HorizontalAlignment="Stretch"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+
+                        <!-- PANEL: PUERTOS POSIBLES (NUEVO) -->
+                        <StackPanel Name="PnlPuertosPosibles" Spacing="15" IsVisible="False">
+                            <TextBlock Text="Puertos Posibles" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Define las condiciones necesarias para agrupar ROMs como versiones alternativas del mismo juego:" 
+                                       Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
+                            
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                                <CheckBox Name="ChkPossiblePortsIncludeNonLibrary" Grid.Column="0" Content="Incluir juegos que no estén en la biblioteca activa"/>
+                                <Button Name="BtnResetPossiblePorts" Grid.Column="1" Content="Revertir a Por Defecto" Classes="OptionBtn" Click="BtnResetPossiblePorts_Click"/>
+                            </Grid>
+                            
+                            <!-- Cabecera de la Tabla -->
+                            <Border Background="#282a32" BorderBrush="#3f424a" BorderThickness="1" CornerRadius="3,3,0,0" Padding="10,8">
+                                <Grid ColumnDefinitions="1.2*, *, *, 0.8*, 0.8*, 1.2*">
+                                    <TextBlock Grid.Column="0" Text="Campo" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="1" Text="Comparación" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="2" Text="Tipo de Valor" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="3" Text="Valor" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="4" Text="Peso" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                    <TextBlock Grid.Column="5" Text="Juegos Destino" Foreground="#9ba1af" FontSize="11" FontWeight="Bold" Margin="2,0"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Lista de Criterios -->
+                            <ListBox Name="LstPossiblePortsCriteria" Height="250" Background="#1b1c21" BorderBrush="#3f424a" BorderThickness="1,0,1,1" CornerRadius="0,0,3,3" x:CompileBindings="False">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="1.2*, *, *, 0.8*, 0.8*, 1.2*" Margin="0,2">
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleFields}" SelectedItem="{Binding Field, Mode=TwoWay}" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleComparisons}" SelectedItem="{Binding Comparison, Mode=TwoWay}" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleValueTypes}" SelectedItem="{Binding ValueType, Mode=TwoWay}" Grid.Column="2" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <TextBox Text="{Binding CustomValue, Mode=TwoWay}" Grid.Column="3" Margin="2" PlaceholderText="Valor..."/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleWeights}" SelectedItem="{Binding Weight, Mode=TwoWay}" Grid.Column="4" Margin="2" HorizontalAlignment="Stretch"/>
+                                            <ComboBox ItemsSource="{Binding $parent[OpcionesWindow].RuleTargetGames}" SelectedItem="{Binding TargetGames, Mode=TwoWay}" Grid.Column="5" Margin="2" HorizontalAlignment="Stretch"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
                         </StackPanel>
 
                         <!-- PANEL: PLACEHOLDER -->

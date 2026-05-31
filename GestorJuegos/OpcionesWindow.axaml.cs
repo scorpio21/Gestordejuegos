@@ -25,7 +25,45 @@ public partial class OpcionesWindow : Window
     private string _colorForeground = "#ffffff";
 
     // Colección local para Prioridades de Región
-    private readonly List<string> _regionPriorities = new();
+    private readonly List<RegionPriorityItem> _regionPriorities = new();
+
+    // Colecciones locales para Juegos Relacionados
+    private readonly List<GameRelationCriterion> _similarCriteria = new();
+    private readonly List<GameRelationCriterion> _recommendedCriteria = new();
+    private readonly List<GameRelationCriterion> _possiblePortsCriteria = new();
+
+    // Colección local para Organización de Progreso
+    private readonly List<ProgressStatusGroup> _progressStatusGroups = new();
+
+    // Listas auxiliares para los ComboBoxes de reglas en XAML
+    public List<string> RuleFields { get; } = new()
+    {
+        "Título", "Nombre Alternativo", "Series", "Género", "Modo de Juego",
+        "Cantidad Máx. de...", "Plataforma", "Calificación",
+        "Calificación en la Comunidad", "Desarrollador", "Editor",
+        "Tipo de Lanzamiento", "Notas"
+    };
+
+    public List<string> RuleComparisons { get; } = new()
+    {
+        "Es Igual A", "No es Igual A", "Es similar a", "No es similar a",
+        "No está vacío", "Es Mayor Que"
+    };
+
+    public List<string> RuleValueTypes { get; } = new()
+    {
+        "Valor del juego", "Valor personalizado"
+    };
+
+    public List<string> RuleWeights { get; } = new()
+    {
+        "Requerido", "1", "2", "3"
+    };
+
+    public List<string> RuleTargetGames { get; } = new()
+    {
+        "Todos los juegos...", "Solo juegos locales...", "Solo juegos de..."
+    };
 
     public OpcionesWindow()
     {
@@ -49,6 +87,7 @@ public partial class OpcionesWindow : Window
         ChkEnableSaveManagement.IsCheckedChanged += OnSaveManagementChecked;
         ChkEnableAutoSaveBackups.IsCheckedChanged += OnAutoSaveBackupsChecked;
         ChkEnableRetroAchievements.IsCheckedChanged += OnRetroAchievementsChecked;
+        ChkEnableProgressAutomation.IsCheckedChanged += OnProgressAutomationChecked;
     }
 
     private void LoadSettingsIntoUI()
@@ -172,7 +211,10 @@ public partial class OpcionesWindow : Window
 
         // 15. Prioridades de Región
         _regionPriorities.Clear();
-        _regionPriorities.AddRange(_settings.RegionPriorities);
+        foreach (var item in _settings.RegionPriorities)
+        {
+            _regionPriorities.Add(new RegionPriorityItem { RegionName = item.RegionName, IsChecked = item.IsChecked });
+        }
         LstRegionPriorities.ItemsSource = null;
         LstRegionPriorities.ItemsSource = _regionPriorities;
 
@@ -183,6 +225,119 @@ public partial class OpcionesWindow : Window
         ChkShowAchievementNotifications.IsChecked = _settings.ShowAchievementNotifications;
         ChkShowAchievementBadges.IsChecked = _settings.ShowAchievementBadges;
         UpdateRetroAchievementsEnablement();
+
+        // 17. Game Progress Automation
+        ChkEnableProgressAutomation.IsChecked = _settings.EnableProgressAutomation;
+        NumProgAutoPlaytimeMin.Value = _settings.ProgAutoPlaytimeMin;
+        NumProgAutoInactiveDays.Value = _settings.ProgAutoInactiveDays;
+        TxtProgAutoIncludeStatuses.Text = _settings.ProgAutoIncludeStatuses;
+
+        var statesList = new List<string>
+        {
+            "Not Started / Unplayed",
+            "Not Started / Want to Play",
+            "Not Started / Won't Play",
+            "Active / In Progress",
+            "Active / Continuous",
+            "Active / Paused",
+            "Done / Beaten",
+            "Done / Completed",
+            "Done / Mastered",
+            "Done / Dropped",
+            "(Ninguno)"
+        };
+
+        void PopulateStateCmb(ComboBox cmb, string selectedValue)
+        {
+            cmb.ItemsSource = statesList;
+            cmb.SelectedItem = selectedValue;
+            if (cmb.SelectedItem == null && statesList.Count > 0)
+                cmb.SelectedIndex = 0;
+        }
+
+        PopulateStateCmb(CmbProgAutoDefault, _settings.ProgAutoDefault);
+        PopulateStateCmb(CmbProgAutoPlaytimeVal, _settings.ProgAutoPlaytimeVal);
+        PopulateStateCmb(CmbProgAutoEarnedAchVal, _settings.ProgAutoEarnedAchVal);
+        PopulateStateCmb(CmbProgAutoInactiveVal, _settings.ProgAutoInactiveVal);
+        PopulateStateCmb(CmbProgAutoSoftcoreBeatenVal, _settings.ProgAutoSoftcoreBeatenVal);
+        PopulateStateCmb(CmbProgAutoHardcoreBeatenVal, _settings.ProgAutoHardcoreBeatenVal);
+        PopulateStateCmb(CmbProgAutoSoftcoreCompleteVal, _settings.ProgAutoSoftcoreCompleteVal);
+        PopulateStateCmb(CmbProgAutoHardcoreMasteredVal, _settings.ProgAutoHardcoreMasteredVal);
+
+        UpdateProgressAutomationEnablement();
+
+        // 18. Game Progress Organization
+        _progressStatusGroups.Clear();
+        foreach (var group in _settings.ProgressStatusGroups)
+        {
+            _progressStatusGroups.Add(new ProgressStatusGroup
+            {
+                GroupName = group.GroupName,
+                Items = new List<string>(group.Items)
+            });
+        }
+        LoadProgressOrgTree();
+
+        // 19. Buscar
+        ChkEnableLaunchBoxMetadataSearch.IsChecked = _settings.EnableLaunchBoxMetadataSearch;
+        ChkLoadLaunchBoxRatings.IsChecked = _settings.LoadLaunchBoxRatings;
+        ChkUseCommunityRatings.IsChecked = _settings.UseCommunityRatings;
+        NumMinCommunityRatings.Value = _settings.MinCommunityRatings;
+        ChkUseAdvancedSearchSyntax.IsChecked = _settings.UseAdvancedSearchSyntax;
+
+        // 20. Juegos Similares
+        ChkSimilarIncludeNonLibrary.IsChecked = _settings.SimilarIncludeNonLibrary;
+        _similarCriteria.Clear();
+        foreach (var c in _settings.SimilarGameCriteria)
+        {
+            _similarCriteria.Add(new GameRelationCriterion
+            {
+                Field = c.Field,
+                Comparison = c.Comparison,
+                ValueType = c.ValueType,
+                CustomValue = c.CustomValue,
+                Weight = c.Weight,
+                TargetGames = c.TargetGames
+            });
+        }
+        LstSimilarCriteria.ItemsSource = null;
+        LstSimilarCriteria.ItemsSource = _similarCriteria;
+
+        // 21. Juegos Recomendados
+        ChkRecommendedIncludeNonLibrary.IsChecked = _settings.RecommendedIncludeNonLibrary;
+        _recommendedCriteria.Clear();
+        foreach (var c in _settings.RecommendedGameCriteria)
+        {
+            _recommendedCriteria.Add(new GameRelationCriterion
+            {
+                Field = c.Field,
+                Comparison = c.Comparison,
+                ValueType = c.ValueType,
+                CustomValue = c.CustomValue,
+                Weight = c.Weight,
+                TargetGames = c.TargetGames
+            });
+        }
+        LstRecommendedCriteria.ItemsSource = null;
+        LstRecommendedCriteria.ItemsSource = _recommendedCriteria;
+
+        // 22. Puertos Posibles
+        ChkPossiblePortsIncludeNonLibrary.IsChecked = _settings.PossiblePortsIncludeNonLibrary;
+        _possiblePortsCriteria.Clear();
+        foreach (var c in _settings.PossiblePortsCriteria)
+        {
+            _possiblePortsCriteria.Add(new GameRelationCriterion
+            {
+                Field = c.Field,
+                Comparison = c.Comparison,
+                ValueType = c.ValueType,
+                CustomValue = c.CustomValue,
+                Weight = c.Weight,
+                TargetGames = c.TargetGames
+            });
+        }
+        LstPossiblePortsCriteria.ItemsSource = null;
+        LstPossiblePortsCriteria.ItemsSource = _possiblePortsCriteria;
     }
 
     private void UpdateSaveManagementEnablement()
@@ -280,7 +435,7 @@ public partial class OpcionesWindow : Window
         int selectedIndex = LstRegionPriorities.SelectedIndex;
         if (selectedIndex > 0)
         {
-            string item = _regionPriorities[selectedIndex];
+            var item = _regionPriorities[selectedIndex];
             _regionPriorities.RemoveAt(selectedIndex);
             _regionPriorities.Insert(selectedIndex - 1, item);
             
@@ -295,7 +450,7 @@ public partial class OpcionesWindow : Window
         int selectedIndex = LstRegionPriorities.SelectedIndex;
         if (selectedIndex >= 0 && selectedIndex < _regionPriorities.Count - 1)
         {
-            string item = _regionPriorities[selectedIndex];
+            var item = _regionPriorities[selectedIndex];
             _regionPriorities.RemoveAt(selectedIndex);
             _regionPriorities.Insert(selectedIndex + 1, item);
             
@@ -375,6 +530,13 @@ public partial class OpcionesWindow : Window
         if (PnlActualizaciones != null) PnlActualizaciones.IsVisible = false;
         if (PnlPrioridadesRegion != null) PnlPrioridadesRegion.IsVisible = false;
         if (PnlRetroAchievements != null) PnlRetroAchievements.IsVisible = false;
+        if (PnlProgressAutomation != null) PnlProgressAutomation.IsVisible = false;
+        if (PnlProgressOrganization != null) PnlProgressOrganization.IsVisible = false;
+        if (PnlBuscar != null) PnlBuscar.IsVisible = false;
+        if (PnlJuegosRelacionados != null) PnlJuegosRelacionados.IsVisible = false;
+        if (PnlJuegosSimilares != null) PnlJuegosSimilares.IsVisible = false;
+        if (PnlJuegosRecomendados != null) PnlJuegosRecomendados.IsVisible = false;
+        if (PnlPuertosPosibles != null) PnlPuertosPosibles.IsVisible = false;
         if (PnlPlaceholder != null) PnlPlaceholder.IsVisible = false;
 
         // Mostrar el panel correspondiente
@@ -439,6 +601,27 @@ public partial class OpcionesWindow : Window
                 break;
             case "RetroAchievements":
                 if (PnlRetroAchievements != null) PnlRetroAchievements.IsVisible = true;
+                break;
+            case "ProgressAutomation":
+                if (PnlProgressAutomation != null) PnlProgressAutomation.IsVisible = true;
+                break;
+            case "ProgressOrganization":
+                if (PnlProgressOrganization != null) PnlProgressOrganization.IsVisible = true;
+                break;
+            case "Buscar":
+                if (PnlBuscar != null) PnlBuscar.IsVisible = true;
+                break;
+            case "JuegosRelacionados":
+                if (PnlJuegosRelacionados != null) PnlJuegosRelacionados.IsVisible = true;
+                break;
+            case "JuegosSimilares":
+                if (PnlJuegosSimilares != null) PnlJuegosSimilares.IsVisible = true;
+                break;
+            case "JuegosRecomendados":
+                if (PnlJuegosRecomendados != null) PnlJuegosRecomendados.IsVisible = true;
+                break;
+            case "PuertosPosibles":
+                if (PnlPuertosPosibles != null) PnlPuertosPosibles.IsVisible = true;
                 break;
             default:
                 if (PnlPlaceholder != null) PnlPlaceholder.IsVisible = true;
@@ -581,7 +764,7 @@ public partial class OpcionesWindow : Window
         _settings.EnableBetaUpdates = ChkEnableBetaUpdates.IsChecked ?? false;
 
         // 15. Prioridades de Región
-        _settings.RegionPriorities = new List<string>(_regionPriorities);
+        _settings.RegionPriorities = new List<RegionPriorityItem>(_regionPriorities);
 
         // 16. RetroAchievements
         _settings.EnableRetroAchievements = ChkEnableRetroAchievements.IsChecked ?? false;
@@ -589,6 +772,40 @@ public partial class OpcionesWindow : Window
         _settings.RetroApiKey = TxtRetroApiKey.Text ?? "";
         _settings.ShowAchievementNotifications = ChkShowAchievementNotifications.IsChecked ?? true;
         _settings.ShowAchievementBadges = ChkShowAchievementBadges.IsChecked ?? true;
+
+        // 17. Game Progress Automation
+        _settings.EnableProgressAutomation = ChkEnableProgressAutomation.IsChecked ?? true;
+        _settings.ProgAutoDefault = CmbProgAutoDefault.SelectedItem?.ToString() ?? "Not Started / Unplayed";
+        _settings.ProgAutoPlaytimeMin = (int)(NumProgAutoPlaytimeMin.Value ?? 30);
+        _settings.ProgAutoPlaytimeVal = CmbProgAutoPlaytimeVal.SelectedItem?.ToString() ?? "Active / In Progress";
+        _settings.ProgAutoEarnedAchVal = CmbProgAutoEarnedAchVal.SelectedItem?.ToString() ?? "Active / In Progress";
+        _settings.ProgAutoInactiveDays = (int)(NumProgAutoInactiveDays.Value ?? 30);
+        _settings.ProgAutoInactiveVal = CmbProgAutoInactiveVal.SelectedItem?.ToString() ?? "Active / Paused";
+        _settings.ProgAutoSoftcoreBeatenVal = CmbProgAutoSoftcoreBeatenVal.SelectedItem?.ToString() ?? "Done / Beaten";
+        _settings.ProgAutoHardcoreBeatenVal = CmbProgAutoHardcoreBeatenVal.SelectedItem?.ToString() ?? "Done / Beaten";
+        _settings.ProgAutoSoftcoreCompleteVal = CmbProgAutoSoftcoreCompleteVal.SelectedItem?.ToString() ?? "Done / Completed";
+        _settings.ProgAutoHardcoreMasteredVal = CmbProgAutoHardcoreMasteredVal.SelectedItem?.ToString() ?? "Done / Mastered";
+        _settings.ProgAutoIncludeStatuses = TxtProgAutoIncludeStatuses.Text ?? "Not Started / Want to Play";
+
+        // 18. Game Progress Organization
+        _settings.ProgressStatusGroups = new List<ProgressStatusGroup>(_progressStatusGroups);
+
+        // 19. Buscar
+        _settings.EnableLaunchBoxMetadataSearch = ChkEnableLaunchBoxMetadataSearch.IsChecked ?? true;
+        _settings.LoadLaunchBoxRatings = ChkLoadLaunchBoxRatings.IsChecked ?? true;
+        _settings.UseCommunityRatings = ChkUseCommunityRatings.IsChecked ?? true;
+        _settings.MinCommunityRatings = (int)(NumMinCommunityRatings.Value ?? 5);
+        _settings.UseAdvancedSearchSyntax = ChkUseAdvancedSearchSyntax.IsChecked ?? true;
+
+        // 20. Juegos Similares, Recomendados y Puertos
+        _settings.SimilarIncludeNonLibrary = ChkSimilarIncludeNonLibrary.IsChecked ?? true;
+        _settings.SimilarGameCriteria = new List<GameRelationCriterion>(_similarCriteria);
+
+        _settings.RecommendedIncludeNonLibrary = ChkRecommendedIncludeNonLibrary.IsChecked ?? true;
+        _settings.RecommendedGameCriteria = new List<GameRelationCriterion>(_recommendedCriteria);
+
+        _settings.PossiblePortsIncludeNonLibrary = ChkPossiblePortsIncludeNonLibrary.IsChecked ?? true;
+        _settings.PossiblePortsCriteria = new List<GameRelationCriterion>(_possiblePortsCriteria);
 
         Close(true);
     }
@@ -608,5 +825,272 @@ public partial class OpcionesWindow : Window
 
         // Mostrar un pequeño aviso visual
         TxtSectionTitle.Text = "Fuentes (Restablecido por defecto)";
+    }
+
+    private void OnProgressAutomationChecked(object? sender, RoutedEventArgs e)
+    {
+        UpdateProgressAutomationEnablement();
+    }
+
+    private void UpdateProgressAutomationEnablement()
+    {
+        if (BrdProgressAutomationOptions != null)
+        {
+            BrdProgressAutomationOptions.IsEnabled = ChkEnableProgressAutomation.IsChecked == true;
+        }
+    }
+
+    private void LoadProgressOrgTree()
+    {
+        if (TvProgressOrg == null) return;
+        TvProgressOrg.Items.Clear();
+        foreach (var group in _progressStatusGroups)
+        {
+            var groupItem = new TreeViewItem
+            {
+                Header = group.GroupName,
+                Tag = group,
+                IsExpanded = true
+            };
+            foreach (var item in group.Items)
+            {
+                var statusItem = new TreeViewItem
+                {
+                    Header = item,
+                    Tag = item
+                };
+                groupItem.Items.Add(statusItem);
+            }
+            TvProgressOrg.Items.Add(groupItem);
+        }
+    }
+
+    private void BtnProgOrgUp_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TvProgressOrg.SelectedItem is not TreeViewItem selectedItem) return;
+
+        if (selectedItem.Tag is ProgressStatusGroup selectedGroup)
+        {
+            int index = _progressStatusGroups.IndexOf(selectedGroup);
+            if (index > 0)
+            {
+                _progressStatusGroups.RemoveAt(index);
+                _progressStatusGroups.Insert(index - 1, selectedGroup);
+                LoadProgressOrgTree();
+                SelectGroupInTree(selectedGroup);
+            }
+        }
+        else if (selectedItem.Tag is string selectedStatus)
+        {
+            if (selectedItem.Parent is TreeViewItem parentItem && parentItem.Tag is ProgressStatusGroup parentGroup)
+            {
+                int index = parentGroup.Items.IndexOf(selectedStatus);
+                if (index > 0)
+                {
+                    parentGroup.Items.RemoveAt(index);
+                    parentGroup.Items.Insert(index - 1, selectedStatus);
+                    LoadProgressOrgTree();
+                    SelectStatusInTree(parentGroup, selectedStatus);
+                }
+            }
+        }
+    }
+
+    private void BtnProgOrgDown_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TvProgressOrg.SelectedItem is not TreeViewItem selectedItem) return;
+
+        if (selectedItem.Tag is ProgressStatusGroup selectedGroup)
+        {
+            int index = _progressStatusGroups.IndexOf(selectedGroup);
+            if (index >= 0 && index < _progressStatusGroups.Count - 1)
+            {
+                _progressStatusGroups.RemoveAt(index);
+                _progressStatusGroups.Insert(index + 1, selectedGroup);
+                LoadProgressOrgTree();
+                SelectGroupInTree(selectedGroup);
+            }
+        }
+        else if (selectedItem.Tag is string selectedStatus)
+        {
+            if (selectedItem.Parent is TreeViewItem parentItem && parentItem.Tag is ProgressStatusGroup parentGroup)
+            {
+                int index = parentGroup.Items.IndexOf(selectedStatus);
+                if (index >= 0 && index < parentGroup.Items.Count - 1)
+                {
+                    parentGroup.Items.RemoveAt(index);
+                    parentGroup.Items.Insert(index + 1, selectedStatus);
+                    LoadProgressOrgTree();
+                    SelectStatusInTree(parentGroup, selectedStatus);
+                }
+            }
+        }
+    }
+
+    private void BtnProgOrgDelete_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TvProgressOrg.SelectedItem is not TreeViewItem selectedItem) return;
+
+        if (selectedItem.Tag is ProgressStatusGroup selectedGroup)
+        {
+            _progressStatusGroups.Remove(selectedGroup);
+            LoadProgressOrgTree();
+        }
+        else if (selectedItem.Tag is string selectedStatus)
+        {
+            if (selectedItem.Parent is TreeViewItem parentItem && parentItem.Tag is ProgressStatusGroup parentGroup)
+            {
+                parentGroup.Items.Remove(selectedStatus);
+                LoadProgressOrgTree();
+            }
+        }
+    }
+
+    private void BtnProgOrgAddGroup_Click(object? sender, RoutedEventArgs e)
+    {
+        string name = TxtProgOrgNewItem.Text?.Trim() ?? "";
+        if (string.IsNullOrEmpty(name)) return;
+
+        if (_progressStatusGroups.Exists(g => g.GroupName.Equals(name, StringComparison.OrdinalIgnoreCase))) return;
+
+        var newGroup = new ProgressStatusGroup { GroupName = name, Items = new() };
+        _progressStatusGroups.Add(newGroup);
+        TxtProgOrgNewItem.Text = "";
+        LoadProgressOrgTree();
+        SelectGroupInTree(newGroup);
+    }
+
+    private void BtnProgOrgAddStatus_Click(object? sender, RoutedEventArgs e)
+    {
+        string name = TxtProgOrgNewItem.Text?.Trim() ?? "";
+        if (string.IsNullOrEmpty(name)) return;
+
+        ProgressStatusGroup? targetGroup = null;
+
+        if (TvProgressOrg.SelectedItem is TreeViewItem selectedItem)
+        {
+            if (selectedItem.Tag is ProgressStatusGroup group)
+            {
+                targetGroup = group;
+            }
+            else if (selectedItem.Tag is string && selectedItem.Parent is TreeViewItem parentItem && parentItem.Tag is ProgressStatusGroup pGroup)
+            {
+                targetGroup = pGroup;
+            }
+        }
+
+        if (targetGroup == null) return;
+
+        if (targetGroup.Items.Contains(name)) return;
+
+        targetGroup.Items.Add(name);
+        TxtProgOrgNewItem.Text = "";
+        LoadProgressOrgTree();
+        SelectStatusInTree(targetGroup, name);
+    }
+
+    private void BtnProgOrgReset_Click(object? sender, RoutedEventArgs e)
+    {
+        _progressStatusGroups.Clear();
+        _progressStatusGroups.Add(new ProgressStatusGroup { GroupName = "Not Started", Items = new() { "Unplayed", "Want to Play", "Won't Play" } });
+        _progressStatusGroups.Add(new ProgressStatusGroup { GroupName = "Active", Items = new() { "In Progress", "Continuous", "Paused" } });
+        _progressStatusGroups.Add(new ProgressStatusGroup { GroupName = "Done", Items = new() { "Beaten", "Completed", "Mastered", "Dropped" } });
+        LoadProgressOrgTree();
+    }
+
+    private void SelectGroupInTree(ProgressStatusGroup group)
+    {
+        if (TvProgressOrg == null) return;
+        foreach (var rawItem in TvProgressOrg.Items)
+        {
+            if (rawItem is TreeViewItem item && item.Tag == group)
+            {
+                TvProgressOrg.SelectedItem = item;
+                item.Focus();
+                break;
+            }
+        }
+    }
+
+    private void SelectStatusInTree(ProgressStatusGroup group, string status)
+    {
+        if (TvProgressOrg == null) return;
+        foreach (var rawItem in TvProgressOrg.Items)
+        {
+            if (rawItem is TreeViewItem item && item.Tag == group)
+            {
+                item.IsExpanded = true;
+                foreach (var rawSubItem in item.Items)
+                {
+                    if (rawSubItem is TreeViewItem subItem && subItem.Tag is string s && s == status)
+                    {
+                        TvProgressOrg.SelectedItem = subItem;
+                        subItem.Focus();
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    private void BtnResetSimilar_Click(object? sender, RoutedEventArgs e)
+    {
+        var defaults = new AppSettings();
+        _similarCriteria.Clear();
+        foreach (var c in defaults.SimilarGameCriteria)
+        {
+            _similarCriteria.Add(new GameRelationCriterion
+            {
+                Field = c.Field,
+                Comparison = c.Comparison,
+                ValueType = c.ValueType,
+                CustomValue = c.CustomValue,
+                Weight = c.Weight,
+                TargetGames = c.TargetGames
+            });
+        }
+        LstSimilarCriteria.ItemsSource = null;
+        LstSimilarCriteria.ItemsSource = _similarCriteria;
+    }
+
+    private void BtnResetRecommended_Click(object? sender, RoutedEventArgs e)
+    {
+        var defaults = new AppSettings();
+        _recommendedCriteria.Clear();
+        foreach (var c in defaults.RecommendedGameCriteria)
+        {
+            _recommendedCriteria.Add(new GameRelationCriterion
+            {
+                Field = c.Field,
+                Comparison = c.Comparison,
+                ValueType = c.ValueType,
+                CustomValue = c.CustomValue,
+                Weight = c.Weight,
+                TargetGames = c.TargetGames
+            });
+        }
+        LstRecommendedCriteria.ItemsSource = null;
+        LstRecommendedCriteria.ItemsSource = _recommendedCriteria;
+    }
+
+    private void BtnResetPossiblePorts_Click(object? sender, RoutedEventArgs e)
+    {
+        var defaults = new AppSettings();
+        _possiblePortsCriteria.Clear();
+        foreach (var c in defaults.PossiblePortsCriteria)
+        {
+            _possiblePortsCriteria.Add(new GameRelationCriterion
+            {
+                Field = c.Field,
+                Comparison = c.Comparison,
+                ValueType = c.ValueType,
+                CustomValue = c.CustomValue,
+                Weight = c.Weight,
+                TargetGames = c.TargetGames
+            });
+        }
+        LstPossiblePortsCriteria.ItemsSource = null;
+        LstPossiblePortsCriteria.ItemsSource = _possiblePortsCriteria;
     }
 }

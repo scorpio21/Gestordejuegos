@@ -34,7 +34,11 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
       - **Reproducción de vídeo**: Selectores de tipo RadioButton agrupados para alternar el motor de vídeo preferido entre Windows Media Player y FFmpeg.
       - **Datos (Cabecera)**: Panel informativo nativo que guía al usuario a seleccionar una subcategoría a la izquierda.
       - **Copias de Seguridad (Datos)**: Checkbox funcional para habilitar respaldos automáticos de los archivos de metadatos XML de LaunchBox.
-      - **Prioridades de Región**: Lista interactiva (`ListBox`) con botones premium "▲ Subir" y "▼ Bajar" para reordenar dinámicamente y priorizar las regiones de metadatos.
+      - **Game Progress Automation**: Autotrackeo completo de progreso de juegos a través de 9 condiciones (tiempo de juego en minutos, logros obtenidos, inactividad en días y logros de Softcore/Hardcore completados) vinculados a AppSettings con dropdowns de estado.
+      - **Game Progress Organization**: Árbol jerárquico (`TreeView`) dinámico de grupos de progreso ("Not Started", "Active", "Done") con botones interactivos para reordenar (Subir/Bajar), agregar y eliminar grupos/estados con opción de reinicio por defecto.
+      - **Prioridades de Región**: Lista interactiva de checkboxes bidireccionales con botones premium "▲ Subir" y "▼ Bajar" para reordenar dinámicamente y priorizar las regiones de metadatos.
+      - **Buscar**: Ajustes de búsqueda avanzada de metadatos de LaunchBox con checkboxes y NumericUpDown para el mínimo de calificaciones de la comunidad.
+      - **Juegos Relacionados (Similares, Recomendados y Puertos)**: Tres subpaneles con tablas editables de reglas de afinidad de juegos en formato Grid (5 ComboBoxes y 1 TextBox por regla) con enlace de datos bidireccional y botones para revertir a las reglas predefinidas originales de LaunchBox.
       - **RetroAchievements (Logros)**: Formulario de credenciales enmascaradas habilitado en cascada interactiva, incluyendo notificaciones y medallas visuales de logros, junto a un botón de testeo de conexión asíncrono con feedback visual inmediato.
     - Estructuración modular limpia que evita inflar la ventana principal y cumple rigurosamente con la **Política de Cero Advertencias**.
 
