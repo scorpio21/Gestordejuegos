@@ -76,48 +76,117 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (_settings.Theme == "Neon Deluxe Arcade LB")
+            // Siempre limpiar/ocultar el fondo al iniciar
+            if (ImgThemeBackground != null)
             {
-                this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#ff007f"); // Rosa Neón
-                this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#0b0c10"); // Negro Tech
-                this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#161920"); // Gris Neón Profundo
-                this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#00f3ff"); // Cian Neón
+                ImgThemeBackground.IsVisible = false;
+                ImgThemeBackground.Source = null;
             }
-            else if (_settings.Theme == "Old Default")
+
+            string themeName = _settings.Theme;
+            // Mapeo automático para mantener compatibilidad con la configuración anterior
+            if (themeName == "Neon Deluxe Arcade LB")
             {
-                this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#3b82f6"); // Azul Clásico
-                this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#111827"); // Gris Carbón
-                this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1f2937"); // Slate Oscuro
-                this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#374151"); // Gris Medio
+                themeName = "Neon Deluxe";
             }
-            else
+
+            bool themeLoaded = false;
+
+            if (themeName != "Default" && themeName != "Old Default" && !string.IsNullOrWhiteSpace(themeName))
             {
-                // Tema por defecto o personalizado
-                if (_settings.ColorTheme == "Personalizado")
+                try
                 {
-                    this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorSelectedBg);
-                    this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorDarkBg);
-                    this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorLightBg);
-                    this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorBorderWindow);
+                    string themeFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Themes", themeName);
+                    if (!Directory.Exists(themeFolder))
+                    {
+                        themeFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Themes", themeName);
+                    }
+
+                    if (Directory.Exists(themeFolder))
+                    {
+                        string jsonPath = Path.Combine(themeFolder, "theme.json");
+                        if (File.Exists(jsonPath))
+                        {
+                            string jsonText = File.ReadAllText(jsonPath);
+                            var themeConfig = System.Text.Json.JsonSerializer.Deserialize<ThemeConfig>(jsonText);
+                            if (themeConfig != null)
+                            {
+                                if (themeConfig.Colors != null)
+                                {
+                                    foreach (var colorPair in themeConfig.Colors)
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(colorPair.Value))
+                                        {
+                                            this.Resources[colorPair.Key] = Avalonia.Media.Brush.Parse(colorPair.Value);
+                                        }
+                                    }
+                                    themeLoaded = true;
+                                }
+
+                                if (!string.IsNullOrWhiteSpace(themeConfig.BackgroundImage) && ImgThemeBackground != null)
+                                {
+                                    string bgPath = Path.Combine(themeFolder, themeConfig.BackgroundImage);
+                                    if (File.Exists(bgPath))
+                                    {
+                                        ImgThemeBackground.Source = new Avalonia.Media.Imaging.Bitmap(bgPath);
+                                        ImgThemeBackground.IsVisible = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignorar errores individuales para no bloquear el arranque y usar fallbacks
+                }
+            }
+
+            if (!themeLoaded)
+            {
+                if (themeName == "Old Default")
+                {
+                    this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#3b82f6"); // Azul Clásico
+                    this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#111827"); // Gris Carbón
+                    this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1f2937"); // Slate Oscuro
+                    this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#374151"); // Gris Medio
                 }
                 else
                 {
-                    this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#10b981"); // Verde Esmeralda
-                    this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#0f172a"); // Azul Oscuro
-                    this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1e293b"); // Slate Azulado
-                    this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#334155"); // Azul Grisáceo
+                    // Tema por defecto o personalizado
+                    if (_settings.ColorTheme == "Personalizado")
+                    {
+                        this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorSelectedBg);
+                        this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorDarkBg);
+                        this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorLightBg);
+                        this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse(_settings.ColorBorderWindow);
+                    }
+                    else
+                    {
+                        this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#10b981"); // Verde Esmeralda
+                        this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#0f172a"); // Azul Oscuro
+                        this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1e293b"); // Slate Azulado
+                        this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#334155"); // Azul Grisáceo
+                    }
                 }
             }
         }
         catch
         {
-            // Fallback robusto en caso de error
+            // Fallback robusto en caso de error crítico
             this.Resources["AccentBrush"] = Avalonia.Media.Brush.Parse("#10b981");
             this.Resources["DeepDarkBrush"] = Avalonia.Media.Brush.Parse("#0f172a");
             this.Resources["PanelBrush"] = Avalonia.Media.Brush.Parse("#1e293b");
             this.Resources["BorderBrush"] = Avalonia.Media.Brush.Parse("#334155");
         }
     }
+
+    private class ThemeConfig
+    {
+        public Dictionary<string, string> Colors { get; set; } = new();
+        public string BackgroundImage { get; set; } = "";
+    }
+
 
     private void SaveSettings()
     {

@@ -259,7 +259,7 @@
                                 <TextBlock Text="Tema:" Foreground="#9ba1af" FontSize="11"/>
                                 <ComboBox Name="CmbTheme" SelectedIndex="0" HorizontalAlignment="Stretch">
                                     <ComboBoxItem Content="Default"/>
-                                    <ComboBoxItem Content="Neon Deluxe Arcade LB"/>
+                                    <ComboBoxItem Content="Neon Deluxe"/>
                                     <ComboBoxItem Content="Old Default"/>
                                 </ComboBox>
                             </StackPanel>

@@ -14,6 +14,14 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
+### v1.2.0.2-Dev (31 Mayo 2026)
+*   **Sistema de Temas Dinámico y Extensible (Sin LaunchBox)**: Migrado por completo el motor estático de temas a una arquitectura de carpetas genéricas dinámica e independiente bajo la carpeta `Themes`.
+    - Eliminada la carpeta antigua `LBThemes` y todo residuo de LaunchBox (proyectos WPF, XAMLs, etc.).
+    - Escaneo dinámico al vuelo en la inicialización de `OpcionesWindow` que pobla el ComboBox de temas leyendo las subcarpetas del directorio `Themes`.
+    - Soporte para archivos de configuración `theme.json` por tema, definiendo los colores de recursos dinámicos (`AccentBrush`, `DeepDarkBrush`, `PanelBrush`, `BorderBrush`) e imágenes de fondo personalizadas.
+    - Actualización y mapeo en caliente automático desde configuraciones anteriores para compatibilidad retroactiva.
+    - Corrección del error crítico de compilación en `MainWindow.axaml.cs` (`CS8641: else duplicado`).
+
 ### v1.2.0.1-Dev (31 Mayo 2026)
 *   **Nueva Ventana de Opciones estilo LaunchBox**: Diseñada e implementada la ventana de diálogo modal `OpcionesWindow` que replica exactamente la interfaz estética de LaunchBox (panel izquierdo con TreeView jerárquico de categorías y panel derecho de ajustes dinámicos). Soporta y vincula las siguientes configuraciones de forma persistente a `AppSettings` y al archivo `appsettings.json`:
     - Ruta de instalación de LaunchBox (`AppSettings.LaunchBoxPath`) mediante un TextBox y buscador de directorios asíncrono.

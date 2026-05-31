@@ -1,0 +1,9 @@
+{
+  "Colors": {
+    "AccentBrush": "#ff007f",
+    "DeepDarkBrush": "#0b0c10",
+    "PanelBrush": "#161920",
+    "BorderBrush": "#00f3ff"
+  },
+  "BackgroundImage": "Images/Background-01.jpg"
+}

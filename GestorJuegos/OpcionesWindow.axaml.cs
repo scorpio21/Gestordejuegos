@@ -116,15 +116,84 @@ public partial class OpcionesWindow : Window
             }
         }
 
-        // 3. Tema Principal
+        // 3. Tema Principal (Poblado Dinámico)
         if (CmbTheme != null)
         {
+            // Mapeo automático de Neon Deluxe antiguo a nuevo
+            if (_settings.Theme == "Neon Deluxe Arcade LB")
+            {
+                _settings.Theme = "Neon Deluxe";
+            }
+
+            // Guardar el tema actual seleccionado
+            string currentTheme = _settings.Theme;
+
+            // Limpiar items existentes
+            CmbTheme.Items.Clear();
+
+            // Agregar temas fijos/integrados por defecto
+            CmbTheme.Items.Add(new ComboBoxItem { Content = "Default" });
+            CmbTheme.Items.Add(new ComboBoxItem { Content = "Old Default" });
+
+            // Escanear carpeta de temas
+            try
+            {
+                string themesDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Themes");
+                if (!System.IO.Directory.Exists(themesDir))
+                {
+                    themesDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Themes");
+                }
+
+                if (System.IO.Directory.Exists(themesDir))
+                {
+                    var directories = System.IO.Directory.GetDirectories(themesDir);
+                    foreach (var dir in directories)
+                    {
+                        string folderName = System.IO.Path.GetFileName(dir);
+                        
+                        // Omitir carpetas conocidas integradas si están en disco
+                        if (folderName.Equals("Default", StringComparison.OrdinalIgnoreCase) || 
+                            folderName.Equals("Old Default", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        // Verificar si tiene un theme.json para considerarlo tema válido
+                        string jsonPath = System.IO.Path.Combine(dir, "theme.json");
+                        if (System.IO.File.Exists(jsonPath))
+                        {
+                            CmbTheme.Items.Add(new ComboBoxItem { Content = folderName });
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Ignorar errores de escaneo
+            }
+
+            // Seleccionar el tema actual
+            bool themeSelected = false;
             foreach (var rawItem in CmbTheme.Items)
             {
-                if (rawItem is ComboBoxItem item && item.Content?.ToString() == _settings.Theme)
+                if (rawItem is ComboBoxItem item && item.Content?.ToString() == currentTheme)
                 {
                     CmbTheme.SelectedItem = item;
+                    themeSelected = true;
                     break;
+                }
+            }
+
+            // Si no se encuentra, seleccionar "Default"
+            if (!themeSelected && CmbTheme.Items.Count > 0)
+            {
+                foreach (var rawItem in CmbTheme.Items)
+                {
+                    if (rawItem is ComboBoxItem item && item.Content?.ToString() == "Default")
+                    {
+                        CmbTheme.SelectedItem = item;
+                        break;
+                    }
                 }
             }
         }
