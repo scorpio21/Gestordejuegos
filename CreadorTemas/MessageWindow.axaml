@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="CreadorTemas.MessageWindow"
+        Title="Mensaje"
+        Width="380"
+        Height="180"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#1c1d22"
+        RequestedThemeVariant="Dark"
+        Icon="/img/iconoventana.png">
+
+    <Grid RowDefinitions="*, 50" Margin="15">
+        <!-- Mensaje -->
+        <StackPanel Grid.Row="0" Spacing="8">
+            <TextBlock Name="TxtTitle" Text="Título" Foreground="#38bdf8" FontWeight="Bold" FontSize="13"/>
+            <ScrollViewer Height="70">
+                <TextBlock Name="TxtMessage" Text="Mensaje detallado aquí..." Foreground="White" FontSize="11" TextWrapping="Wrap"/>
+            </ScrollViewer>
+        </StackPanel>
+
+        <!-- Botón Aceptar -->
+        <Border Grid.Row="1" BorderBrush="#2e313c" BorderThickness="0,1,0,0" Padding="0,10,0,0">
+            <Button Name="BtnClose" Content="Aceptar" Click="BtnClose_Click" Width="80" Height="28" Background="#2c2e35" BorderBrush="#3f424a" BorderThickness="1" Foreground="White" FontSize="11" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        </Border>
+    </Grid>
+</Window>

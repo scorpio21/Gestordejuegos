@@ -620,6 +620,11 @@
                                             </Setter.Value>
                                         </Setter>
                                     </Style>
+                                    <!-- Cambia sutilmente el borde del contenedor del juego al color de acento al pasar el ratón -->
+                                    <Style Selector="ListBoxItem:pointerover Border">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                        <Setter Property="BorderThickness" Value="1"/>
+                                    </Style>
                                 </ListBox.Styles>
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="models:Game">
@@ -692,13 +697,22 @@
                                         <Setter Property="Background" Value="Transparent"/>
                                     </Style>
                                     <Style Selector="ListBoxItem:selected Border#CoverBorder">
-                                        <Setter Property="BoxShadow" Value="0 0 15 2 #00a2ff"/>
-                                        <Setter Property="BorderBrush" Value="#00a2ff"/>
-                                        <Setter Property="BorderThickness" Value="1.5"/>
+                                        <!-- El borde ahora se ilumina dinámicamente con el color de acento del tema -->
+                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                        <Setter Property="BorderThickness" Value="2"/>
                                     </Style>
                                     <Style Selector="ListBoxItem:selected Border#PlaceholderBorder">
-                                        <Setter Property="BoxShadow" Value="0 0 15 2 #00a2ff"/>
-                                        <Setter Property="BorderBrush" Value="#00a2ff"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                        <Setter Property="BorderThickness" Value="2"/>
+                                    </Style>
+                                    <!-- Efecto de Hover para carátulas reales -->
+                                    <Style Selector="ListBoxItem:pointerover Border#CoverBorder">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                        <Setter Property="BorderThickness" Value="1.5"/>
+                                    </Style>
+                                    <!-- Efecto de Hover para placeholders de juegos sin carátula -->
+                                    <Style Selector="ListBoxItem:pointerover Border#PlaceholderBorder">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                                         <Setter Property="BorderThickness" Value="1.5"/>
                                     </Style>
                                 </ListBox.Styles>
@@ -724,8 +738,13 @@
                                         <Setter Property="Background" Value="Transparent"/>
                                         <Setter Property="BorderThickness" Value="0"/>
                                         <Setter Property="Padding" Value="0"/>
-                                        <Setter Property="RenderTransform" Value="scale(0.8) translate(-50px, 0)"/>
                                         <Setter Property="Opacity" Value="0.6"/>
+                                        <Setter Property="RenderTransform">
+                                            <TransformGroup>
+                                                <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+                                                <TranslateTransform X="-50"/>
+                                            </TransformGroup>
+                                        </Setter>
                                         <Setter Property="Transitions">
                                             <Transitions>
                                                 <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.3" Easing="CubicEaseOut"/>
@@ -734,9 +753,14 @@
                                         </Setter>
                                     </Style>
                                     <Style Selector="ListBoxItem:selected">
-                                        <Setter Property="RenderTransform" Value="scale(1.2) translate(0, 0)"/>
                                         <Setter Property="Opacity" Value="1"/>
                                         <Setter Property="ZIndex" Value="10"/>
+                                        <Setter Property="RenderTransform">
+                                            <TransformGroup>
+                                                <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
+                                                <TranslateTransform X="0"/>
+                                            </TransformGroup>
+                                        </Setter>
                                     </Style>
                                     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
                                         <Setter Property="Background" Value="Transparent"/>
@@ -765,8 +789,10 @@
                                         <Setter Property="Background" Value="Transparent"/>
                                         <Setter Property="BorderThickness" Value="0"/>
                                         <Setter Property="Padding" Value="0"/>
-                                        <Setter Property="RenderTransform" Value="scale(0.7) rotateY(45deg)"/>
                                         <Setter Property="Opacity" Value="0.5"/>
+                                        <Setter Property="RenderTransform">
+                                            <ScaleTransform ScaleX="0.7" ScaleY="0.7"/>
+                                        </Setter>
                                         <Setter Property="Transitions">
                                             <Transitions>
                                                 <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.4" Easing="CubicEaseOut"/>
@@ -775,9 +801,11 @@
                                         </Setter>
                                     </Style>
                                     <Style Selector="ListBoxItem:selected">
-                                        <Setter Property="RenderTransform" Value="scale(1.1) rotateY(0deg)"/>
                                         <Setter Property="Opacity" Value="1"/>
                                         <Setter Property="ZIndex" Value="10"/>
+                                        <Setter Property="RenderTransform">
+                                            <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
+                                        </Setter>
                                     </Style>
                                     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
                                         <Setter Property="Background" Value="Transparent"/>

@@ -1,0 +1,295 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="650"
+        x:Class="CreadorTemas.MainWindow"
+        Title="Creador de Temas para Gestor de Juegos"
+        Icon="/img/iconoventana.png"
+        Width="880"
+        Height="680"
+        CanResize="True"
+        WindowStartupLocation="CenterScreen"
+        Background="#141519"
+        RequestedThemeVariant="Dark">
+
+    <Window.Styles>
+        <!-- Estilos para títulos de sección -->
+        <Style Selector="TextBlock.SectionHeader">
+            <Setter Property="Foreground" Value="#38bdf8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,15,0,5"/>
+        </Style>
+
+        <!-- Estilos de botones estándar -->
+        <Style Selector="Button.ActionBtn">
+            <Setter Property="Background" Value="#252730"/>
+            <Setter Property="BorderBrush" Value="#454955"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Button.ActionBtn:pointerover">
+            <Setter Property="Background" Value="#323542"/>
+            <Setter Property="BorderBrush" Value="#62687c"/>
+        </Style>
+
+        <!-- Estilos de entrada de texto -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#1c1d24"/>
+            <Setter Property="BorderBrush" Value="#3d404a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#38bdf8"/>
+        </Style>
+
+        <!-- Círculo o cuadro de previsualización de color interactivo -->
+        <Style Selector="Button.ColorSelectBtn">
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="#3d404a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="3"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="15">
+        <!-- 1. BARRA SUPERIOR: CONFIGURACIÓN DE RUTA DESTINO -->
+        <Border Grid.Row="0" Background="#1c1d24" BorderBrush="#2e313c" BorderThickness="1" Padding="12" CornerRadius="4" Margin="0,0,0,12">
+            <Grid ColumnDefinitions="Auto, *, Auto">
+                <TextBlock Grid.Column="0" Text="Carpeta de Temas (Themes) de la App:" Foreground="#9ba1af" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBox Name="TxtThemesPath" Grid.Column="1" PlaceholderText="Ruta a la carpeta Themes de GestorJuegos..." VerticalAlignment="Center" IsReadOnly="True"/>
+                <Button Name="BtnBrowseThemesPath" Grid.Column="2" Content="Examinar..." Classes="ActionBtn" Margin="10,0,0,0" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- 2. CONTENIDO PRINCIPAL: FORMULARIO A LA IZQUIERDA Y VISTA PREVIA A LA DERECHA -->
+        <Grid Grid.Row="1" ColumnDefinitions="*, 340">
+            <!-- PANEL IZQUIERDO: FORMULARIO DE EDICIÓN -->
+            <ScrollViewer Grid.Column="0" Padding="0,0,15,0">
+                <StackPanel Spacing="12">
+                    <!-- Datos del Tema -->
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Nombre del Tema:" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                        <TextBox Name="TxtThemeName" PlaceholderText="Ej: Neon Deluxe, Retro Wave, Minimalist..."/>
+                        <TextBlock Text="Este nombre se usará para la carpeta y se listará en las Opciones del Gestor de Juegos." Foreground="#64748b" FontSize="10" FontStyle="Italic"/>
+                    </StackPanel>
+
+                    <Border Height="1" Background="#2e313c" Margin="0,5"/>
+
+                    <!-- Sección de Colores -->
+                    <TextBlock Text="Pinceles y Colores (Colors)" Classes="SectionHeader"/>
+                    <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto" Margin="0,0,0,5">
+                        <!-- Fila 0: Accent y DeepDark -->
+                        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="4" Margin="0,0,8,10">
+                            <TextBlock Text="Acento (AccentBrush):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBox Name="TxtAccentHex" Text="#ff007f" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <Button Name="BtnSelectAccent" Grid.Column="1" Classes="ColorSelectBtn" Width="36" Margin="6,0,0,0">
+                                    <Border Name="BrdAccentPreview" Background="#ff007f" CornerRadius="2"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="1" Spacing="4" Margin="8,0,0,10">
+                            <TextBlock Text="Fondo Principal (DeepDarkBrush):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBox Name="TxtDeepDarkHex" Text="#0b0c10" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <Button Name="BtnSelectDeepDark" Grid.Column="1" Classes="ColorSelectBtn" Width="36" Margin="6,0,0,0">
+                                    <Border Name="BrdDeepDarkPreview" Background="#0b0c10" CornerRadius="2"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Fila 1: Panel y Border -->
+                        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4" Margin="0,0,8,10">
+                            <TextBlock Text="Fondo Panel (PanelBrush):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBox Name="TxtPanelHex" Text="#161920" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <Button Name="BtnSelectPanel" Grid.Column="1" Classes="ColorSelectBtn" Width="36" Margin="6,0,0,0">
+                                    <Border Name="BrdPanelPreview" Background="#161920" CornerRadius="2"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4" Margin="8,0,0,10">
+                            <TextBlock Text="Color Borde (BorderBrush):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBox Name="TxtBorderHex" Text="#00f3ff" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <Button Name="BtnSelectBorder" Grid.Column="1" Classes="ColorSelectBtn" Width="36" Margin="6,0,0,0">
+                                    <Border Name="BrdBorderPreview" Background="#00f3ff" CornerRadius="2"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Fila 2: MainForeground y SecondaryText -->
+                        <StackPanel Grid.Row="2" Grid.Column="0" Spacing="4" Margin="0,0,8,10">
+                            <TextBlock Text="Texto Principal (MainForeground):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBox Name="TxtForegroundHex" Text="#ffffff" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <Button Name="BtnSelectForeground" Grid.Column="1" Classes="ColorSelectBtn" Width="36" Margin="6,0,0,0">
+                                    <Border Name="BrdForegroundPreview" Background="#ffffff" CornerRadius="2"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4" Margin="8,0,0,10">
+                            <TextBlock Text="Texto Secundario (SecondaryTextBrush):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBox Name="TxtSecondaryHex" Text="#00f3ff" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <Button Name="BtnSelectSecondary" Grid.Column="1" Classes="ColorSelectBtn" Width="36" Margin="6,0,0,0">
+                                    <Border Name="BrdSecondaryPreview" Background="#00f3ff" CornerRadius="2"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Height="1" Background="#2e313c" Margin="0,5"/>
+
+                    <!-- Fuentes Tipográficas -->
+                    <TextBlock Text="Fuentes (Fonts)" Classes="SectionHeader"/>
+                    <Grid ColumnDefinitions="*, *" Margin="0,0,0,5">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
+                            <TextBlock Text="Fuente Principal (MainFont):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto, Auto">
+                                <TextBox Name="TxtMainFontPath" IsReadOnly="True" PlaceholderText="Por defecto..." VerticalAlignment="Center"/>
+                                <Button Name="BtnBrowseMainFont" Grid.Column="1" Content="..." Classes="ActionBtn" Margin="4,0,0,0" ToolTip.Tip="Examinar archivo de fuente (.ttf, .otf)"/>
+                                <Button Name="BtnClearMainFont" Grid.Column="2" Content="X" Classes="ActionBtn" Margin="4,0,0,0" Foreground="#ef4444" ToolTip.Tip="Restablecer"/>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="8,0,0,0">
+                            <TextBlock Text="Fuente Cabecera (HeaderFont):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto, Auto">
+                                <TextBox Name="TxtHeaderFontPath" IsReadOnly="True" PlaceholderText="Por defecto..." VerticalAlignment="Center"/>
+                                <Button Name="BtnBrowseHeaderFont" Grid.Column="1" Content="..." Classes="ActionBtn" Margin="4,0,0,0" ToolTip.Tip="Examinar archivo de fuente (.ttf, .otf)"/>
+                                <Button Name="BtnClearHeaderFont" Grid.Column="2" Content="X" Classes="ActionBtn" Margin="4,0,0,0" Foreground="#ef4444" ToolTip.Tip="Restablecer"/>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Height="1" Background="#2e313c" Margin="0,5"/>
+
+                    <!-- Multimedia del Tema -->
+                    <TextBlock Text="Imágenes de Fondo (Media)" Classes="SectionHeader"/>
+                    <Grid ColumnDefinitions="*, *" Margin="0,0,0,5">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
+                            <TextBlock Text="Fondo (BackgroundImage):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto, Auto">
+                                <TextBox Name="TxtBgImagePath" IsReadOnly="True" PlaceholderText="Sin fondo..." VerticalAlignment="Center"/>
+                                <Button Name="BtnBrowseBgImage" Grid.Column="1" Content="..." Classes="ActionBtn" Margin="4,0,0,0"/>
+                                <Button Name="BtnClearBgImage" Grid.Column="2" Content="X" Classes="ActionBtn" Margin="4,0,0,0" Foreground="#ef4444"/>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="8,0,0,0">
+                            <TextBlock Text="Superposición (OverlayImage):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto, Auto">
+                                <TextBox Name="TxtOverlayImagePath" IsReadOnly="True" PlaceholderText="Sin overlay..." VerticalAlignment="Center"/>
+                                <Button Name="BtnBrowseOverlayImage" Grid.Column="1" Content="..." Classes="ActionBtn" Margin="4,0,0,0"/>
+                                <Button Name="BtnClearOverlayImage" Grid.Column="2" Content="X" Classes="ActionBtn" Margin="4,0,0,0" Foreground="#ef4444"/>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Height="1" Background="#2e313c" Margin="0,5"/>
+
+                    <!-- Métricas y Vistas -->
+                    <TextBlock Text="Métricas y Configuración de Vista" Classes="SectionHeader"/>
+                    <Grid ColumnDefinitions="*, *" Margin="0,0,0,5">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
+                            <TextBlock Text="Radio de Esquinas (CornerRadius):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <Slider Name="SldCornerRadius" Minimum="0" Maximum="25" Value="8" SmallChange="1" LargeChange="5" VerticalAlignment="Center"/>
+                                <TextBlock Name="TxtCornerRadiusVal" Grid.Column="1" Text="8 px" Foreground="White" FontSize="11" Width="35" TextAlignment="Right" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="8,0,0,0">
+                            <TextBlock Text="Vista Preferida (PreferredView):" Foreground="#9ba1af" FontSize="11"/>
+                            <ComboBox Name="CmbPreferredView" HorizontalAlignment="Stretch" SelectedIndex="0" VerticalAlignment="Center">
+                                <ComboBoxItem Content="Grid"/>
+                                <ComboBoxItem Content="List"/>
+                                <ComboBoxItem Content="Wheel"/>
+                                <ComboBoxItem Content="HorizontalWheel"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- PANEL DERECHO: VISTA PREVIA INTERACTIVA (PREVIEW) -->
+            <Border Grid.Column="1" Background="#111215" BorderBrush="#2e313c" BorderThickness="1" CornerRadius="4" Padding="15">
+                <Grid RowDefinitions="Auto, *, Auto">
+                    <!-- Cabecera de la Vista Previa -->
+                    <TextBlock Grid.Row="0" Text="VISTA PREVIA EN VIVO" Foreground="#64748b" FontSize="10" FontWeight="Bold" LetterSpacing="1" Margin="0,0,0,15" HorizontalAlignment="Center"/>
+
+                    <!-- Simulación de la Interfaz -->
+                    <Border Grid.Row="1" Name="BrdPreviewDeepDark" Background="#0b0c10" BorderBrush="#2e313c" BorderThickness="1" CornerRadius="4" ClipToBounds="True">
+                        <!-- Imagen de Fondo Simulada -->
+                        <Panel>
+                            <!-- Imagen de fondo real si se selecciona -->
+                            <Image Name="ImgPreviewBg" Stretch="UniformToFill" Opacity="0.4" IsVisible="False"/>
+                            <!-- Superposición real si se selecciona -->
+                            <Image Name="ImgPreviewOverlay" Stretch="UniformToFill" Opacity="0.6" IsVisible="False"/>
+
+                            <Grid RowDefinitions="40, *, 40" Margin="10">
+                                <!-- Mock Cabecera -->
+                                <Border Grid.Row="0" Name="BrdPreviewPanelHeader" Background="#161920" Height="32" Padding="10,0" CornerRadius="4">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <TextBlock Name="TxtPreviewHeaderTitle" Text="GESTOR DE JUEGOS" Foreground="#ff007f" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="🎮" Foreground="White" FontSize="11" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Mock Tarjeta de Juego -->
+                                <Border Grid.Row="1" Name="BrdPreviewPanelCard" Background="#161920" BorderBrush="#00f3ff" BorderThickness="1.5" CornerRadius="8" Margin="0,15,0,15" Width="200" Height="220" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 4 10 1 #3300f3ff">
+                                    <Grid RowDefinitions="*, Auto">
+                                        <!-- Imagen de portada de ejemplo -->
+                                        <Border Grid.Row="0" Background="#282c34" Margin="8,8,8,4" CornerRadius="4">
+                                            <TextBlock Text="CUBIERTA JUEGO" Foreground="#64748b" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        
+                                        <!-- Detalles del juego -->
+                                        <StackPanel Grid.Row="1" Margin="10,4,10,10" Spacing="2">
+                                            <TextBlock Name="TxtPreviewMainText" Text="Juego de Ejemplo" Foreground="#ffffff" FontSize="11" FontWeight="SemiBold" TextAlignment="Center"/>
+                                            <TextBlock Name="TxtPreviewSubText" Text="Desarrollador - 2026" Foreground="#00f3ff" FontSize="9" TextAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Mock Barra de estado inferior -->
+                                <Border Grid.Row="2" Name="BrdPreviewPanelFooter" Background="#161920" Height="28" Padding="10,0" CornerRadius="4" VerticalAlignment="Bottom">
+                                    <Grid ColumnDefinitions="Auto, *, Auto">
+                                        <TextBlock Grid.Column="0" Text="128 juegos" Foreground="#9ba1af" FontSize="9" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="Mando: Conectado" Foreground="#10b981" FontSize="9" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Panel>
+                    </Border>
+
+                    <!-- Mensaje de estado de la vista previa -->
+                    <TextBlock Grid.Row="2" Text="La vista previa se actualiza automáticamente al cambiar colores, fuentes y radios de esquinas." Foreground="#64748b" FontSize="9.5" TextWrapping="Wrap" TextAlignment="Center" Margin="0,10,0,0"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 3. BARRA INFERIOR: ACCIONES GLOBALES -->
+        <Border Grid.Row="2" BorderBrush="#2e313c" BorderThickness="0,1,0,0" Padding="0,12,0,0" Margin="0,12,0,0">
+            <Grid ColumnDefinitions="Auto, *, Auto">
+                <!-- Botón de Importación -->
+                <Button Name="BtnImportTheme" Grid.Column="0" Content="📁 Importar / Cargar Tema..." Classes="ActionBtn" Padding="12,6"/>
+
+                <!-- Botones de Acción de Guardado/Cierre -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
+                    <Button Name="BtnSaveTheme" Content="💾 Guardar Tema" Classes="ActionBtn" Background="#007acc" BorderBrush="#008ce6" Padding="15,6" FontWeight="SemiBold"/>
+                    <Button Name="BtnExit" Content="Salir" Classes="ActionBtn" Padding="12,6" Click="BtnExit_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

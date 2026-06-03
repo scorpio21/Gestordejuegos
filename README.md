@@ -14,6 +14,15 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
+### v1.3.0-Dev (3 Junio 2026)
+*   **Creador de Temas Standalone (`CreadorTemas`)**: Desarrollo e implementación de una aplicación independiente de Avalonia UI para diseñar, editar e importar temas personalizados para `GestorJuegos`.
+    - **Independencia absoluta**: Creado fuera del directorio de la aplicación principal para no alterar su código de forma intrusiva.
+    - **Detección inteligente**: Autodetecta el directorio `Themes/` del Gestor de Juegos y vincula de forma segura los recursos del tema.
+    - **Editor visual interactivo**: Permite personalizar 6 pinceles de color mediante un selector gráfico, definir fuentes de texto locales, configurar imágenes de fondo/superposición, CornerRadius y tipos de vista preferidos.
+    - **Vista previa en caliente**: Renderizado en tiempo real de una tarjeta y cabecera de juego simulada con "Aesthetic Wow" reactivo al diseño modificado.
+    - **Importador Avanzado**: Capacidad para cargar temas nativos existentes (`theme.json`) o convertir temas originales de LaunchBox (extrayendo automáticamente sus fuentes locales y fondos de pantalla).
+    - **Robustez de fuentes**: Implementada la validación crítica de `GlyphTypeface` y construcción segura de URIs locales de fuentes para evitar cierres nativos inesperados del hilo de renderizado al cargar fuentes externas incompatibles o corruptas.
+
 ### v1.2.0.2-Dev (31 Mayo 2026)
 *   **Sistema de Temas Dinámico y Extensible (Sin LaunchBox)**: Migrado por completo el motor estático de temas a una arquitectura de carpetas genéricas dinámica e independiente bajo la carpeta `Themes`.
     - Eliminada la carpeta antigua `LBThemes` y todo residuo de LaunchBox (proyectos WPF, XAMLs, etc.).
