@@ -264,26 +264,29 @@ namespace GestorJuegos.Services
         {
             using var coversContext = new CoversDbContext();
 
-            // Si se especifica un tipo, intentar buscarlo primero
+            // Si se especifica un tipo, intentar buscarlo estrictamente
             if (!string.IsNullOrEmpty(artType))
             {
                 // 1. Buscar en la tabla de imágenes adicionales
                 var extraThumb = coversContext.Images
                     .Where(i => i.GameId == gameId && i.ImageType == artType)
-                    .Select(i => i.ImageData) // Las imágenes extra no suelen tener thumbnail separado, usamos el original
+                    .Select(i => i.ImageData)
                     .FirstOrDefault();
 
                 if (extraThumb != null) return extraThumb;
 
-                // 2. Buscar en carátulas principales si el tipo coincide
+                // 2. Buscar en carátulas principales solo si el tipo coincide
                 var cover = coversContext.Covers.Find(gameId);
                 if (cover != null && cover.ImageType == artType)
                 {
                     return cover.ThumbnailData ?? cover.ImageData;
                 }
+
+                // Si se pidió un tipo específico y no se encontró, NO hacer fallback
+                return null;
             }
 
-            // Fallback al thumbnail por defecto
+            // Si NO se especifica tipo (o es nulo), devolver el thumbnail de la carátula principal (comportamiento por defecto)
             return coversContext.Covers.Where(c => c.Id == gameId).Select(c => c.ThumbnailData).FirstOrDefault();
         }
 

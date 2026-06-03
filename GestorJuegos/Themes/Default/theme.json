@@ -1,0 +1,19 @@
+{
+  "Colors": {
+    "AccentBrush": "#0078d4",
+    "DeepDarkBrush": "#111111",
+    "PanelBrush": "#1c1c1c",
+    "BorderBrush": "#333333",
+    "MainForeground": "#ffffff",
+    "SecondaryTextBrush": "#aaaaaa"
+  },
+  "Fonts": {
+    "MainFont": "Poppins-Regular.ttf",
+    "HeaderFont": "Gilroy-Bold.ttf"
+  },
+  "BackgroundImage": "Images/Fanart_Background.jpg",
+  "OverlayImage": "Images/Overlay.png",
+  "Metrics": {
+    "CornerRadius": "4"
+  }
+}

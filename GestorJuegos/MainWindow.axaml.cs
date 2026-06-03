@@ -92,7 +92,7 @@ public partial class MainWindow : Window
 
             bool themeLoaded = false;
 
-            if (themeName != "Default" && themeName != "Old Default" && !string.IsNullOrWhiteSpace(themeName))
+            if (!string.IsNullOrWhiteSpace(themeName))
             {
                 try
                 {
@@ -111,6 +111,7 @@ public partial class MainWindow : Window
                             var themeConfig = System.Text.Json.JsonSerializer.Deserialize<ThemeConfig>(jsonText);
                             if (themeConfig != null)
                             {
+                                // 1. Colores
                                 if (themeConfig.Colors != null)
                                 {
                                     foreach (var colorPair in themeConfig.Colors)
@@ -120,16 +121,58 @@ public partial class MainWindow : Window
                                             var parsedColor = Avalonia.Media.Color.Parse(colorPair.Value);
                                             this.Resources[colorPair.Key] = new Avalonia.Media.SolidColorBrush(parsedColor);
                                             
-                                            // Si es el fondo oscuro, registrar también el color crudo para los degradados
                                             if (colorPair.Key == "DeepDarkBrush")
                                             {
                                                 this.Resources["DeepDarkColor"] = parsedColor;
                                             }
                                         }
                                     }
-                                    themeLoaded = true;
                                 }
 
+                                // 2. Fuentes dinámicas
+                                if (themeConfig.Fonts != null)
+                                {
+                                    foreach (var fontPair in themeConfig.Fonts)
+                                    {
+                                        string fontFile = fontPair.Value;
+                                        if (string.IsNullOrWhiteSpace(fontFile)) continue;
+
+                                        string fontPath = Path.Combine(themeFolder, fontFile);
+                                        if (File.Exists(fontPath))
+                                        {
+                                            try
+                                            {
+                                                // Crear URI para la fuente (file://...)
+                                                var fontUri = new Uri($"file://{fontPath.Replace("\\", "/")}");
+                                                var fontFamily = new Avalonia.Media.FontFamily(fontUri, Path.GetFileNameWithoutExtension(fontFile));
+
+                                                // VALIDACIÓN CRÍTICA: Verificar si Avalonia puede crear el GlyphTypeface
+                                                var typeface = new Avalonia.Media.Typeface(fontFamily);
+                                                if (typeface.GlyphTypeface != null)
+                                                {
+                                                    this.Resources[fontPair.Key] = fontFamily;
+                                                }
+                                                else
+                                                {
+                                                    // Si falla, usar fallback
+                                                    this.Resources[fontPair.Key] = Avalonia.Media.FontFamily.Default;
+                                                }
+                                            }
+                                            catch { /* Ignorar fuente inválida */ }
+                                        }
+                                    }
+                                }
+
+                                // 3. Métricas (CornerRadius)
+                                if (themeConfig.Metrics != null)
+                                {
+                                    if (themeConfig.Metrics.TryGetValue("CornerRadius", out string? radiusStr) && double.TryParse(radiusStr, out double radius))
+                                    {
+                                        this.Resources["ThemeCornerRadius"] = new Avalonia.CornerRadius(radius);
+                                    }
+                                }
+
+                                // 4. Imagen de fondo
                                 if (!string.IsNullOrWhiteSpace(themeConfig.BackgroundImage) && ImgThemeBackground != null)
                                 {
                                     string bgPath = Path.Combine(themeFolder, themeConfig.BackgroundImage);
@@ -139,6 +182,34 @@ public partial class MainWindow : Window
                                         ImgThemeBackground.IsVisible = true;
                                     }
                                 }
+
+                                // 5. Imagen de Overlay (Vignette/Efectos)
+                                if (!string.IsNullOrWhiteSpace(themeConfig.OverlayImage) && ImgThemeOverlay != null)
+                                {
+                                    string overlayPath = Path.Combine(themeFolder, themeConfig.OverlayImage);
+                                    if (File.Exists(overlayPath))
+                                    {
+                                        ImgThemeOverlay.Source = new Avalonia.Media.Imaging.Bitmap(overlayPath);
+                                        ImgThemeOverlay.IsVisible = true;
+                                    }
+                                }
+
+                                // 6. Logo de la Aplicación (Personalizado por tema)
+                                if (ImgAppLogo != null)
+                                {
+                                    string logoPath = Path.Combine(themeFolder, "Images", "Logo.png");
+                                    if (File.Exists(logoPath))
+                                    {
+                                        ImgAppLogo.Source = new Avalonia.Media.Imaging.Bitmap(logoPath);
+                                        ImgAppLogo.IsVisible = true;
+                                    }
+                                    else
+                                    {
+                                        // Ocultar si el tema no tiene logo personalizado
+                                        ImgAppLogo.IsVisible = false;
+                                    }
+                                }
+                                themeLoaded = true;
                             }
                         }
                     }
@@ -151,6 +222,17 @@ public partial class MainWindow : Window
 
             if (!themeLoaded)
             {
+                // Limpiar imagen de overlay si no hay tema
+                if (ImgThemeOverlay != null) ImgThemeOverlay.IsVisible = false;
+
+                // Ocultar Logo si no hay tema cargado
+                if (ImgAppLogo != null) ImgAppLogo.IsVisible = false;
+
+                // Limpiar recursos si no se cargó tema
+                this.Resources["MainFont"] = Avalonia.Media.FontFamily.Default;
+                this.Resources["HeaderFont"] = Avalonia.Media.FontFamily.Default;
+                this.Resources["ThemeCornerRadius"] = new Avalonia.CornerRadius(8);
+
                 if (themeName == "Old Default")
                 {
                     var accentColor = Avalonia.Media.Color.Parse("#3b82f6");
@@ -215,7 +297,10 @@ public partial class MainWindow : Window
     private class ThemeConfig
     {
         public Dictionary<string, string> Colors { get; set; } = new();
+        public Dictionary<string, string> Fonts { get; set; } = new();
+        public Dictionary<string, string> Metrics { get; set; } = new();
         public string BackgroundImage { get; set; } = "";
+        public string OverlayImage { get; set; } = "";
     }
 
 
@@ -371,19 +456,18 @@ public partial class MainWindow : Window
 
         // 1. Intentar cargar el tipo específico de la base de datos (extra images)
         byte[]? dbImage = _gameService.GetGameExtraImage(_selectedGame.Id, dbTypeName);
-        
+
         if (dbImage != null && dbImage.Length > 0)
         {
             _currentCover = dbImage;
         }
         else
         {
-            // FALLBACK: Si no existe ese tipo, intentar cargar la carátula principal por defecto
-            LogDebug($"Tipo {friendlyName} no encontrado en DB, cargando carátula principal.");
-            _currentCover = _gameService.GetGameFullCover(_selectedGame.Id);
+            // Sin Fallback: Si se elige un tipo específico y no existe, mostrar vacío
+            LogDebug($"Tipo {friendlyName} no encontrado en DB.");
+            _currentCover = null;
         }
         UpdateCoverImage();
-
         // Fade In
         ImgCover.Opacity = 1;
         ImgEditCover.Opacity = 1;
@@ -5328,45 +5412,66 @@ public partial class MainWindow : Window
         try
         {
             using var context = new GestorJuegos.Data.CoversDbContext();
-            // Buscar imágenes de tipo Screenshot - Gameplay, Snap, Fanart
-            var images = context.Images
-                .Where(i => i.GameId == gameId && (i.ImageType == "Screenshot - Gameplay" || i.ImageType == "Snap" || i.ImageType == "Fanart - Background" || i.ImageType == "Fanart" || i.ImageType == "Screenshot"))
-                .ToList();
 
-            if (images.Count > 0)
+            // 1. CARGAR IMAGEN PRINCIPAL (Prioridad: Box 3D)
+            var box3d = context.Images
+                .Where(i => i.GameId == gameId && (i.ImageType == "Box 3D" || i.ImageType == "Box - 3D"))
+                .Select(i => i.ImageData)
+                .FirstOrDefault();
+
+            if (box3d != null && box3d.Length > 0)
             {
-                LstScreenshots.ItemsSource = images;
-                LstScreenshots.IsVisible = true;
-                
-                // Seleccionar la primera imagen por defecto
-                ShowGameplayPreview(images[0].ImageData);
+                ShowGameplayPreview(box3d);
             }
             else
             {
-                // Fallback: Si no hay imágenes, mostrar la carátula principal
-                byte[]? fullCover = _gameService.GetGameFullCover(gameId);
-                if (fullCover != null && fullCover.Length > 0)
+                // Fallback: Si no hay 3D, intentar Box Frontal normal
+                var boxFront = context.Covers
+                    .Where(c => c.Id == gameId)
+                    .Select(c => c.ImageData ?? c.ThumbnailData)
+                    .FirstOrDefault();
+
+                if (boxFront != null && boxFront.Length > 0)
                 {
-                    ShowGameplayPreview(fullCover);
+                    ShowGameplayPreview(boxFront);
                 }
                 else
                 {
                     ImgGameplayPreview.Source = null;
                     if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = true;
                 }
+            }
+
+            // 2. CARGAR GALERÍA DE IMÁGENES (Capturas, Fanart, etc.)
+            var galleryImages = context.Images
+                .Where(i => i.GameId == gameId && 
+                       (i.ImageType == "Screenshot - Gameplay" || 
+                        i.ImageType == "Snap" || 
+                        i.ImageType == "Fanart - Background" || 
+                        i.ImageType == "Fanart" || 
+                        i.ImageType == "Screenshot"))
+                .ToList();
+
+            if (galleryImages.Count > 0)
+            {
+                LstScreenshots.ItemsSource = galleryImages;
+                LstScreenshots.IsVisible = true;
+            }
+            else
+            {
                 LstScreenshots.ItemsSource = null;
                 LstScreenshots.IsVisible = false;
             }
         }
-        catch
+        catch (Exception ex)
         {
+            LogDebug($"Error al cargar galería: {ex.Message}");
             ImgGameplayPreview.Source = null;
             if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = true;
             LstScreenshots.ItemsSource = null;
             LstScreenshots.IsVisible = false;
         }
     }
-
     private void ShowGameplayPreview(byte[]? data)
     {
         if (data != null && data.Length > 0)

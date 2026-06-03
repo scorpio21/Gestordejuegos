@@ -14,6 +14,18 @@
         Icon="/img/iconoventana.png">
 
     <Window.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
+        </Style>
+
+        <Style Selector="MenuItem">
+            <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
+        </Style>
+
+        <Style Selector="TreeView">
+            <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
+        </Style>
+
         <!-- Estilos para TabControl Moderno -->
         <Style Selector="TabControl.Modern">
             <Setter Property="Background" Value="Transparent"/>
@@ -38,8 +50,9 @@
         <Style Selector="TextBox">
             <Setter Property="Background" Value="{DynamicResource DeepDarkBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource ThemeCornerRadius}"/>
             <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
         </Style>
         <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
             <Setter Property="BorderBrush" Value="#10b981"/>
@@ -49,18 +62,21 @@
         <Style Selector="ComboBox">
             <Setter Property="Background" Value="{DynamicResource DeepDarkBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource ThemeCornerRadius}"/>
+            <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
         </Style>
 
         <Style Selector="NumericUpDown">
             <Setter Property="Background" Value="{DynamicResource DeepDarkBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource ThemeCornerRadius}"/>
+            <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
         </Style>
 
         <Style Selector="Button.Secondary">
             <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource ThemeCornerRadius}"/>
+            <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="Background" Duration="0:0:0.2"/>
@@ -111,6 +127,12 @@
     <Window.Resources>
         <utils:ByteArrayToBitmapConverter x:Key="ByteToBitmap"/>
         <utils:RegionToFlagConverter x:Key="RegionToFlag"/>
+        
+        <!-- Recursos Dinámicos de Tema (Cargados por código) -->
+        <FontFamily x:Key="MainFont">Default</FontFamily>
+        <FontFamily x:Key="HeaderFont">Default</FontFamily>
+        <CornerRadius x:Key="ThemeCornerRadius">8</CornerRadius>
+        
         <SolidColorBrush x:Key="AccentBrush" Color="#10b981"/>
         <SolidColorBrush x:Key="PanelBrush" Color="#1e293b"/>
         <SolidColorBrush x:Key="BorderBrush" Color="#334155"/>
@@ -251,16 +273,24 @@
 
     <Grid>
         <!-- FONDO DINÁMICO (Inmersivo) -->
-        <Panel Name="PnlBackground" IsHitTestVisible="False">
-            <Image Name="ImgThemeBackground" Stretch="UniformToFill" Opacity="0.45" IsVisible="False"/>
-            <Image Name="ImgBackground" Stretch="UniformToFill" Opacity="0.2">
+        <Panel Name="PnlBackground" IsHitTestVisible="False" Grid.RowSpan="5" Grid.ColumnSpan="5">
+            <!-- 1. Fondo del Tema (Estatico del tema) -->
+            <Image Name="ImgThemeBackground" Stretch="UniformToFill" Opacity="0.5" IsVisible="False"/>
+            
+            <!-- 2. Overlay del Tema (Vignette/Textura) -->
+            <Image Name="ImgThemeOverlay" Stretch="UniformToFill" Opacity="0.7" IsVisible="False"/>
+            
+            <!-- 3. Fondo del Juego (Cambia al seleccionar juego) -->
+            <Image Name="ImgBackground" Stretch="UniformToFill" Opacity="0.3">
                 <Image.Transitions>
                     <Transitions>
                         <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
                     </Transitions>
                 </Image.Transitions>
             </Image>
-            <Border Background="{DynamicResource DeepDarkBrush}" Opacity="0.6"/> <!-- Capa de tinte oscuro para legibilidad -->
+            
+            <!-- 4. Tinte de legibilidad -->
+            <Border Background="{DynamicResource DeepDarkBrush}" Opacity="0.4"/>
         </Panel>
         
         <DockPanel>
@@ -269,7 +299,6 @@
                 <Grid ColumnDefinitions="Auto, *, Auto" Margin="15,0">
                     <!-- Izquierda: Menu y Logo -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-                        <Image Source="/img/icono.png" Width="26" Height="26" VerticalAlignment="Center" Margin="5,0,8,0"/>
                         <Menu VerticalAlignment="Center">
                             <MenuItem Header="HERRAMIENTAS">
                                 <MenuItem Header="RESPALDOS DE BASE DE DATOS" IsEnabled="False" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
@@ -449,6 +478,9 @@
                 <!-- IZQUIERDA: Sidebar de Filtros Inteligente -->
                 <Border Grid.Column="0" Background="{DynamicResource DeepDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0" Padding="5">
                     <DockPanel>
+                        <!-- Logotipo del Tema / Aplicación -->
+                        <Image Name="ImgAppLogo" Source="/img/icono.png" Width="120" Height="60" Margin="0,15,0,10" VerticalAlignment="Center" DockPanel.Dock="Top"/>
+                        
                         <!-- Selector de Vista estilo LaunchBox -->
                         <Border DockPanel.Dock="Top" Background="{DynamicResource PanelBrush}" CornerRadius="8" Margin="5,5,5,10" Padding="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                             <ComboBox Name="CmbSidebarView" SelectedIndex="0" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" CornerRadius="6">
@@ -797,9 +829,9 @@
                                 <StackPanel Spacing="5" Margin="20,15,20,5">
                                     <StackPanel Orientation="Horizontal" Spacing="6" Opacity="0.8">
                                         <TextBlock Text="🕹️" FontSize="12" VerticalAlignment="Center"/>
-                                        <TextBlock Name="TxtInfoPlatform" Text="ARCADE" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy" LetterSpacing="1" VerticalAlignment="Center"/>
+                                        <TextBlock Name="TxtInfoPlatform" Text="ARCADE" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy" LetterSpacing="1" VerticalAlignment="Center" FontFamily="{DynamicResource MainFont}"/>
                                     </StackPanel>
-                                    <TextBlock Name="TxtInfoName" FontSize="26" FontWeight="Black" Foreground="White" TextWrapping="Wrap"/>
+                                    <TextBlock Name="TxtInfoName" FontSize="26" FontWeight="Black" Foreground="White" TextWrapping="Wrap" FontFamily="{DynamicResource HeaderFont}"/>
                                 </StackPanel>
 
                                 <!-- Pestañas de Detalle -->
@@ -809,36 +841,42 @@
                                         <ScrollViewer Margin="0,10,0,0">
                                             <StackPanel Spacing="20">
                                                 
-                                                <!-- Captura de Pantalla / Previsualización Principal -->
-                                                <Border Background="{DynamicResource PanelBrush}" CornerRadius="10" ClipToBounds="True" Height="200" BoxShadow="0 4 12 0 #50000000" Margin="10,0">
-                                                    <Panel>
-                                                        <Image Name="ImgGameplayPreview" Stretch="UniformToFill" Cursor="Hand" PointerPressed="ImgGameplayPreview_PointerPressed"/>
-                                                        <!-- Placeholder si no hay imagen -->
-                                                        <TextBlock Name="TxtGameplayPlaceholder" Text="Sin captura de pantalla" Foreground="#64748b" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Panel>
-                                                </Border>
+                                                <!-- IMAGEN PRINCIPAL (Box 3D por defecto) -->
+                                                <StackPanel Spacing="8" Margin="10,0,10,0">
+                                                    <TextBlock Text="VISTA PREVIA" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy"/>
+                                                    <Border Background="{DynamicResource PanelBrush}" CornerRadius="10" ClipToBounds="True" Height="220" BoxShadow="0 4 12 0 #50000000">
+                                                        <Panel>
+                                                            <Image Name="ImgGameplayPreview" Stretch="Uniform" Cursor="Hand" PointerPressed="ImgGameplayPreview_PointerPressed"/>
+                                                            <!-- Placeholder si no hay imagen -->
+                                                            <TextBlock Name="TxtGameplayPlaceholder" Text="Sin imagen 3D / Box Art" Foreground="#64748b" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Panel>
+                                                    </Border>
+                                                </StackPanel>
 
                                                 <!-- Carrusel Horizontal de Capturas y Arte Adicional -->
-                                                <ListBox Name="LstScreenshots" Background="Transparent" BorderThickness="0" Height="65" Margin="10,0" SelectionChanged="LstScreenshots_SelectionChanged">
-                                                    <ListBox.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Horizontal" Spacing="8"/>
-                                                        </ItemsPanelTemplate>
-                                                    </ListBox.ItemsPanel>
-                                                    <ListBox.ItemTemplate>
-                                                        <DataTemplate x:DataType="models:GameImage">
-                                                            <Border CornerRadius="6" ClipToBounds="True" Width="85" Height="53" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
-                                                                <Image Source="{Binding ImageData, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill"/>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ListBox.ItemTemplate>
-                                                    <ListBox.Styles>
-                                                        <Style Selector="ListBoxItem">
-                                                            <Setter Property="Padding" Value="0"/>
-                                                            <Setter Property="Background" Value="Transparent"/>
-                                                        </Style>
-                                                    </ListBox.Styles>
-                                                </ListBox>
+                                                <StackPanel Spacing="8" Margin="10,15,10,0">
+                                                    <TextBlock Text="IMÁGENES DEL JUEGO" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy"/>
+                                                    <ListBox Name="LstScreenshots" Background="Transparent" BorderThickness="0" Height="65" SelectionChanged="LstScreenshots_SelectionChanged">
+                                                        <ListBox.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <StackPanel Orientation="Horizontal" Spacing="8"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ListBox.ItemsPanel>
+                                                        <ListBox.ItemTemplate>
+                                                            <DataTemplate x:DataType="models:GameImage">
+                                                                <Border CornerRadius="6" ClipToBounds="True" Width="85" Height="53" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                                                    <Image Source="{Binding ImageData, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill"/>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ListBox.ItemTemplate>
+                                                        <ListBox.Styles>
+                                                            <Style Selector="ListBoxItem">
+                                                                <Setter Property="Padding" Value="0"/>
+                                                                <Setter Property="Background" Value="Transparent"/>
+                                                            </Style>
+                                                        </ListBox.Styles>
+                                                    </ListBox>
+                                                </StackPanel>
 
                                                 <!-- Botón JUGAR Gigante Verde LaunchBox -->
                                                 <Button Name="BtnLaunchGame" Background="#22c55e" Foreground="White" Height="52" CornerRadius="10" HorizontalAlignment="Stretch" Margin="10,0" Padding="0" Click="BtnLaunchGame_Click">
