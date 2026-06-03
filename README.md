@@ -18,10 +18,15 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 *   **Creador de Temas Standalone (`CreadorTemas`)**: Desarrollo e implementación de una aplicación independiente de Avalonia UI para diseñar, editar e importar temas personalizados para `GestorJuegos`.
     - **Independencia absoluta**: Creado fuera del directorio de la aplicación principal para no alterar su código de forma intrusiva.
     - **Detección inteligente**: Autodetecta el directorio `Themes/` del Gestor de Juegos y vincula de forma segura los recursos del tema.
-    - **Editor visual interactivo**: Permite personalizar 6 pinceles de color mediante un selector gráfico, definir fuentes de texto locales, configurar imágenes de fondo/superposición, CornerRadius y tipos de vista preferidos.
-    - **Vista previa en caliente**: Renderizado en tiempo real de una tarjeta y cabecera de juego simulada con "Aesthetic Wow" reactivo al diseño modificado.
-    - **Importador Avanzado**: Capacidad para cargar temas nativos existentes (`theme.json`) o convertir temas originales de LaunchBox (extrayendo automáticamente sus fuentes locales y fondos de pantalla).
-    - **Robustez de fuentes**: Implementada la validación crítica de `GlyphTypeface` y construcción segura de URIs locales de fuentes para evitar cierres nativos inesperados del hilo de renderizado al cargar fuentes externas incompatibles o corruptas.
+    - **Editor visual interactivo**: Permite personalizar 6 pinceles de color mediante un selector gráfico, definir fuentes de texto locales, configurar imágenes de fondo/superposición, CornerRadius y seleccionar la vista preferida (Cuadrícula, Lista, Rueda Vertical o Rueda Horizontal) con traducción amigable en español.
+    - **Personalización de Logotipo y Hover**: Añadida la capacidad de seleccionar un logotipo personalizado (`Images/Logo.png`), elegir un color de borde hover independiente (`HoverBorderBrush`) y graduar el desenfoque de brillo hover (`HoverGlowBlur`).
+    - **Vista previa en caliente**: Renderizado en tiempo real de una tarjeta y cabecera de juego simulada con "Aesthetic Wow" reactivo al diseño modificado, incluyendo la simulación dinámica del logo y del efecto hover al pasar el ratón.
+*   **Mejoras de Navegación y Vistas (`GestorJuegos`)**:
+    - **Persistencia de Vista**: Se ha modificado el cambio de plataforma en la barra lateral para que conserve la vista activa seleccionada por el usuario (Lista, Cuadrícula o Ruedas) en lugar de forzar siempre el restablecimiento a la vista de Cuadrícula.
+    - **Hover en Vistas de Rueda**: Se han implementado efectos de hover dinámicos y adaptados para las vistas de Rueda Vertical (iluminación de texto y opacidad) y Rueda Horizontal Coverflow (borde de hover de color y opacidad).
+    - **Curvatura y Efecto de Rueda (Vertical y Horizontal)**: Implementado el efecto dinámico de curvatura matemática en parábola para simular una rueda física en el listado. Para la rueda vertical se desplazan los elementos en el eje X, y para la rueda horizontal (Coverflow) en el eje Y. Se calcula y actualiza la curvatura al vuelo en tiempo real en base a la distancia de cada elemento al centro visual.
+    - **Estabilización de Curvatura al Cambiar de Plataforma**: Se agregaron manejadores de eventos para `LayoutUpdated` y `EffectiveViewportChanged`, asegurando que el cálculo del efecto de rueda se active inmediatamente cuando los contenedores de elementos terminan de generarse tras un cambio de plataforma.
+
 
 ### v1.2.0.2-Dev (31 Mayo 2026)
 *   **Sistema de Temas Dinámico y Extensible (Sin LaunchBox)**: Migrado por completo el motor estático de temas a una arquitectura de carpetas genéricas dinámica e independiente bajo la carpeta `Themes`.

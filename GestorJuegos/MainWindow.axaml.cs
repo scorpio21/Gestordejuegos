@@ -1,6 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using GestorJuegos.Models;
@@ -477,6 +479,14 @@ public partial class MainWindow : Window
 
         LstGames.SelectionChanged += LstGames_SelectionChanged;
         LstGamesGrid.SelectionChanged += LstGames_SelectionChanged;
+        LstGamesWheelVertical.SelectionChanged += LstGames_SelectionChanged;
+        LstGamesWheelHorizontal.SelectionChanged += LstGames_SelectionChanged;
+
+        // Registrar eventos de renderizado/layout para actualizar la curvatura
+        LstGamesWheelVertical.EffectiveViewportChanged += (s, e) => UpdateWheelCurvature();
+        LstGamesWheelVertical.LayoutUpdated += (s, e) => UpdateWheelCurvature();
+        LstGamesWheelHorizontal.EffectiveViewportChanged += (s, e) => UpdateHorizontalWheelCurvature();
+        LstGamesWheelHorizontal.LayoutUpdated += (s, e) => UpdateHorizontalWheelCurvature();
         
         LstPlatformsWall.SelectionChanged += LstPlatformsWall_SelectionChanged;
         TvSidebar.SelectionChanged += TvSidebar_SelectionChanged;
@@ -2170,8 +2180,8 @@ public partial class MainWindow : Window
             // Cargar los detalles de la plataforma/categoría en el panel derecho
             LoadPlatformOrCategoryDetails(item);
             
-            // Forzar vista de rejilla por defecto
-            BtnViewGrid_Click(null, new RoutedEventArgs());
+            // Mantener la vista de visualización activa (Lista, Cuadrícula o Ruedas) al cambiar de plataforma
+            // BtnViewGrid_Click(null, new RoutedEventArgs());
 
             using var context = new GestorJuegos.Data.AppDbContext();
             var query = context.Games.Include(g => g.Platform).AsQueryable();
@@ -3748,6 +3758,9 @@ public partial class MainWindow : Window
         LstGamesGrid.ItemsSource = paginated;
         LstGamesWheelVertical.ItemsSource = paginated;
         LstGamesWheelHorizontal.ItemsSource = paginated;
+
+        // Forzar actualización de la curvatura en segundo plano tras renderizar
+        Avalonia.Threading.Dispatcher.UIThread.Post(UpdateWheels, Avalonia.Threading.DispatcherPriority.Background);
         
         if (_selectedPlatform != null)
         {
@@ -3845,10 +3858,14 @@ public partial class MainWindow : Window
         if (listBox?.SelectedItem is Game game)
         {
             // Sync selection
-            if (sender == LstGames && LstGamesGrid.SelectedItem != game)
-                LstGamesGrid.SelectedItem = game;
-            else if (sender == LstGamesGrid && LstGames.SelectedItem != game)
-                LstGames.SelectedItem = game;
+            // Sincronizar selección entre todas las vistas de juegos
+            if (LstGames.SelectedItem != game) LstGames.SelectedItem = game;
+            if (LstGamesGrid.SelectedItem != game) LstGamesGrid.SelectedItem = game;
+            if (LstGamesWheelVertical.SelectedItem != game) LstGamesWheelVertical.SelectedItem = game;
+            if (LstGamesWheelHorizontal.SelectedItem != game) LstGamesWheelHorizontal.SelectedItem = game;
+
+            // Actualizar la curvatura tras la selección
+            Avalonia.Threading.Dispatcher.UIThread.Post(UpdateWheels, Avalonia.Threading.DispatcherPriority.Background);
 
             // Visibilidad de Paneles con Fade
             if (PnlNoGameSelected != null) PnlNoGameSelected.IsVisible = false;
@@ -6005,5 +6022,97 @@ public partial class MainWindow : Window
         _showStatusBadge = !_showStatusBadge;
         UpdateMenuCheckmarks();
         ApplySearchFilter();
+    }
+
+    private void UpdateWheels()
+    {
+        UpdateWheelCurvature();
+        UpdateHorizontalWheelCurvature();
+    }
+
+    private void UpdateWheelCurvature()
+    {
+        if (LstGamesWheelVertical == null || !LstGamesWheelVertical.IsVisible) return;
+
+        double centerOfList = LstGamesWheelVertical.Bounds.Height / 2;
+        if (centerOfList <= 0) return;
+
+        var itemsSource = LstGamesWheelVertical.ItemsSource as System.Collections.IList;
+        if (itemsSource == null) return;
+
+        foreach (var item in itemsSource)
+        {
+            var container = LstGamesWheelVertical.ContainerFromItem(item) as ListBoxItem;
+            if (container == null) continue;
+
+            // Obtener la posición del contenedor relativa a la ListBox
+            var position = container.TranslatePoint(new Point(0, 0), LstGamesWheelVertical);
+            if (position.HasValue)
+            {
+                double itemCenterY = position.Value.Y + (container.Bounds.Height / 2);
+                double distanceFromCenter = itemCenterY - centerOfList;
+                double maxDistance = centerOfList;
+
+                // Calcular el desplazamiento X basado en una parábola (curva de rueda)
+                double ratio = Math.Clamp(distanceFromCenter / maxDistance, -1.0, 1.0);
+                double shiftX = -75 * (ratio * ratio); // Curvatura de hasta -75px a la izquierda
+
+                // Escala de selección y visibilidad (destacar el elemento central seleccionado)
+                bool isSelected = container.IsSelected;
+                double scale = isSelected ? 1.25 : 0.85;
+                if (isSelected) shiftX += 25; // Mover un poco a la derecha el seleccionado
+
+                // Cambiar el orden de apilamiento (ZIndex) de los elementos
+                container.ZIndex = isSelected ? 10 : (int)(10 - Math.Abs(distanceFromCenter) / 10);
+
+                var group = new TransformGroup();
+                group.Children.Add(new ScaleTransform(scale, scale));
+                group.Children.Add(new TranslateTransform(shiftX, 0));
+                container.RenderTransform = group;
+            }
+        }
+    }
+
+    private void UpdateHorizontalWheelCurvature()
+    {
+        if (LstGamesWheelHorizontal == null || !LstGamesWheelHorizontal.IsVisible) return;
+
+        double centerOfList = LstGamesWheelHorizontal.Bounds.Width / 2;
+        if (centerOfList <= 0) return;
+
+        var itemsSource = LstGamesWheelHorizontal.ItemsSource as System.Collections.IList;
+        if (itemsSource == null) return;
+
+        foreach (var item in itemsSource)
+        {
+            var container = LstGamesWheelHorizontal.ContainerFromItem(item) as ListBoxItem;
+            if (container == null) continue;
+
+            // Obtener la posición del contenedor relativa a la ListBox
+            var position = container.TranslatePoint(new Point(0, 0), LstGamesWheelHorizontal);
+            if (position.HasValue)
+            {
+                double itemCenterX = position.Value.X + (container.Bounds.Width / 2);
+                double distanceFromCenter = itemCenterX - centerOfList;
+                double maxDistance = centerOfList;
+
+                // Calcular el desplazamiento Y basado en una parábola (curvatura de rueda horizontal)
+                double ratio = Math.Clamp(distanceFromCenter / maxDistance, -1.0, 1.0);
+                double shiftY = 50 * (ratio * ratio); // Curvatura de hasta 50px hacia abajo en los extremos
+
+                // Escala de selección y visibilidad (destacar el elemento central seleccionado)
+                bool isSelected = container.IsSelected;
+                double scale = isSelected ? 1.2 : 0.85;
+                if (isSelected) shiftY -= 10; // Levantar un poco el seleccionado
+
+                // Cambiar el orden de apilamiento (ZIndex) de los elementos
+                container.ZIndex = isSelected ? 10 : (int)(10 - Math.Abs(distanceFromCenter) / 20);
+
+                var group = new TransformGroup();
+                group.Children.Add(new ScaleTransform(scale, scale));
+                group.Children.Add(new TranslateTransform(0, shiftY));
+                container.RenderTransform = group;
+            }
+        }
     }
 }

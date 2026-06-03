@@ -1,0 +1,20 @@
+{
+  "Colors": {
+    "AccentBrush": "#ff007f",
+    "DeepDarkBrush": "#0b0c10",
+    "PanelBrush": "#161920",
+    "BorderBrush": "#00f3ff",
+    "MainForeground": "#ffffff",
+    "SecondaryTextBrush": "#00f3ff"
+  },
+  "Fonts": {
+    "MainFont": "GentiumBookPlus-Regular.ttf",
+    "HeaderFont": ""
+  },
+  "BackgroundImage": "Images/Fanart_Background.jpg",
+  "OverlayImage": "",
+  "Metrics": {
+    "CornerRadius": "8"
+  },
+  "PreferredView": "Grid"
+}

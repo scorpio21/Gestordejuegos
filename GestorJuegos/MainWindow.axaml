@@ -767,6 +767,13 @@
                                     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
                                         <Setter Property="Background" Value="Transparent"/>
                                     </Style>
+                                    <!-- Efecto Hover -->
+                                    <Style Selector="ListBoxItem:pointerover">
+                                        <Setter Property="Opacity" Value="0.9"/>
+                                    </Style>
+                                    <Style Selector="ListBoxItem:pointerover TextBlock">
+                                        <Setter Property="Foreground" Value="{DynamicResource HoverBorderBrush}"/>
+                                    </Style>
                                 </ListBox.Styles>
                             </ListBox>
 
@@ -811,6 +818,14 @@
                                     </Style>
                                     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
                                         <Setter Property="Background" Value="Transparent"/>
+                                    </Style>
+                                    <!-- Efecto Hover -->
+                                    <Style Selector="ListBoxItem:pointerover">
+                                        <Setter Property="Opacity" Value="0.9"/>
+                                    </Style>
+                                    <Style Selector="ListBoxItem:pointerover Border">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource HoverBorderBrush}"/>
+                                        <Setter Property="BorderThickness" Value="1.5"/>
                                     </Style>
                                 </ListBox.Styles>
                             </ListBox>

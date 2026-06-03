@@ -20,12 +20,15 @@ namespace CreadorTemas
         private string _borderColor = "#00f3ff";
         private string _mainForegroundColor = "#ffffff";
         private string _secondaryTextColor = "#00f3ff";
+        private string _hoverColor = "#ff007f";
 
         private string? _mainFontPath;
         private string? _headerFontPath;
         private string? _bgImagePath;
         private string? _overlayImagePath;
+        private string? _logoImagePath;
         private double _cornerRadius = 8;
+        private double _hoverGlowBlur = 12;
         private bool _isPreviewHovered = false;
 
         public MainWindow()
@@ -45,6 +48,27 @@ namespace CreadorTemas
             BtnSelectBorder.Click += (s, e) => SelectColor(TxtBorderHex, BrdBorderPreview, c => _borderColor = c);
             BtnSelectForeground.Click += (s, e) => SelectColor(TxtForegroundHex, BrdForegroundPreview, c => _mainForegroundColor = c);
             BtnSelectSecondary.Click += (s, e) => SelectColor(TxtSecondaryHex, BrdSecondaryPreview, c => _secondaryTextColor = c);
+            BtnSelectHoverColor.Click += (s, e) => SelectColor(TxtHoverHex, BrdHoverPreview, c => _hoverColor = c);
+
+            SldHoverGlow.ValueChanged += (s, e) => {
+                _hoverGlowBlur = e.NewValue;
+                if (TxtHoverGlowVal != null) TxtHoverGlowVal.Text = $"{(int)_hoverGlowBlur} px";
+                UpdatePreview();
+            };
+
+            BtnBrowseLogoImage.Click += (s, e) => BrowseFile("Imágenes (*.jpg;*.jpeg;*.png)", new[] { "*.jpg", "*.jpeg", "*.png" }, path => {
+                _logoImagePath = path;
+                TxtLogoImagePath.Text = Path.GetFileName(path);
+                UpdatePreviewImage(ImgPreviewLogo, path);
+                UpdatePreview();
+            });
+            BtnClearLogoImage.Click += (s, e) => { 
+                _logoImagePath = null; 
+                TxtLogoImagePath.Text = ""; 
+                ImgPreviewLogo.Source = null; 
+                ImgPreviewLogo.IsVisible = false;
+                UpdatePreview();
+            };
 
             BrdPreviewPanelCard.PointerEntered += (s, e) => { _isPreviewHovered = true; UpdatePreview(); };
             BrdPreviewPanelCard.PointerExited += (s, e) => { _isPreviewHovered = false; UpdatePreview(); };
@@ -157,12 +181,12 @@ namespace CreadorTemas
                     
                     if (_isPreviewHovered)
                     {
-                        BrdPreviewPanelCard.BorderBrush = Brush.Parse(_accentColor);
+                        BrdPreviewPanelCard.BorderBrush = Brush.Parse(_hoverColor);
                         BrdPreviewPanelCard.BoxShadow = new BoxShadows(new BoxShadow 
                         { 
-                            Blur = 12, 
-                            Spread = 2, 
-                            Color = Color.Parse(_accentColor), 
+                            Blur = _hoverGlowBlur, 
+                            Spread = _hoverGlowBlur > 0 ? 2 : 0, 
+                            Color = Color.Parse(_hoverColor), 
                             OffsetY = 0 
                         });
                     }
@@ -177,6 +201,12 @@ namespace CreadorTemas
                             OffsetY = 4 
                         });
                     }
+                }
+                if (ImgPreviewLogo != null && TxtPreviewHeaderTitle != null)
+                {
+                    bool hasLogo = ImgPreviewLogo.Source != null;
+                    TxtPreviewHeaderTitle.IsVisible = !hasLogo;
+                    ImgPreviewLogo.IsVisible = hasLogo;
                 }
                 if (BrdPreviewPanelFooter != null) BrdPreviewPanelFooter.Background = Brush.Parse(_panelColor);
                 if (TxtPreviewHeaderTitle != null) TxtPreviewHeaderTitle.Foreground = Brush.Parse(_accentColor);
@@ -269,6 +299,26 @@ namespace CreadorTemas
             if (theme.Colors.TryGetValue("BorderBrush", out var bor)) LoadColorVal(bor, TxtBorderHex, BrdBorderPreview, c => _borderColor = c);
             if (theme.Colors.TryGetValue("MainForeground", out var fore)) LoadColorVal(fore, TxtForegroundHex, BrdForegroundPreview, c => _mainForegroundColor = c);
             if (theme.Colors.TryGetValue("SecondaryTextBrush", out var sec)) LoadColorVal(sec, TxtSecondaryHex, BrdSecondaryPreview, c => _secondaryTextColor = c);
+            
+            if (theme.Colors.TryGetValue("HoverBorderBrush", out var hovColor)) 
+                LoadColorVal(hovColor, TxtHoverHex, BrdHoverPreview, c => _hoverColor = c);
+            else 
+                LoadColorVal(_accentColor, TxtHoverHex, BrdHoverPreview, c => _hoverColor = c);
+
+            if (theme.Metrics.TryGetValue("HoverGlowBlur", out var hgStr) && double.TryParse(hgStr, out double hg))
+            {
+                SldHoverGlow.Value = hg;
+                _hoverGlowBlur = hg;
+            }
+            else
+            {
+                SldHoverGlow.Value = 12;
+                _hoverGlowBlur = 12;
+            }
+
+            _logoImagePath = GetAssetPath("Images/Logo.png", folder);
+            TxtLogoImagePath.Text = string.IsNullOrEmpty(_logoImagePath) ? "" : Path.GetFileName(_logoImagePath);
+            UpdatePreviewImage(ImgPreviewLogo, _logoImagePath ?? "");
 
             _mainFontPath = GetAssetPath(theme.Fonts.GetValueOrDefault("MainFont"), folder);
             TxtMainFontPath.Text = string.IsNullOrEmpty(_mainFontPath) ? "" : Path.GetFileName(_mainFontPath);
@@ -292,7 +342,7 @@ namespace CreadorTemas
 
             for (int i = 0; i < CmbPreferredView.Items.Count; i++)
             {
-                if (CmbPreferredView.Items[i] is ComboBoxItem item && item.Content?.ToString() == theme.PreferredView)
+                if (CmbPreferredView.Items[i] is ComboBoxItem item && item.Tag?.ToString() == theme.PreferredView)
                 {
                     CmbPreferredView.SelectedIndex = i;
                     break;
@@ -331,6 +381,10 @@ namespace CreadorTemas
                 }
 
                 _bgImagePath = null; TxtBgImagePath.Text = "";
+                _logoImagePath = null; TxtLogoImagePath.Text = "";
+                ImgPreviewBg.Source = null; ImgPreviewBg.IsVisible = false;
+                ImgPreviewLogo.Source = null; ImgPreviewLogo.IsVisible = false;
+
                 string imagesDir = Path.Combine(folder, "Images");
                 if (Directory.Exists(imagesDir))
                 {
@@ -348,6 +402,23 @@ namespace CreadorTemas
                         }
                     }
                     if (bestBg != null) { _bgImagePath = bestBg; TxtBgImagePath.Text = Path.GetFileName(bestBg); UpdatePreviewImage(ImgPreviewBg, bestBg); }
+
+                    // Buscar Logo.png si existe
+                    string? logoPath = null;
+                    foreach (var img in files)
+                    {
+                        if (Path.GetFileName(img).Equals("logo.png", StringComparison.OrdinalIgnoreCase))
+                        {
+                            logoPath = img;
+                            break;
+                        }
+                    }
+                    if (logoPath != null)
+                    {
+                        _logoImagePath = logoPath;
+                        TxtLogoImagePath.Text = Path.GetFileName(logoPath);
+                        UpdatePreviewImage(ImgPreviewLogo, logoPath);
+                    }
                 }
 
                 LoadColorVal("#ff007f", TxtAccentHex, BrdAccentPreview, c => _accentColor = c);
@@ -356,6 +427,9 @@ namespace CreadorTemas
                 LoadColorVal("#00f3ff", TxtBorderHex, BrdBorderPreview, c => _borderColor = c);
                 LoadColorVal("#ffffff", TxtForegroundHex, BrdForegroundPreview, c => _mainForegroundColor = c);
                 LoadColorVal("#00f3ff", TxtSecondaryHex, BrdSecondaryPreview, c => _secondaryTextColor = c);
+                LoadColorVal("#ff007f", TxtHoverHex, BrdHoverPreview, c => _hoverColor = c);
+                SldHoverGlow.Value = 12;
+                _hoverGlowBlur = 12;
                 SldCornerRadius.Value = 8;
                 _cornerRadius = 8;
                 CmbPreferredView.SelectedIndex = 0;
@@ -392,7 +466,8 @@ namespace CreadorTemas
                 {
                     Colors = new Dictionary<string, string> {
                         { "AccentBrush", _accentColor }, { "DeepDarkBrush", _deepDarkColor }, { "PanelBrush", _panelColor },
-                        { "BorderBrush", _borderColor }, { "MainForeground", _mainForegroundColor }, { "SecondaryTextBrush", _secondaryTextColor }
+                        { "BorderBrush", _borderColor }, { "MainForeground", _mainForegroundColor }, { "SecondaryTextBrush", _secondaryTextColor },
+                        { "HoverBorderBrush", _hoverColor }
                     },
                     Fonts = new Dictionary<string, string> {
                         { "MainFont", string.IsNullOrEmpty(_mainFontPath) ? "" : Path.GetFileName(_mainFontPath) },
@@ -400,11 +475,14 @@ namespace CreadorTemas
                     },
                     BackgroundImage = string.IsNullOrEmpty(_bgImagePath) ? "" : "Images/" + Path.GetFileName(_bgImagePath),
                     OverlayImage = string.IsNullOrEmpty(_overlayImagePath) ? "" : "Images/" + Path.GetFileName(_overlayImagePath),
-                    Metrics = new Dictionary<string, string> { { "CornerRadius", ((int)_cornerRadius).ToString() } },
-                    PreferredView = (CmbPreferredView.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Grid"
+                    Metrics = new Dictionary<string, string> { 
+                        { "CornerRadius", ((int)_cornerRadius).ToString() },
+                        { "HoverGlowBlur", ((int)_hoverGlowBlur).ToString() }
+                    },
+                    PreferredView = (CmbPreferredView.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "Grid"
                 };
 
-                await ThemeManager.SaveThemeAsync(themesPath, safeName, themeObj, _mainFontPath, _headerFontPath, _bgImagePath, _overlayImagePath);
+                await ThemeManager.SaveThemeAsync(themesPath, safeName, themeObj, _mainFontPath, _headerFontPath, _bgImagePath, _overlayImagePath, _logoImagePath);
                 await ShowMessageDialog("¡Éxito!", $"Tema '{themeName}' guardado correctamente en:\n{Path.Combine(themesPath, safeName)}");
             }
             catch (Exception ex) { await ShowMessageDialog("Error de Guardado", "No se pudo guardar el tema: " + ex.Message); }

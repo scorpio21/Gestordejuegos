@@ -75,7 +75,7 @@
         <!-- 2. CONTENIDO PRINCIPAL: FORMULARIO A LA IZQUIERDA Y VISTA PREVIA A LA DERECHA -->
         <Grid Grid.Row="1" ColumnDefinitions="*, 340">
             <!-- PANEL IZQUIERDO: FORMULARIO DE EDICIÓN -->
-            <ScrollViewer Grid.Column="0" Padding="0,0,15,0">
+            <ScrollViewer Grid.Column="0" Padding="0,0,15,0" VerticalScrollBarVisibility="Visible">
                 <StackPanel Spacing="12">
                     <!-- Datos del Tema -->
                     <StackPanel Spacing="5">
@@ -176,9 +176,9 @@
                     <Border Height="1" Background="#2e313c" Margin="0,5"/>
 
                     <!-- Multimedia del Tema -->
-                    <TextBlock Text="Imágenes de Fondo (Media)" Classes="SectionHeader"/>
-                    <Grid ColumnDefinitions="*, *" Margin="0,0,0,5">
-                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
+                    <TextBlock Text="Imágenes de Fondo y Logotipo (Media)" Classes="SectionHeader"/>
+                    <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, *" Margin="0,0,0,5">
+                        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="4" Margin="0,0,8,10">
                             <TextBlock Text="Fondo (BackgroundImage):" Foreground="#9ba1af" FontSize="11"/>
                             <Grid ColumnDefinitions="*, Auto, Auto">
                                 <TextBox Name="TxtBgImagePath" IsReadOnly="True" PlaceholderText="Sin fondo..." VerticalAlignment="Center"/>
@@ -186,12 +186,20 @@
                                 <Button Name="BtnClearBgImage" Grid.Column="2" Content="X" Classes="ActionBtn" Margin="4,0,0,0" Foreground="#ef4444"/>
                             </Grid>
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="4" Margin="8,0,0,0">
+                        <StackPanel Grid.Row="0" Grid.Column="1" Spacing="4" Margin="8,0,0,10">
                             <TextBlock Text="Superposición (OverlayImage):" Foreground="#9ba1af" FontSize="11"/>
                             <Grid ColumnDefinitions="*, Auto, Auto">
                                 <TextBox Name="TxtOverlayImagePath" IsReadOnly="True" PlaceholderText="Sin overlay..." VerticalAlignment="Center"/>
                                 <Button Name="BtnBrowseOverlayImage" Grid.Column="1" Content="..." Classes="ActionBtn" Margin="4,0,0,0"/>
                                 <Button Name="BtnClearOverlayImage" Grid.Column="2" Content="X" Classes="ActionBtn" Margin="4,0,0,0" Foreground="#ef4444"/>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4" Margin="0,0,8,5">
+                            <TextBlock Text="Logotipo de la App (Logo.png):" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto, Auto">
+                                <TextBox Name="TxtLogoImagePath" IsReadOnly="True" PlaceholderText="Por defecto..." VerticalAlignment="Center"/>
+                                <Button Name="BtnBrowseLogoImage" Grid.Column="1" Content="..." Classes="ActionBtn" Margin="4,0,0,0"/>
+                                <Button Name="BtnClearLogoImage" Grid.Column="2" Content="X" Classes="ActionBtn" Margin="4,0,0,0" Foreground="#ef4444"/>
                             </Grid>
                         </StackPanel>
                     </Grid>
@@ -211,11 +219,34 @@
                         <StackPanel Grid.Column="1" Spacing="4" Margin="8,0,0,0">
                             <TextBlock Text="Vista Preferida (PreferredView):" Foreground="#9ba1af" FontSize="11"/>
                             <ComboBox Name="CmbPreferredView" HorizontalAlignment="Stretch" SelectedIndex="0" VerticalAlignment="Center">
-                                <ComboBoxItem Content="Grid"/>
-                                <ComboBoxItem Content="List"/>
-                                <ComboBoxItem Content="Wheel"/>
-                                <ComboBoxItem Content="HorizontalWheel"/>
+                                <ComboBoxItem Content="Cuadrícula" Tag="Grid"/>
+                                <ComboBoxItem Content="Lista" Tag="List"/>
+                                <ComboBoxItem Content="Rueda Vertical (Wheel)" Tag="Wheel"/>
+                                <ComboBoxItem Content="Rueda Horizontal (Coverflow)" Tag="HorizontalWheel"/>
                             </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Height="1" Background="#2e313c" Margin="0,5"/>
+
+                    <!-- Efectos y Hover -->
+                    <TextBlock Text="Efectos al Pasar el Ratón (Hover)" Classes="SectionHeader"/>
+                    <Grid ColumnDefinitions="*, *" Margin="0,0,0,5">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,8,0">
+                            <TextBlock Text="Color de Borde Hover:" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBox Name="TxtHoverHex" Text="#ff007f" IsReadOnly="True" VerticalAlignment="Center"/>
+                                <Button Name="BtnSelectHoverColor" Grid.Column="1" Classes="ColorSelectBtn" Width="36" Margin="6,0,0,0">
+                                    <Border Name="BrdHoverPreview" Background="#ff007f" CornerRadius="2"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="8,0,0,0">
+                            <TextBlock Text="Desenfoque de Brillo Hover:" Foreground="#9ba1af" FontSize="11"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <Slider Name="SldHoverGlow" Minimum="0" Maximum="30" Value="12" SmallChange="1" LargeChange="5" VerticalAlignment="Center"/>
+                                <TextBlock Name="TxtHoverGlowVal" Grid.Column="1" Text="12 px" Foreground="White" FontSize="11" Width="35" TextAlignment="Right" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                            </Grid>
                         </StackPanel>
                     </Grid>
                 </StackPanel>
@@ -240,7 +271,11 @@
                                 <!-- Mock Cabecera -->
                                 <Border Grid.Row="0" Name="BrdPreviewPanelHeader" Background="#161920" Height="32" Padding="10,0" CornerRadius="4">
                                     <Grid ColumnDefinitions="*, Auto">
-                                        <TextBlock Name="TxtPreviewHeaderTitle" Text="GESTOR DE JUEGOS" Foreground="#ff007f" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                                        <!-- Logo o Título -->
+                                        <Panel VerticalAlignment="Center">
+                                            <TextBlock Name="TxtPreviewHeaderTitle" Text="GESTOR DE JUEGOS" Foreground="#ff007f" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                                            <Image Name="ImgPreviewLogo" Height="22" Stretch="Uniform" HorizontalAlignment="Left" IsVisible="False"/>
+                                        </Panel>
                                         <TextBlock Grid.Column="1" Text="🎮" Foreground="White" FontSize="11" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>

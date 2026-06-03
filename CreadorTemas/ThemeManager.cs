@@ -44,7 +44,8 @@ namespace CreadorTemas
             string? sourceMainFont,
             string? sourceHeaderFont,
             string? sourceBgImage,
-            string? sourceOverlayImage)
+            string? sourceOverlayImage,
+            string? sourceLogoImage)
         {
             await Task.Run(() =>
             {
@@ -84,6 +85,14 @@ namespace CreadorTemas
                     string destImg = Path.Combine(imagesFolder, Path.GetFileName(sourceOverlayImage));
                     if (sourceOverlayImage != destImg)
                         File.Copy(sourceOverlayImage, destImg, true);
+                }
+
+                // Copiar imagen del logotipo de la aplicación (guardándolo como Logo.png)
+                if (!string.IsNullOrEmpty(sourceLogoImage) && File.Exists(sourceLogoImage))
+                {
+                    string destLogo = Path.Combine(imagesFolder, "Logo.png");
+                    if (sourceLogoImage != destLogo)
+                        File.Copy(sourceLogoImage, destLogo, true);
                 }
 
                 // Escribir theme.json

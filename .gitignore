@@ -687,3 +687,6 @@ import_covers_log.txt
 
 # Archivos XML pesados no deseados
 *.xml
+
+# Carpetas temporales y de revisión
+/RevisaDB/
