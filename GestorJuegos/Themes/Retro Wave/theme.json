@@ -3,6 +3,13 @@
     "AccentBrush": "#ff0055",
     "DeepDarkBrush": "#1a0033",
     "PanelBrush": "#2b0054",
-    "BorderBrush": "#00ffcc"
-  }
+    "BorderBrush": "#00ffcc",
+    "MainForeground": "#ffffff",
+    "SecondaryTextBrush": "#00ffcc"
+  },
+  "Metrics": {
+    "CornerRadius": "8",
+    "HoverGlowBlur": "20"
+  },
+  "PreferredView": "Wheel"
 }

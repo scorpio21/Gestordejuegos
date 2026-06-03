@@ -620,9 +620,9 @@
                                             </Setter.Value>
                                         </Setter>
                                     </Style>
-                                    <!-- Cambia sutilmente el borde del contenedor del juego al color de acento al pasar el ratón -->
+                                    <!-- Cambia sutilmente el borde del contenedor al color del hover del tema -->
                                     <Style Selector="ListBoxItem:pointerover Border">
-                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource HoverBorderBrush}"/>
                                         <Setter Property="BorderThickness" Value="1"/>
                                     </Style>
                                 </ListBox.Styles>
@@ -707,13 +707,15 @@
                                     </Style>
                                     <!-- Efecto de Hover para carátulas reales -->
                                     <Style Selector="ListBoxItem:pointerover Border#CoverBorder">
-                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource HoverBorderBrush}"/>
                                         <Setter Property="BorderThickness" Value="1.5"/>
+                                        <Setter Property="BoxShadow" Value="{DynamicResource HoverBoxShadow}"/>
                                     </Style>
                                     <!-- Efecto de Hover para placeholders de juegos sin carátula -->
                                     <Style Selector="ListBoxItem:pointerover Border#PlaceholderBorder">
-                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource HoverBorderBrush}"/>
                                         <Setter Property="BorderThickness" Value="1.5"/>
+                                        <Setter Property="BoxShadow" Value="{DynamicResource HoverBoxShadow}"/>
                                     </Style>
                                 </ListBox.Styles>
                             </ListBox>

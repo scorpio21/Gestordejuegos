@@ -231,6 +231,51 @@ public partial class MainWindow : Window
                                         BtnViewGrid_Click(null, new RoutedEventArgs());
                                     }
                                 }
+
+                                // 8. Carga Dinámica de Efectos Hover
+                                if (themeConfig != null)
+                                {
+                                    // Determinar el color del hover (si no está definido en el tema, se usa el color de acento)
+                                    if (!themeConfig.Colors.TryGetValue("HoverBorderBrush", out string? hoverColorStr))
+                                    {
+                                        this.Resources["HoverBorderBrush"] = this.Resources["AccentBrush"];
+                                    }
+                                    else
+                                    {
+                                        this.Resources["HoverBorderBrush"] = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(hoverColorStr));
+                                    }
+
+                                    // Determinar el desenfoque de brillo hover (HoverGlowBlur) desde Metrics
+                                    double glowBlur = 12; // Valor por defecto
+                                    if (themeConfig.Metrics != null && themeConfig.Metrics.TryGetValue("HoverGlowBlur", out string? glowStr) && double.TryParse(glowStr, out double gb))
+                                    {
+                                        glowBlur = gb;
+                                    }
+
+                                    var hoverBrush = (Avalonia.Media.SolidColorBrush)this.Resources["HoverBorderBrush"];
+                                    if (glowBlur > 0)
+                                    {
+                                        this.Resources["HoverBoxShadow"] = new Avalonia.Media.BoxShadows(new Avalonia.Media.BoxShadow
+                                        {
+                                            Blur = glowBlur,
+                                            Spread = 2,
+                                            Color = hoverBrush.Color,
+                                            OffsetY = 0
+                                        });
+                                    }
+                                    else
+                                    {
+                                        // Brillo desactivado (sombra transparente)
+                                        this.Resources["HoverBoxShadow"] = new Avalonia.Media.BoxShadows(new Avalonia.Media.BoxShadow
+                                        {
+                                            Blur = 0,
+                                            Spread = 0,
+                                            Color = Avalonia.Media.Colors.Transparent,
+                                            OffsetY = 0
+                                        });
+                                    }
+                                }
+
                                 themeLoaded = true;
                             }
                         }
@@ -267,6 +312,16 @@ public partial class MainWindow : Window
                     this.Resources["DeepDarkColor"] = deepDarkColor;
                     this.Resources["PanelBrush"] = new Avalonia.Media.SolidColorBrush(panelColor);
                     this.Resources["BorderBrush"] = new Avalonia.Media.SolidColorBrush(borderColor);
+
+                    // Fallback para Hover
+                    this.Resources["HoverBorderBrush"] = this.Resources["AccentBrush"];
+                    this.Resources["HoverBoxShadow"] = new Avalonia.Media.BoxShadows(new Avalonia.Media.BoxShadow
+                    {
+                        Blur = 12,
+                        Spread = 2,
+                        Color = accentColor,
+                        OffsetY = 0
+                    });
                 }
                 else
                 {
@@ -283,6 +338,16 @@ public partial class MainWindow : Window
                         this.Resources["DeepDarkColor"] = deepDarkColor;
                         this.Resources["PanelBrush"] = new Avalonia.Media.SolidColorBrush(panelColor);
                         this.Resources["BorderBrush"] = new Avalonia.Media.SolidColorBrush(borderColor);
+
+                        // Fallback para Hover personalizado
+                        this.Resources["HoverBorderBrush"] = this.Resources["AccentBrush"];
+                        this.Resources["HoverBoxShadow"] = new Avalonia.Media.BoxShadows(new Avalonia.Media.BoxShadow
+                        {
+                            Blur = 12,
+                            Spread = 2,
+                            Color = accentColor,
+                            OffsetY = 0
+                        });
                     }
                     else
                     {
@@ -296,6 +361,16 @@ public partial class MainWindow : Window
                         this.Resources["DeepDarkColor"] = deepDarkColor;
                         this.Resources["PanelBrush"] = new Avalonia.Media.SolidColorBrush(panelColor);
                         this.Resources["BorderBrush"] = new Avalonia.Media.SolidColorBrush(borderColor);
+
+                        // Fallback para Hover por defecto
+                        this.Resources["HoverBorderBrush"] = this.Resources["AccentBrush"];
+                        this.Resources["HoverBoxShadow"] = new Avalonia.Media.BoxShadows(new Avalonia.Media.BoxShadow
+                        {
+                            Blur = 12,
+                            Spread = 2,
+                            Color = accentColor,
+                            OffsetY = 0
+                        });
                     }
                 }
             }
@@ -313,6 +388,15 @@ public partial class MainWindow : Window
             this.Resources["DeepDarkColor"] = deepDarkColor;
             this.Resources["PanelBrush"] = new Avalonia.Media.SolidColorBrush(panelColor);
             this.Resources["BorderBrush"] = new Avalonia.Media.SolidColorBrush(borderColor);
+
+            this.Resources["HoverBorderBrush"] = this.Resources["AccentBrush"];
+            this.Resources["HoverBoxShadow"] = new Avalonia.Media.BoxShadows(new Avalonia.Media.BoxShadow
+            {
+                Blur = 12,
+                Spread = 2,
+                Color = accentColor,
+                OffsetY = 0
+            });
         }
     }
 

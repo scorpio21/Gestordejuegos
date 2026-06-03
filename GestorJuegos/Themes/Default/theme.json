@@ -14,7 +14,8 @@
   "BackgroundImage": "Images/Fanart_Background.jpg",
   "OverlayImage": "Images/Overlay.png",
   "Metrics": {
-    "CornerRadius": "4"
+    "CornerRadius": "4",
+    "HoverGlowBlur": "15"
   },
   "PreferredView": "List"
 }
