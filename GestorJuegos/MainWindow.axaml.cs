@@ -5603,8 +5603,8 @@ public partial class MainWindow : Window
                 }
                 else
                 {
-                    ImgGameplayPreview.Source = null;
-                    if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = true;
+                    ImgGameBox3D.Cover = null;
+                    if (Txt3DHint != null) Txt3DHint.IsVisible = false;
                 }
             }
 
@@ -5632,8 +5632,8 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             LogDebug($"Error al cargar galería: {ex.Message}");
-            ImgGameplayPreview.Source = null;
-            if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = true;
+            ImgGameBox3D.Cover = null;
+            if (Txt3DHint != null) Txt3DHint.IsVisible = false;
             LstScreenshots.ItemsSource = null;
             LstScreenshots.IsVisible = false;
         }
@@ -5645,19 +5645,19 @@ public partial class MainWindow : Window
             try
             {
                 using var ms = new MemoryStream(data);
-                ImgGameplayPreview.Source = new Bitmap(ms);
-                if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = false;
+                ImgGameBox3D.Cover = new Bitmap(ms);
+                if (Txt3DHint != null) Txt3DHint.IsVisible = true;
             }
             catch
             {
-                ImgGameplayPreview.Source = null;
-                if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = true;
+                ImgGameBox3D.Cover = null;
+                if (Txt3DHint != null) Txt3DHint.IsVisible = false;
             }
         }
         else
         {
-            ImgGameplayPreview.Source = null;
-            if (TxtGameplayPlaceholder != null) TxtGameplayPlaceholder.IsVisible = true;
+            ImgGameBox3D.Cover = null;
+            if (Txt3DHint != null) Txt3DHint.IsVisible = false;
         }
     }
 
@@ -5671,6 +5671,7 @@ public partial class MainWindow : Window
 
     private void ImgGameplayPreview_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        // El control GameBox3D ahora maneja su propia interactividad
         if (_selectedGame == null) return;
         
         // Si hay una imagen seleccionada en el carrusel, usar esa; si no, la imagen cargada

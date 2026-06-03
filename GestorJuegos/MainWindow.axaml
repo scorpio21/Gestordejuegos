@@ -5,6 +5,7 @@
         xmlns:models="clr-namespace:GestorJuegos.Models"
         xmlns:services="clr-namespace:GestorJuegos.Services"
         xmlns:utils="clr-namespace:GestorJuegos.Utils"
+        xmlns:controls="clr-namespace:GestorJuegos.Controls"
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
         x:Class="GestorJuegos.MainWindow"
         Title="Gestor de Juegos"
@@ -985,14 +986,27 @@
                                         <ScrollViewer Margin="0,10,0,0">
                                             <StackPanel Spacing="20">
                                                 
-                                                <!-- IMAGEN PRINCIPAL (Box 3D por defecto) -->
+                                                <!-- IMAGEN PRINCIPAL (Visor 3D Interactivo) -->
                                                 <StackPanel Spacing="8" Margin="10,0,10,0">
-                                                    <TextBlock Text="VISTA PREVIA" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy"/>
-                                                    <Border Background="{DynamicResource PanelBrush}" CornerRadius="10" ClipToBounds="True" Height="220" BoxShadow="0 4 12 0 #50000000">
+                                                    <TextBlock Text="VISOR 3D INTERACTIVO" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy"/>
+                                                    <Border Background="{DynamicResource PanelBrush}" CornerRadius="10" ClipToBounds="True" Height="380" BoxShadow="0 4 12 0 #50000000">
                                                         <Panel>
-                                                            <Image Name="ImgGameplayPreview" Stretch="Uniform" Cursor="Hand" PointerPressed="ImgGameplayPreview_PointerPressed"/>
-                                                            <!-- Placeholder si no hay imagen -->
-                                                            <TextBlock Name="TxtGameplayPlaceholder" Text="Sin imagen 3D / Box Art" Foreground="#64748b" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            <!-- Control de Carátula 3D Personalizado -->
+                                                            <controls:GameBox3D 
+                                                                Name="ImgGameBox3D"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"
+                                                                Width="320" 
+                                                                Height="360"/>
+                                                                
+                                                            <TextBlock Name="Txt3DHint" 
+                                                                       Text="🖱️ Clic derecho para girar" 
+                                                                       HorizontalAlignment="Center" 
+                                                                       VerticalAlignment="Bottom" 
+                                                                       Margin="0,0,0,10" 
+                                                                       FontSize="10" 
+                                                                       Foreground="#60ffffff" 
+                                                                       IsHitTestVisible="False"/>
                                                         </Panel>
                                                     </Border>
                                                 </StackPanel>
