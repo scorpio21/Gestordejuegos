@@ -15,5 +15,6 @@
   "OverlayImage": "Images/Overlay.png",
   "Metrics": {
     "CornerRadius": "4"
-  }
+  },
+  "PreferredView": "List"
 }

@@ -14,5 +14,6 @@
   "BackgroundImage": "Images/Background-01.jpg",
   "Metrics": {
     "CornerRadius": "0"
-  }
+  },
+  "PreferredView": "Grid"
 }

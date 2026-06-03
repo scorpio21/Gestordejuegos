@@ -275,10 +275,22 @@
         <!-- FONDO DINÁMICO (Inmersivo) -->
         <Panel Name="PnlBackground" IsHitTestVisible="False" Grid.RowSpan="5" Grid.ColumnSpan="5">
             <!-- 1. Fondo del Tema (Estatico del tema) -->
-            <Image Name="ImgThemeBackground" Stretch="UniformToFill" Opacity="0.5" IsVisible="False"/>
+            <Image Name="ImgThemeBackground" Stretch="UniformToFill" Opacity="0.5" IsVisible="False">
+                <Image.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.8" Easing="CubicEaseInOut"/>
+                    </Transitions>
+                </Image.Transitions>
+            </Image>
             
             <!-- 2. Overlay del Tema (Vignette/Textura) -->
-            <Image Name="ImgThemeOverlay" Stretch="UniformToFill" Opacity="0.7" IsVisible="False"/>
+            <Image Name="ImgThemeOverlay" Stretch="UniformToFill" Opacity="0.7" IsVisible="False">
+                <Image.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.8" Easing="CubicEaseInOut"/>
+                    </Transitions>
+                </Image.Transitions>
+            </Image>
             
             <!-- 3. Fondo del Juego (Cambia al seleccionar juego) -->
             <Image Name="ImgBackground" Stretch="UniformToFill" Opacity="0.3">
@@ -479,7 +491,13 @@
                 <Border Grid.Column="0" Background="{DynamicResource DeepDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0" Padding="5">
                     <DockPanel>
                         <!-- Logotipo del Tema / Aplicación -->
-                        <Image Name="ImgAppLogo" Source="/img/icono.png" Width="120" Height="60" Margin="0,15,0,10" VerticalAlignment="Center" DockPanel.Dock="Top"/>
+                        <Image Name="ImgAppLogo" Source="/img/icono.png" Width="120" Height="60" Margin="0,15,0,10" VerticalAlignment="Center" DockPanel.Dock="Top">
+                            <Image.Transitions>
+                                <Transitions>
+                                    <DoubleTransition Property="Opacity" Duration="0:0:0.8" Easing="CubicEaseInOut"/>
+                                </Transitions>
+                            </Image.Transitions>
+                        </Image>
                         
                         <!-- Selector de Vista estilo LaunchBox -->
                         <Border DockPanel.Dock="Top" Background="{DynamicResource PanelBrush}" CornerRadius="8" Margin="5,5,5,10" Padding="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
@@ -587,7 +605,7 @@
                                                             <TextBlock Text="📁"/>
                                                         </MenuItem.Icon>
                                                     </MenuItem>
-                                                    <MenuItem Header="Añadir a Favoritos" Click="BtnToggleFavorite_Click">
+                                                    <MenuItem Header="Añadir de Favoritos" Click="BtnToggleFavorite_Click">
                                                         <MenuItem.Icon>
                                                             <TextBlock Text="⭐" Foreground="#f59e0b"/>
                                                         </MenuItem.Icon>
@@ -643,7 +661,7 @@
                                                             <TextBlock Text="📁"/>
                                                         </MenuItem.Icon>
                                                     </MenuItem>
-                                                    <MenuItem Header="Añadir a Favoritos" Click="BtnToggleFavorite_Click">
+                                                    <MenuItem Header="Añadir de Favoritos" Click="BtnToggleFavorite_Click">
                                                         <MenuItem.Icon>
                                                             <TextBlock Text="⭐" Foreground="#f59e0b"/>
                                                         </MenuItem.Icon>
@@ -682,6 +700,87 @@
                                         <Setter Property="BoxShadow" Value="0 0 15 2 #00a2ff"/>
                                         <Setter Property="BorderBrush" Value="#00a2ff"/>
                                         <Setter Property="BorderThickness" Value="1.5"/>
+                                    </Style>
+                                </ListBox.Styles>
+                            </ListBox>
+
+                            <!-- NUEVA VISTA: WHEEL VERTICAL (Estilo LaunchBox) -->
+                            <ListBox Name="LstGamesWheelVertical" IsVisible="False" Background="Transparent" BorderThickness="0" Padding="0,200">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel Orientation="Vertical"/>
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Game">
+                                        <Panel Height="100" Margin="0,5">
+                                            <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="Uniform" HorizontalAlignment="Right" Margin="0,0,40,0"/>
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,160,0" FontSize="18" FontWeight="Bold" Foreground="White" Opacity="0.5"/>
+                                        </Panel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                                <ListBox.Styles>
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="RenderTransform" Value="scale(0.8) translate(-50px, 0)"/>
+                                        <Setter Property="Opacity" Value="0.6"/>
+                                        <Setter Property="Transitions">
+                                            <Transitions>
+                                                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+                                                <DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
+                                            </Transitions>
+                                        </Setter>
+                                    </Style>
+                                    <Style Selector="ListBoxItem:selected">
+                                        <Setter Property="RenderTransform" Value="scale(1.2) translate(0, 0)"/>
+                                        <Setter Property="Opacity" Value="1"/>
+                                        <Setter Property="ZIndex" Value="10"/>
+                                    </Style>
+                                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                    </Style>
+                                </ListBox.Styles>
+                            </ListBox>
+
+                            <!-- NUEVA VISTA: WHEEL HORIZONTAL (Estilo CoverFlow) -->
+                            <ListBox Name="LstGamesWheelHorizontal" IsVisible="False" Background="Transparent" BorderThickness="0" Padding="200,0">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Game">
+                                        <Panel Width="200" Height="300" Margin="10,0">
+                                            <Border CornerRadius="10" ClipToBounds="True" BoxShadow="0 10 20 0 #80000000">
+                                                <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill"/>
+                                            </Border>
+                                        </Panel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                                <ListBox.Styles>
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="RenderTransform" Value="scale(0.7) rotateY(45deg)"/>
+                                        <Setter Property="Opacity" Value="0.5"/>
+                                        <Setter Property="Transitions">
+                                            <Transitions>
+                                                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.4" Easing="CubicEaseOut"/>
+                                                <DoubleTransition Property="Opacity" Duration="0:0:0.4"/>
+                                            </Transitions>
+                                        </Setter>
+                                    </Style>
+                                    <Style Selector="ListBoxItem:selected">
+                                        <Setter Property="RenderTransform" Value="scale(1.1) rotateY(0deg)"/>
+                                        <Setter Property="Opacity" Value="1"/>
+                                        <Setter Property="ZIndex" Value="10"/>
+                                    </Style>
+                                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                        <Setter Property="Background" Value="Transparent"/>
                                     </Style>
                                 </ListBox.Styles>
                             </ListBox>

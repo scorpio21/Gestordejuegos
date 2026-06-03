@@ -209,6 +209,28 @@ public partial class MainWindow : Window
                                         ImgAppLogo.IsVisible = false;
                                     }
                                 }
+
+                                // 7. Vista Preferida (Grid vs List vs Wheel)
+                                if (!string.IsNullOrEmpty(themeConfig.PreferredView))
+                                {
+                                    if (themeConfig.PreferredView.Equals("List", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        BtnViewList_Click(null, new RoutedEventArgs());
+                                    }
+                                    else if (themeConfig.PreferredView.Equals("Wheel", StringComparison.OrdinalIgnoreCase) || 
+                                             themeConfig.PreferredView.Equals("VerticalWheel", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        BtnViewWheelVertical_Click(null, new RoutedEventArgs());
+                                    }
+                                    else if (themeConfig.PreferredView.Equals("HorizontalWheel", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        BtnViewWheelHorizontal_Click(null, new RoutedEventArgs());
+                                    }
+                                    else
+                                    {
+                                        BtnViewGrid_Click(null, new RoutedEventArgs());
+                                    }
+                                }
                                 themeLoaded = true;
                             }
                         }
@@ -301,6 +323,7 @@ public partial class MainWindow : Window
         public Dictionary<string, string> Metrics { get; set; } = new();
         public string BackgroundImage { get; set; } = "";
         public string OverlayImage { get; set; } = "";
+        public string PreferredView { get; set; } = "Grid"; // Grid, List, Wheel, HorizontalWheel
     }
 
 
@@ -1529,23 +1552,61 @@ public partial class MainWindow : Window
     private void BtnViewList_Click(object? sender, RoutedEventArgs e)
     {
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
-        BtnViewList.IsChecked = true;
-        BtnViewGrid.IsChecked = false;
+        if (BtnViewList != null) BtnViewList.IsChecked = true;
+        if (BtnViewGrid != null) BtnViewGrid.IsChecked = false;
+        
         LstGames.IsVisible = true;
         LstGamesGrid.IsVisible = false;
-        BtnViewList.Background = Avalonia.Media.Brush.Parse("#444444");
-        BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
+        LstGamesWheelVertical.IsVisible = false;
+        LstGamesWheelHorizontal.IsVisible = false;
+        
+        if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#444444");
+        if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
     }
 
     private void BtnViewGrid_Click(object? sender, RoutedEventArgs e)
     {
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
-        BtnViewGrid.IsChecked = true;
-        BtnViewList.IsChecked = false;
+        if (BtnViewGrid != null) BtnViewGrid.IsChecked = true;
+        if (BtnViewList != null) BtnViewList.IsChecked = false;
+        
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = true;
-        BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
-        BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#444444");
+        LstGamesWheelVertical.IsVisible = false;
+        LstGamesWheelHorizontal.IsVisible = false;
+        
+        if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
+        if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#444444");
+    }
+
+    private void BtnViewWheelVertical_Click(object? sender, RoutedEventArgs e)
+    {
+        GestorJuegos.Utils.SoundHelper.PlayNavigation();
+        if (BtnViewGrid != null) BtnViewGrid.IsChecked = false;
+        if (BtnViewList != null) BtnViewList.IsChecked = false;
+
+        LstGames.IsVisible = false;
+        LstGamesGrid.IsVisible = false;
+        LstGamesWheelVertical.IsVisible = true;
+        LstGamesWheelHorizontal.IsVisible = false;
+
+        if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
+        if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
+    }
+
+    private void BtnViewWheelHorizontal_Click(object? sender, RoutedEventArgs e)
+    {
+        GestorJuegos.Utils.SoundHelper.PlayNavigation();
+        if (BtnViewGrid != null) BtnViewGrid.IsChecked = false;
+        if (BtnViewList != null) BtnViewList.IsChecked = false;
+
+        LstGames.IsVisible = false;
+        LstGamesGrid.IsVisible = false;
+        LstGamesWheelVertical.IsVisible = false;
+        LstGamesWheelHorizontal.IsVisible = true;
+
+        if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
+        if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
     }
 
     private void LoadPlatforms()
@@ -3585,6 +3646,8 @@ public partial class MainWindow : Window
         // Limpiar para forzar refresco total
         LstGames.ItemsSource = null;
         LstGamesGrid.ItemsSource = null;
+        LstGamesWheelVertical.ItemsSource = null;
+        LstGamesWheelHorizontal.ItemsSource = null;
 
         // Cargar miniaturas para la página actual
         foreach (var game in paginated)
@@ -3599,6 +3662,8 @@ public partial class MainWindow : Window
 
         LstGames.ItemsSource = paginated;
         LstGamesGrid.ItemsSource = paginated;
+        LstGamesWheelVertical.ItemsSource = paginated;
+        LstGamesWheelHorizontal.ItemsSource = paginated;
         
         if (_selectedPlatform != null)
         {
