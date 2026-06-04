@@ -217,20 +217,20 @@ public partial class MainWindow : Window
                                 {
                                     if (themeConfig.PreferredView.Equals("List", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        BtnViewList_Click(null, new RoutedEventArgs());
+                                        if (BtnViewList != null) BtnViewList_Click(null, new RoutedEventArgs());
                                     }
                                     else if (themeConfig.PreferredView.Equals("Wheel", StringComparison.OrdinalIgnoreCase) || 
                                              themeConfig.PreferredView.Equals("VerticalWheel", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        BtnViewWheelVertical_Click(null, new RoutedEventArgs());
+                                        if (BtnViewWheelVertical != null) BtnViewWheelVertical_Click(null, new RoutedEventArgs());
                                     }
                                     else if (themeConfig.PreferredView.Equals("HorizontalWheel", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        BtnViewWheelHorizontal_Click(null, new RoutedEventArgs());
+                                        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal_Click(null, new RoutedEventArgs());
                                     }
                                     else
                                     {
-                                        BtnViewGrid_Click(null, new RoutedEventArgs());
+                                        if (BtnViewGrid != null) BtnViewGrid_Click(null, new RoutedEventArgs());
                                     }
                                 }
 
@@ -1648,6 +1648,8 @@ public partial class MainWindow : Window
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
         if (BtnViewList != null) BtnViewList.IsChecked = true;
         if (BtnViewGrid != null) BtnViewGrid.IsChecked = false;
+        if (BtnViewWheelVertical != null) BtnViewWheelVertical.IsChecked = false;
+        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.IsChecked = false;
         
         LstGames.IsVisible = true;
         LstGamesGrid.IsVisible = false;
@@ -1656,6 +1658,8 @@ public partial class MainWindow : Window
         
         if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#444444");
         if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
+        if (BtnViewWheelVertical != null) BtnViewWheelVertical.Background = Avalonia.Media.Brush.Parse("#222222");
+        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.Background = Avalonia.Media.Brush.Parse("#222222");
     }
 
     private void BtnViewGrid_Click(object? sender, RoutedEventArgs e)
@@ -1663,6 +1667,8 @@ public partial class MainWindow : Window
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
         if (BtnViewGrid != null) BtnViewGrid.IsChecked = true;
         if (BtnViewList != null) BtnViewList.IsChecked = false;
+        if (BtnViewWheelVertical != null) BtnViewWheelVertical.IsChecked = false;
+        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.IsChecked = false;
         
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = true;
@@ -1671,13 +1677,17 @@ public partial class MainWindow : Window
         
         if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
         if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#444444");
+        if (BtnViewWheelVertical != null) BtnViewWheelVertical.Background = Avalonia.Media.Brush.Parse("#222222");
+        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.Background = Avalonia.Media.Brush.Parse("#222222");
     }
 
     private void BtnViewWheelVertical_Click(object? sender, RoutedEventArgs e)
     {
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
+        if (BtnViewWheelVertical != null) BtnViewWheelVertical.IsChecked = true;
         if (BtnViewGrid != null) BtnViewGrid.IsChecked = false;
         if (BtnViewList != null) BtnViewList.IsChecked = false;
+        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.IsChecked = false;
 
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = false;
@@ -1686,13 +1696,17 @@ public partial class MainWindow : Window
 
         if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
         if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
+        if (BtnViewWheelVertical != null) BtnViewWheelVertical.Background = Avalonia.Media.Brush.Parse("#444444");
+        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.Background = Avalonia.Media.Brush.Parse("#222222");
     }
 
     private void BtnViewWheelHorizontal_Click(object? sender, RoutedEventArgs e)
     {
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
+        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.IsChecked = true;
         if (BtnViewGrid != null) BtnViewGrid.IsChecked = false;
         if (BtnViewList != null) BtnViewList.IsChecked = false;
+        if (BtnViewWheelVertical != null) BtnViewWheelVertical.IsChecked = false;
 
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = false;
@@ -1701,6 +1715,16 @@ public partial class MainWindow : Window
 
         if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
         if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
+        if (BtnViewWheelVertical != null) BtnViewWheelVertical.Background = Avalonia.Media.Brush.Parse("#222222");
+        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.Background = Avalonia.Media.Brush.Parse("#444444");
+    }
+
+    private void RestoreActiveViewVisibility()
+    {
+        if (BtnViewList?.IsChecked == true) BtnViewList_Click(null, new RoutedEventArgs());
+        else if (BtnViewWheelVertical?.IsChecked == true) BtnViewWheelVertical_Click(null, new RoutedEventArgs());
+        else if (BtnViewWheelHorizontal?.IsChecked == true) BtnViewWheelHorizontal_Click(null, new RoutedEventArgs());
+        else BtnViewGrid_Click(null, new RoutedEventArgs());
     }
 
     private void LoadPlatforms()
@@ -2180,8 +2204,8 @@ public partial class MainWindow : Window
             // Cargar los detalles de la plataforma/categoría en el panel derecho
             LoadPlatformOrCategoryDetails(item);
             
-            // Mantener la vista de visualización activa (Lista, Cuadrícula o Ruedas) al cambiar de plataforma
-            // BtnViewGrid_Click(null, new RoutedEventArgs());
+            // Restaurar la visibilidad de la vista activa (Grid, List o Wheels)
+            RestoreActiveViewVisibility();
 
             using var context = new GestorJuegos.Data.AppDbContext();
             var query = context.Games.Include(g => g.Platform).AsQueryable();
@@ -2712,6 +2736,8 @@ public partial class MainWindow : Window
         PnlPagination.IsVisible = false;
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = false;
+        LstGamesWheelVertical.IsVisible = false;
+        LstGamesWheelHorizontal.IsVisible = false;
         PnlGameDetails.IsVisible = false;
         
         LoadPlatforms();
@@ -5579,33 +5605,20 @@ public partial class MainWindow : Window
         {
             using var context = new GestorJuegos.Data.CoversDbContext();
 
-            // 1. CARGAR IMAGEN PRINCIPAL (Prioridad: Box 3D)
-            var box3d = context.Images
-                .Where(i => i.GameId == gameId && (i.ImageType == "Box 3D" || i.ImageType == "Box - 3D"))
-                .Select(i => i.ImageData)
+            // Cargar siempre la portada frontal plana (Box Front) para el visor 3D interactivo
+            var boxFront = context.Covers
+                .Where(c => c.Id == gameId)
+                .Select(c => c.ImageData ?? c.ThumbnailData)
                 .FirstOrDefault();
 
-            if (box3d != null && box3d.Length > 0)
+            if (boxFront != null && boxFront.Length > 0)
             {
-                ShowGameplayPreview(box3d);
+                ShowGameplayPreview(boxFront);
             }
             else
             {
-                // Fallback: Si no hay 3D, intentar Box Frontal normal
-                var boxFront = context.Covers
-                    .Where(c => c.Id == gameId)
-                    .Select(c => c.ImageData ?? c.ThumbnailData)
-                    .FirstOrDefault();
-
-                if (boxFront != null && boxFront.Length > 0)
-                {
-                    ShowGameplayPreview(boxFront);
-                }
-                else
-                {
-                    ImgGameBox3D.Cover = null;
-                    if (Txt3DHint != null) Txt3DHint.IsVisible = false;
-                }
+                ImgGameBox3D.Cover = null;
+                if (Txt3DHint != null) Txt3DHint.IsVisible = false;
             }
 
             // 2. CARGAR GALERÍA DE IMÁGENES (Capturas, Fanart, etc.)
@@ -6046,7 +6059,6 @@ public partial class MainWindow : Window
             var container = LstGamesWheelVertical.ContainerFromItem(item) as ListBoxItem;
             if (container == null) continue;
 
-            // Obtener la posición del contenedor relativa a la ListBox
             var position = container.TranslatePoint(new Point(0, 0), LstGamesWheelVertical);
             if (position.HasValue)
             {
@@ -6054,21 +6066,24 @@ public partial class MainWindow : Window
                 double distanceFromCenter = itemCenterY - centerOfList;
                 double maxDistance = centerOfList;
 
-                // Calcular el desplazamiento X basado en una parábola (curva de rueda)
-                double ratio = Math.Clamp(distanceFromCenter / maxDistance, -1.0, 1.0);
-                double shiftX = -75 * (ratio * ratio); // Curvatura de hasta -75px a la izquierda
+                // Parábola más suave para evitar que se salgan de la pantalla
+                double ratio = Math.Clamp(distanceFromCenter / maxDistance, -1.2, 1.2);
+                double shiftX = -80 * (ratio * ratio); // Reducido de -120 a -80
+                
+                // Rotación sutil para simular la inclinación de la rueda
+                double rotation = ratio * 15; 
 
-                // Escala de selección y visibilidad (destacar el elemento central seleccionado)
                 bool isSelected = container.IsSelected;
-                double scale = isSelected ? 1.25 : 0.85;
-                if (isSelected) shiftX += 25; // Mover un poco a la derecha el seleccionado
+                double scale = isSelected ? 1.2 : (1.0 - Math.Abs(ratio) * 0.2); // Escala más moderada
+                double opacity = 1.0 - Math.Abs(ratio) * 0.4;
 
-                // Cambiar el orden de apilamiento (ZIndex) de los elementos
-                container.ZIndex = isSelected ? 10 : (int)(10 - Math.Abs(distanceFromCenter) / 10);
+                container.ZIndex = isSelected ? 100 : (int)(50 - Math.Abs(distanceFromCenter) / 5);
+                container.Opacity = opacity;
 
                 var group = new TransformGroup();
+                group.Children.Add(new RotateTransform(rotation));
                 group.Children.Add(new ScaleTransform(scale, scale));
-                group.Children.Add(new TranslateTransform(shiftX, 0));
+                group.Children.Add(new TranslateTransform(shiftX + (isSelected ? 40 : 0), 0)); // Añadido margen derecho al seleccionado
                 container.RenderTransform = group;
             }
         }
@@ -6089,7 +6104,6 @@ public partial class MainWindow : Window
             var container = LstGamesWheelHorizontal.ContainerFromItem(item) as ListBoxItem;
             if (container == null) continue;
 
-            // Obtener la posición del contenedor relativa a la ListBox
             var position = container.TranslatePoint(new Point(0, 0), LstGamesWheelHorizontal);
             if (position.HasValue)
             {
@@ -6097,20 +6111,20 @@ public partial class MainWindow : Window
                 double distanceFromCenter = itemCenterX - centerOfList;
                 double maxDistance = centerOfList;
 
-                // Calcular el desplazamiento Y basado en una parábola (curvatura de rueda horizontal)
+                // Efecto CoverFlow/Rueda Horizontal
                 double ratio = Math.Clamp(distanceFromCenter / maxDistance, -1.0, 1.0);
-                double shiftY = 50 * (ratio * ratio); // Curvatura de hasta 50px hacia abajo en los extremos
+                double shiftY = 60 * (ratio * ratio); 
+                double rotationY = ratio * 45; // Inclinación lateral estilo CoverFlow
 
-                // Escala de selección y visibilidad (destacar el elemento central seleccionado)
                 bool isSelected = container.IsSelected;
-                double scale = isSelected ? 1.2 : 0.85;
-                if (isSelected) shiftY -= 10; // Levantar un poco el seleccionado
-
-                // Cambiar el orden de apilamiento (ZIndex) de los elementos
-                container.ZIndex = isSelected ? 10 : (int)(10 - Math.Abs(distanceFromCenter) / 20);
+                double scale = isSelected ? 1.2 : 0.8;
+                
+                container.ZIndex = isSelected ? 100 : (int)(50 - Math.Abs(distanceFromCenter) / 10);
 
                 var group = new TransformGroup();
-                group.Children.Add(new ScaleTransform(scale, scale));
+                // Simulación de rotación 3D usando Skew y ScaleX
+                group.Children.Add(new ScaleTransform(scale * (1.0 - Math.Abs(ratio) * 0.2), scale));
+                group.Children.Add(new SkewTransform(0, ratio * 10)); 
                 group.Children.Add(new TranslateTransform(0, shiftY));
                 container.RenderTransform = group;
             }

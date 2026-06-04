@@ -35,61 +35,78 @@ namespace GestorJuegos.Controls
 
         private Border? _spine;
         private Border? _front;
+        private Border? _shadow;
         private TextBlock? _placeholder;
+        private Panel? _root;
 
         public GameBox3D()
         {
             Template = new FuncControlTemplate<GameBox3D>((parent, nameScope) =>
             {
-                var root = new Panel
+                _root = new Panel
                 {
-                    Width = 300,
-                    Height = 400,
+                    Width = 320,
+                    Height = 380,
                     ClipToBounds = false
                 };
 
+                // CAPA 0: SOMBRA PROYECTADA (Sigue el giro)
+                _shadow = new Border
+                {
+                    Width = 240,
+                    Height = 350,
+                    Background = new SolidColorBrush(Color.Parse("#A0000000")),
+                    CornerRadius = new CornerRadius(4),
+                    Effect = new BlurEffect { Radius = 30 },
+                    IsHitTestVisible = false
+                };
+
+                // CAPA 1: EL LOMO (Spine)
                 _spine = new Border
                 {
-                    Width = 40,
-                    Height = 360,
+                    Width = 45,
+                    Height = 350,
                     Background = new LinearGradientBrush
                     {
                         StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
                         EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
                         GradientStops =
                         {
-                            new GradientStop(Color.Parse("#1a1a1a"), 0),
-                            new GradientStop(Color.Parse("#333333"), 1)
+                            new GradientStop(Color.Parse("#111111"), 0),
+                            new GradientStop(Color.Parse("#252525"), 0.5),
+                            new GradientStop(Color.Parse("#1a1a1a"), 1)
                         }
                     },
+                    BorderBrush = new SolidColorBrush(Color.Parse("#333333")),
+                    BorderThickness = new Thickness(1, 0, 0, 0),
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
                 };
 
+                // CAPA 2: CARA FRONTAL
                 _front = new Border
                 {
                     Width = 240,
-                    Height = 360,
-                    Background = new SolidColorBrush(Color.Parse("#2d2f35")),
-                    CornerRadius = new CornerRadius(2),
-                    BoxShadow = new BoxShadows(new BoxShadow { Blur = 20, Color = Color.Parse("#80000000"), OffsetY = 10 }),
+                    Height = 350,
+                    Background = new SolidColorBrush(Color.Parse("#1e1e1e")),
+                    BorderBrush = new SolidColorBrush(Color.Parse("#444444")),
+                    BorderThickness = new Thickness(0.5),
+                    CornerRadius = new CornerRadius(1),
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
                 };
 
-                var frontImage = new Image
-                {
-                    Stretch = Stretch.UniformToFill
-                };
+                var frontImage = new Image { Stretch = Stretch.UniformToFill };
                 frontImage.Bind(Image.SourceProperty, parent.GetObservable(CoverProperty));
 
                 _placeholder = new TextBlock
                 {
                     Text = "🎮",
-                    FontSize = 50,
+                    FontSize = 60,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                    Opacity = 0.2
+                    Opacity = 0.15,
+                    Foreground = Brushes.White
                 };
 
                 var frontPanel = new Panel();
@@ -97,12 +114,13 @@ namespace GestorJuegos.Controls
                 frontPanel.Children.Add(frontImage);
                 _front.Child = frontPanel;
 
-                root.Children.Add(_spine);
-                root.Children.Add(_front);
+                _root.Children.Add(_shadow);
+                _root.Children.Add(_spine);
+                _root.Children.Add(_front);
 
                 UpdateVisuals();
 
-                return root;
+                return _root;
             });
         }
 
@@ -117,32 +135,57 @@ namespace GestorJuegos.Controls
 
         private void UpdateVisuals()
         {
-            if (_front == null || _spine == null || _placeholder == null) return;
+            if (_front == null || _spine == null || _shadow == null) return;
 
-            _placeholder.IsVisible = Cover == null;
+            if (_placeholder != null) _placeholder.IsVisible = Cover == null;
 
             double angle = RotationY;
             double rad = angle * Math.PI / 180.0;
             double cos = Math.Cos(rad);
             double sin = Math.Sin(rad);
 
-            // Frontal
-            var frontTransform = new TransformGroup();
-            frontTransform.Children.Add(new ScaleTransform(Math.Max(0.1, cos), 1.0));
-            frontTransform.Children.Add(new SkewTransform(0, sin * 10));
-            frontTransform.Children.Add(new TranslateTransform(150 - (120 * cos), 0));
-            _front.RenderTransform = frontTransform;
+            // GEOMETRÍA DE LA CAJA PERFECTA
+            // El ancho visual del frontal depende del coseno (proyección perspectiva)
+            double visualFrontWidth = 240 * cos;
+            // El ancho visual del lomo depende del seno (proyección lateral)
+            double visualSpineWidth = 45 * Math.Abs(sin);
 
-            // Spine
-            _spine.IsVisible = angle > -45;
-            var spineTransform = new TransformGroup();
-            double spineScale = Math.Max(0.1, Math.Abs(sin));
-            spineTransform.Children.Add(new ScaleTransform(spineScale, 0.95));
-            spineTransform.Children.Add(new SkewTransform(0, -cos * 15));
-            spineTransform.Children.Add(new TranslateTransform(150 - (120 * cos) - (40 * spineScale), 0));
-            _spine.RenderTransform = spineTransform;
+            double centerX = 160;
+
+            // 1. Transformación del Frontal (Efecto de rotación con perspectiva falsa)
+            var frontGroup = new TransformGroup();
+            frontGroup.Children.Add(new ScaleTransform(Math.Max(0.01, cos), 1.0));
+            // Añadimos un pequeño Skew vertical para simular punto de fuga
+            frontGroup.Children.Add(new SkewTransform(0, sin * 8));
+            // Posicionamos el frontal para que pivote desde el borde izquierdo del lomo
+            double frontX = centerX - (visualFrontWidth / 2) + (visualSpineWidth / 2 * (angle < 0 ? 1 : -1));
+            frontGroup.Children.Add(new TranslateTransform(frontX - (centerX - 120), 0));
+            _front.RenderTransform = frontGroup;
+
+            // 2. Transformación del Lomo (Solo visible si rotamos positivo)
+            _spine.IsVisible = angle > -85;
+            var spineGroup = new TransformGroup();
+            spineGroup.Children.Add(new ScaleTransform(Math.Max(0.01, Math.Abs(sin)), 0.98));
+            spineGroup.Children.Add(new SkewTransform(0, -cos * 10));
+            double spineX = frontX - (visualSpineWidth * (angle > 0 ? 1 : 0));
+            spineGroup.Children.Add(new TranslateTransform(spineX - (centerX - 120), 0));
+            _spine.RenderTransform = spineGroup;
+
+            // 3. Sombra dinámica
+            var shadowGroup = new TransformGroup();
+            shadowGroup.Children.Add(new ScaleTransform(cos, 1.0));
+            shadowGroup.Children.Add(new SkewTransform(sin * 0.2, 0));
+            shadowGroup.Children.Add(new TranslateTransform(frontX - (centerX - 120) + 15, 15));
+            _shadow.RenderTransform = shadowGroup;
+            _shadow.Opacity = Math.Max(0.2, cos * 0.8);
+
+            // 4. Sombreado de caras para realismo
+            _front.Opacity = 0.6 + (0.4 * cos);
+            _spine.Opacity = 0.3 + (0.7 * Math.Abs(sin));
             
-            _front.Opacity = 0.5 + (0.5 * cos);
+            // Ajustar ZIndex dinámico para que el lomo pase por detrás o delante
+            _spine.ZIndex = angle > 0 ? 1 : 2;
+            _front.ZIndex = angle > 0 ? 2 : 1;
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -164,6 +207,7 @@ namespace GestorJuegos.Controls
             {
                 var currentPosition = e.GetPosition(this);
                 double deltaX = currentPosition.X - _lastMousePosition.X;
+                // Sensibilidad ajustada para que el giro se sienta natural
                 RotationY = Math.Clamp(RotationY + (deltaX * RotationSensitivity), -85.0, 85.0);
                 _lastMousePosition = currentPosition;
                 e.Handled = true;

@@ -463,8 +463,10 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
                         <Border Background="{DynamicResource DeepDarkBrush}" CornerRadius="8" Padding="2" Margin="0,0,10,0">
                             <StackPanel Orientation="Horizontal">
-                                <ToggleButton Name="BtnViewGrid" Content="▤" ToolTip.Tip="Vista Galería" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6"/>
-                                <ToggleButton Name="BtnViewList" Content="≡" ToolTip.Tip="Vista Lista" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6"/>
+                                <ToggleButton Name="BtnViewGrid" Content="▦" ToolTip.Tip="Vista Galería" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6" Click="BtnViewGrid_Click" IsChecked="True"/>
+                                <ToggleButton Name="BtnViewList" Content="≡" ToolTip.Tip="Vista Lista" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6" Click="BtnViewList_Click"/>
+                                <ToggleButton Name="BtnViewWheelVertical" Content="🎡" ToolTip.Tip="Vista Rueda Vertical" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6" Click="BtnViewWheelVertical_Click" IsVisible="False"/>
+                                <ToggleButton Name="BtnViewWheelHorizontal" Content="🎠" ToolTip.Tip="Vista Rueda Horizontal" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6" Click="BtnViewWheelHorizontal_Click" IsVisible="False"/>
                             </StackPanel>
                         </Border>
                         
@@ -996,8 +998,8 @@
                                                                 Name="ImgGameBox3D"
                                                                 HorizontalAlignment="Center"
                                                                 VerticalAlignment="Center"
-                                                                Width="320" 
-                                                                Height="360"/>
+                                                                Width="220" 
+                                                                Height="300"/>
                                                                 
                                                             <TextBlock Name="Txt3DHint" 
                                                                        Text="🖱️ Clic derecho para girar" 
@@ -1080,7 +1082,7 @@
                                                 </Border>
 
                                                 <!-- Selector de Tipo de Arte Principal (Dropdown de LaunchBox para portadas) -->
-                                                <StackPanel Spacing="5" Margin="10,0">
+                                                <StackPanel Spacing="5" Margin="10,0" IsVisible="False">
                                                     <TextBlock Text="TIPO DE CARÁTULA / MULTIMEDIA" Classes="Header" Foreground="#64748b" FontSize="11" FontWeight="Bold"/>
                                                     <ComboBox Name="CmbArtType" SelectedIndex="3" HorizontalAlignment="Stretch" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" SelectionChanged="CmbArtType_SelectionChanged">
                                                         <ComboBoxItem Content="Advert"/>
