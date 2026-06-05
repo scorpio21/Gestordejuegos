@@ -7,23 +7,23 @@ using System.Text.RegularExpressions;
 
 namespace GestorJuegos.Services;
 
-public class LaunchBoxMetadataService
+public class ExternalMetadataService
 {
     private readonly string _dbPath;
 
-    public LaunchBoxMetadataService(string? customDbPath = null)
+    public ExternalMetadataService(string? customDbPath = null)
     {
         if (!string.IsNullOrEmpty(customDbPath) && File.Exists(customDbPath))
         {
             _dbPath = customDbPath;
         }
-        else if (File.Exists(@"K:\GestorJuegos\RevisaDB\LaunchBox.Metadata.db"))
+        else if (File.Exists(@"K:\GestorJuegos\RevisaDB\Metadata.db"))
         {
-            _dbPath = @"K:\GestorJuegos\RevisaDB\LaunchBox.Metadata.db";
+            _dbPath = @"K:\GestorJuegos\RevisaDB\Metadata.db";
         }
         else
         {
-            _dbPath = Path.Combine(@"H:\LaunchBox", "Metadata", "LaunchBox.Metadata.db");
+            _dbPath = Path.Combine(@"C:\BibliotecaExterna", "Metadata", "Metadata.db");
         }
     }
 
@@ -38,14 +38,14 @@ public class LaunchBoxMetadataService
             using var connection = new SqliteConnection($"Data Source={_dbPath}");
             connection.Open();
 
-            string lbPlatform = GetLaunchBoxPlatformName(connection, platformName);
+            string extPlatform = GetExternalPlatformName(connection, platformName);
             string cleanName = CleanGameName(gameName);
 
             // Intentos de búsqueda secuenciales
             GameMetadata? metadata = null;
 
             // 1. Búsqueda por nombre exacto (CompareName)
-            metadata = SearchGame(connection, cleanName, lbPlatform);
+            metadata = SearchGame(connection, cleanName, extPlatform);
             if (metadata != null) return metadata;
 
             // 2. Búsqueda por Títulos Alternativos
@@ -60,12 +60,12 @@ public class LaunchBoxMetadataService
             string strippedName = StripCommonSuffixes(cleanName);
             if (strippedName != cleanName)
             {
-                metadata = SearchGame(connection, strippedName, lbPlatform);
+                metadata = SearchGame(connection, strippedName, extPlatform);
                 if (metadata != null) return metadata;
             }
 
             // 4. Búsqueda Fuzzy / Contenido
-            return SearchGameFuzzy(connection, cleanName, lbPlatform);
+            return SearchGameFuzzy(connection, cleanName, extPlatform);
         }
         catch (Exception)
         {
@@ -73,7 +73,7 @@ public class LaunchBoxMetadataService
         }
     }
 
-    private string GetLaunchBoxPlatformName(SqliteConnection conn, string platformName)
+    private string GetExternalPlatformName(SqliteConnection conn, string platformName)
     {
         string sql = "SELECT Name FROM PlatformAlternateNames WHERE Alternate = @alt LIMIT 1";
         using var cmd = new SqliteCommand(sql, conn);
@@ -98,18 +98,18 @@ public class LaunchBoxMetadataService
             using var connection = new SqliteConnection($"Data Source={_dbPath}");
             connection.Open();
 
-            string lbPlatform = GetLaunchBoxPlatformName(connection, platformName);
+            string extPlatform = GetExternalPlatformName(connection, platformName);
 
             string sql = "SELECT * FROM Platforms WHERE Name = @name LIMIT 1";
             using var cmd = new SqliteCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@name", lbPlatform);
+            cmd.Parameters.AddWithValue("@name", extPlatform);
 
             using var reader = cmd.ExecuteReader();
             if (reader.Read())
             {
                 return new PlatformMetadata
                 {
-                    Name = reader["Name"]?.ToString() ?? lbPlatform,
+                    Name = reader["Name"]?.ToString() ?? extPlatform,
                     ReleaseDate = reader["ReleaseDate"]?.ToString(),
                     Developer = reader["Developer"]?.ToString(),
                     Manufacturer = reader["Manufacturer"]?.ToString(),
@@ -211,7 +211,7 @@ public class LaunchBoxMetadataService
             if (reader.Read()) return MapReaderToMetadata(reader);
         }
 
-        // Búsqueda inversa: ¿el nombre de LB está dentro de nuestro nombre de archivo?
+        // Búsqueda inversa: ¿el nombre externo está dentro de nuestro nombre de archivo?
         if (name.Length > 4)
         {
             string firstWord = name.Split(' ')[0];
@@ -224,8 +224,8 @@ public class LaunchBoxMetadataService
             {
                 while (reader.Read())
                 {
-                    string lbName = reader["Name"]?.ToString()?.ToLower() ?? "";
-                    if (!string.IsNullOrEmpty(lbName) && name.Contains(lbName, StringComparison.OrdinalIgnoreCase))
+                    string extName = reader["Name"]?.ToString()?.ToLower() ?? "";
+                    if (!string.IsNullOrEmpty(extName) && name.Contains(extName, StringComparison.OrdinalIgnoreCase))
                     {
                         return MapReaderToMetadata(reader);
                     }

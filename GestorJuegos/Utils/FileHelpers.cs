@@ -21,7 +21,7 @@ public static class FileHelpers
         return new List<string>();
     }
 
-    public static string GetLaunchBoxFolderName(string friendlyName)
+    public static string GetExternalFolderName(string friendlyName)
     {
         return friendlyName switch
         {

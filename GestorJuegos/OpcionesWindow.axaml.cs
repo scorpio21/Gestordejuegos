@@ -14,7 +14,7 @@ public partial class OpcionesWindow : Window
 {
     private readonly AppSettings _settings;
 
-    // Variables locales de color (Estilo LaunchBox)
+    // Variables locales de color (Estilo Biblioteca Externa)
     private string _colorLightBg = "#1c1d22";
     private string _colorDarkBg = "#121316";
     private string _colorSelectedBg = "#3a5180";
@@ -93,7 +93,7 @@ public partial class OpcionesWindow : Window
     private void LoadSettingsIntoUI()
     {
         // 1. Panel General y Rutas
-        TxtLaunchBoxPath.Text = _settings.LaunchBoxPath;
+        TxtExternalLibraryPath.Text = _settings.ExternalLibraryPath;
         ChkEnableSoundEffects.IsChecked = _settings.EnableSoundEffects;
         ChkAutoImportCovers.IsChecked = _settings.AutoImportCovers;
 
@@ -119,7 +119,7 @@ public partial class OpcionesWindow : Window
         // 3. Tema Principal (Poblado Dinámico)
         if (CmbTheme != null)
         {
-            // Mapeo automático de Neon Deluxe antiguo a nuevo
+            // Mapeo automático de temas antiguos si es necesario
             if (_settings.Theme == "Neon Deluxe Arcade LB")
             {
                 _settings.Theme = "Neon Deluxe";
@@ -348,8 +348,8 @@ public partial class OpcionesWindow : Window
         LoadProgressOrgTree();
 
         // 19. Buscar
-        ChkEnableLaunchBoxMetadataSearch.IsChecked = _settings.EnableLaunchBoxMetadataSearch;
-        ChkLoadLaunchBoxRatings.IsChecked = _settings.LoadLaunchBoxRatings;
+        ChkEnableExternalMetadataSearch.IsChecked = _settings.EnableExternalMetadataSearch;
+        ChkLoadExternalRatings.IsChecked = _settings.LoadExternalRatings;
         ChkUseCommunityRatings.IsChecked = _settings.UseCommunityRatings;
         NumMinCommunityRatings.Value = _settings.MinCommunityRatings;
         ChkUseAdvancedSearchSyntax.IsChecked = _settings.UseAdvancedSearchSyntax;
@@ -705,13 +705,13 @@ public partial class OpcionesWindow : Window
 
         var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "Seleccionar Carpeta de LaunchBox",
+            Title = "Seleccionar Carpeta de la Biblioteca Externa",
             AllowMultiple = false
         });
 
         if (folders != null && folders.Count > 0)
         {
-            TxtLaunchBoxPath.Text = folders[0].Path.LocalPath;
+            TxtExternalLibraryPath.Text = folders[0].Path.LocalPath;
         }
     }
 
@@ -733,7 +733,7 @@ public partial class OpcionesWindow : Window
             {
                 AppPath = files[0].Path.LocalPath,
                 CommandLineArgs = "",
-                StartWith = "LaunchBox",
+                StartWith = "Biblioteca Externa",
                 AllowMultipleInstances = false
             };
             _settings.StartupApplications.Add(app);
@@ -759,7 +759,7 @@ public partial class OpcionesWindow : Window
     private void BtnAccept_Click(object? sender, RoutedEventArgs e)
     {
         // Guardar valores en el objeto AppSettings
-        _settings.LaunchBoxPath = TxtLaunchBoxPath.Text ?? "";
+        _settings.ExternalLibraryPath = TxtExternalLibraryPath.Text ?? "";
         _settings.EnableSoundEffects = ChkEnableSoundEffects.IsChecked ?? true;
         _settings.AutoImportCovers = ChkAutoImportCovers.IsChecked ?? true;
 
@@ -860,8 +860,8 @@ public partial class OpcionesWindow : Window
         _settings.ProgressStatusGroups = new List<ProgressStatusGroup>(_progressStatusGroups);
 
         // 19. Buscar
-        _settings.EnableLaunchBoxMetadataSearch = ChkEnableLaunchBoxMetadataSearch.IsChecked ?? true;
-        _settings.LoadLaunchBoxRatings = ChkLoadLaunchBoxRatings.IsChecked ?? true;
+        _settings.EnableExternalMetadataSearch = ChkEnableExternalMetadataSearch.IsChecked ?? true;
+        _settings.LoadExternalRatings = ChkLoadExternalRatings.IsChecked ?? true;
         _settings.UseCommunityRatings = ChkUseCommunityRatings.IsChecked ?? true;
         _settings.MinCommunityRatings = (int)(NumMinCommunityRatings.Value ?? 5);
         _settings.UseAdvancedSearchSyntax = ChkUseAdvancedSearchSyntax.IsChecked ?? true;

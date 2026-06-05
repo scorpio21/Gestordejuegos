@@ -40,7 +40,7 @@ namespace GestorJuegos.Services
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN DateAdded TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN ShortName TEXT NOT NULL DEFAULT ''"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN Version TEXT NOT NULL DEFAULT ''"); } catch { }
-                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN LaunchBoxDbId TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN ExternalDbId TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN ReleaseDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN ReleaseType TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN MaxPlayers INTEGER"); } catch { }
@@ -85,14 +85,14 @@ namespace GestorJuegos.Services
             }
         }
 
-        private readonly LaunchBoxMetadataService _metadataService = new();
+        private readonly ExternalMetadataService _metadataService = new();
 
         public void EnrichGameWithMetadata(Game game, string platformName)
         {
             var metadata = _metadataService.GetMetadata(game.Name, platformName);
             if (metadata != null)
             {
-                game.LaunchBoxDbId = metadata.DatabaseID.ToString();
+                game.ExternalDbId = metadata.DatabaseID.ToString();
                 game.Description = metadata.Description;
                 game.Year = metadata.ReleaseYear;
                 game.Developer = metadata.Developer;

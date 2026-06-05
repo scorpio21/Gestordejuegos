@@ -25,7 +25,7 @@ namespace GestorJuegos.Models
         private DateTime? _lastPlayed;
         private string _playStatus = "No Jugado";
         private bool _isFavorite;
-        private string? _launchBoxDbId;
+        private string? _externalDbId;
 
         public int Id { get => _id; set { _id = value; OnPropertyChanged(); } }
         public string Name { get => _name; set { _name = value; OnPropertyChanged(); } }
@@ -44,9 +44,9 @@ namespace GestorJuegos.Models
         public DateTime? LastPlayed { get => _lastPlayed; set { _lastPlayed = value; OnPropertyChanged(); } }
         public string PlayStatus { get => _playStatus; set { _playStatus = value; OnPropertyChanged(); } }
         public bool IsFavorite { get => _isFavorite; set { _isFavorite = value; OnPropertyChanged(); } }
-        public string? LaunchBoxDbId { get => _launchBoxDbId; set { _launchBoxDbId = value; OnPropertyChanged(); } }
+        public string? ExternalDbId { get => _externalDbId; set { _externalDbId = value; OnPropertyChanged(); } }
 
-        // --- Nuevos campos alineados con LaunchBox ---
+        // --- Nuevos campos alineados con la Biblioteca Externa ---
         public string? ReleaseDate { get; set; }
         public string? ReleaseType { get; set; }
         public int? MaxPlayers { get; set; }

@@ -6,13 +6,21 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 🚀 Características Principales
 
-- **Centralización Total Multimedia**: Todas las imágenes (carátulas, logotipos, fanarts y capturas) se almacenan en la base de datos local (`GestorCovers.db`), permitiendo una autonomía completa sin depender de LaunchBox.
+- **Centralización Total Multimedia**: Todas las imágenes (carátulas, logotipos, fanarts y capturas) se almacenan en la base de datos local (`GestorCovers.db`), permitiendo una autonomía completa sin depender de Biblioteca Externa.
 - **Muro de Plataformas Profesional**: Navegación visual moderna con logos oficiales de consolas y diseño de cuadrícula.
-- **Grupos de Imagen LaunchBox**: Soporte total para categorías (3D Boxes, Cart Art, Clear Logos, etc.) integradas en la DB.
+- **Grupos de Imagen Biblioteca Externa**: Soporte total para categorías (3D Boxes, Cart Art, Clear Logos, etc.) integradas en la DB.
 - **Dashboard Dinámico**: Estadísticas rápidas, juegos recientes y acceso directo a sistemas.
 - **Modo Mando**: Navegación completa optimizada para mandos mediante XInput.
 
 ## 📅 Historial de Versiones
+
+### v1.4.2-Dev (5 Junio 2026)
+*   **Corrección Crítica de Estabilidad**: Solucionado el error `System.ObjectDisposedException` que ocurría al cambiar rápidamente de plataforma en la barra lateral.
+    - Se ha refactorizado la lógica de `TvSidebar_SelectionChanged` para asegurar que las referencias a la plataforma seleccionada se obtengan antes de cerrar el contexto de la base de datos.
+*   **Optimización de Respuesta de Interfaz (Cero Bloqueos)**:
+    - **Carga Asíncrona de Plataformas**: `LoadPlatforms` ahora se ejecuta completamente en un hilo secundario (`Task.Run`), evitando que la interfaz se congele al escanear grandes bibliotecas o cargar iconos de disco.
+    - **Fondos Dinámicos en Segundo Plano**: La actualización de fanarts y fondos de pantalla (`UpdateDynamicBackground`) se ha convertido a asíncrona, eliminando los micro-tirones (stuttering) al navegar velozmente por la lista de juegos.
+    - **Seguridad de Hilos**: Todas las actualizaciones de la UI se gestionan mediante `Dispatcher.UIThread.Post`, garantizando la estabilidad de la aplicación bajo carga.
 
 ### v1.3.0-Dev (3 Junio 2026)
 *   **Creador de Temas Standalone (`CreadorTemas`)**: Desarrollo e implementación de una aplicación independiente de Avalonia UI para diseñar, editar e importar temas personalizados para `GestorJuegos`.
@@ -29,16 +37,16 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 
 ### v1.2.0.2-Dev (31 Mayo 2026)
-*   **Sistema de Temas Dinámico y Extensible (Sin LaunchBox)**: Migrado por completo el motor estático de temas a una arquitectura de carpetas genéricas dinámica e independiente bajo la carpeta `Themes`.
-    - Eliminada la carpeta antigua `LBThemes` y todo residuo de LaunchBox (proyectos WPF, XAMLs, etc.).
+*   **Sistema de Temas Dinámico y Extensible (Sin Biblioteca Externa)**: Migrado por completo el motor estático de temas a una arquitectura de carpetas genéricas dinámica e independiente bajo la carpeta `Themes`.
+    - Eliminada la carpeta antigua `LBThemes` y todo residuo de Biblioteca Externa (proyectos WPF, XAMLs, etc.).
     - Escaneo dinámico al vuelo en la inicialización de `OpcionesWindow` que pobla el ComboBox de temas leyendo las subcarpetas del directorio `Themes`.
     - Soporte para archivos de configuración `theme.json` por tema, definiendo los colores de recursos dinámicos (`AccentBrush`, `DeepDarkBrush`, `PanelBrush`, `BorderBrush`) e imágenes de fondo personalizadas.
     - Actualización y mapeo en caliente automático desde configuraciones anteriores para compatibilidad retroactiva.
     - Corrección del error crítico de compilación en `MainWindow.axaml.cs` (`CS8641: else duplicado`).
 
 ### v1.2.0.1-Dev (31 Mayo 2026)
-*   **Nueva Ventana de Opciones estilo LaunchBox**: Diseñada e implementada la ventana de diálogo modal `OpcionesWindow` que replica exactamente la interfaz estética de LaunchBox (panel izquierdo con TreeView jerárquico de categorías y panel derecho de ajustes dinámicos). Soporta y vincula las siguientes configuraciones de forma persistente a `AppSettings` y al archivo `appsettings.json`:
-    - Ruta de instalación de LaunchBox (`AppSettings.LaunchBoxPath`) mediante un TextBox y buscador de directorios asíncrono.
+*   **Nueva Ventana de Opciones estilo Biblioteca Externa**: Diseñada e implementada la ventana de diálogo modal `OpcionesWindow` que replica exactamente la interfaz estética de Biblioteca Externa (panel izquierdo con TreeView jerárquico de categorías y panel derecho de ajustes dinámicos). Soporta y vincula las siguientes configuraciones de forma persistente a `AppSettings` y al archivo `appsettings.json`:
+    - Ruta de instalación de Biblioteca Externa (`AppSettings.Biblioteca ExternaPath`) mediante un TextBox y buscador de directorios asíncrono.
     - Efectos de sonido integrados (`AppSettings.EnableSoundEffects`), aplicando los cambios de audio inmediatamente al guardar.
     - Tipo de carátula o arte multimedia preferido por defecto (`AppSettings.PreferredArtType`) e importación automática de carátulas (`AppSettings.AutoImportCovers`).
     - **Personalización Completa de Temas con Cambio en Caliente**: Añadida la categoría completa `Tema de la ventana principal` en el TreeView, con subpaneles funcionales:
@@ -55,12 +63,12 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
       - **Bandeja de Sistema**: 4 checkboxes funcionales para regular el System Tray (minimizado, cerrado, notificaciones de bandeja) y el texto nativo de advertencia sobre las notificaciones de Windows.
       - **Reproducción de vídeo**: Selectores de tipo RadioButton agrupados para alternar el motor de vídeo preferido entre Windows Media Player y FFmpeg.
       - **Datos (Cabecera)**: Panel informativo nativo que guía al usuario a seleccionar una subcategoría a la izquierda.
-      - **Copias de Seguridad (Datos)**: Checkbox funcional para habilitar respaldos automáticos de los archivos de metadatos XML de LaunchBox.
+      - **Copias de Seguridad (Datos)**: Checkbox funcional para habilitar respaldos automáticos de los archivos de metadatos XML de Biblioteca Externa.
       - **Game Progress Automation**: Autotrackeo completo de progreso de juegos a través de 9 condiciones (tiempo de juego en minutos, logros obtenidos, inactividad en días y logros de Softcore/Hardcore completados) vinculados a AppSettings con dropdowns de estado.
       - **Game Progress Organization**: Árbol jerárquico (`TreeView`) dinámico de grupos de progreso ("Not Started", "Active", "Done") con botones interactivos para reordenar (Subir/Bajar), agregar y eliminar grupos/estados con opción de reinicio por defecto.
       - **Prioridades de Región**: Lista interactiva de checkboxes bidireccionales con botones premium "▲ Subir" y "▼ Bajar" para reordenar dinámicamente y priorizar las regiones de metadatos.
-      - **Buscar**: Ajustes de búsqueda avanzada de metadatos de LaunchBox con checkboxes y NumericUpDown para el mínimo de calificaciones de la comunidad.
-      - **Juegos Relacionados (Similares, Recomendados y Puertos)**: Tres subpaneles con tablas editables de reglas de afinidad de juegos en formato Grid (5 ComboBoxes y 1 TextBox por regla) con enlace de datos bidireccional y botones para revertir a las reglas predefinidas originales de LaunchBox.
+      - **Buscar**: Ajustes de búsqueda avanzada de metadatos de Biblioteca Externa con checkboxes y NumericUpDown para el mínimo de calificaciones de la comunidad.
+      - **Juegos Relacionados (Similares, Recomendados y Puertos)**: Tres subpaneles con tablas editables de reglas de afinidad de juegos en formato Grid (5 ComboBoxes y 1 TextBox por regla) con enlace de datos bidireccional y botones para revertir a las reglas predefinidas originales de Biblioteca Externa.
       - **RetroAchievements (Logros)**: Formulario de credenciales enmascaradas habilitado en cascada interactiva, incluyendo notificaciones y medallas visuales de logros, junto a un botón de testeo de conexión asíncrono con feedback visual inmediato.
     - Estructuración modular limpia que evita inflar la ventana principal y cumple rigurosamente con la **Política de Cero Advertencias**.
 
@@ -68,38 +76,38 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 *   **Sincronización de Base de Datos**: Propiedades extendidas (`Languages`, `AdditionalRoms`, `OverrideEmulatorPath`, `OverrideLaunchArguments` y `SelectedArtType`) ahora se persisten en la DB principal para evitar inconsistencias.
 *   **Corrección de Importación**: Solucionados fallos críticos de traducción LINQ durante el escaneo de juegos mediante el uso de evaluación local (`AsEnumerable`).
 *   **Registro de Errores**: Implementado log detallado en `import_error_log.txt` para diagnóstico preciso de fallos durante el proceso de importación.
-*   **Alineación LaunchBox**: Soporte total para metadatos avanzados, hardware de plataformas y nombres alternativos.
-*   **Corrección de Calificación de Comunidad**: Solucionado el problema de solapamiento en el panel de detalles para evitar que etiquetas largas y valores amplios de calificación se superpongan en la UI (usando `DockPanel.Dock="Right"` y `TextTrimming="CharacterEllipsis"`). Además, se implementó el parseo y redondeo de la calificación a un decimal (ej. `3.6` en lugar de `3,6084742268041`), emulando perfectamente la estética de LaunchBox, incorporando un fallback automático para que el indicador de estrellas y la calificación de la cabecera (bajo el banner) muestre de forma dinámica la calificación de la comunidad si el usuario aún no ha valorado el juego personalmente.
-*   **Réplica Exacta de Metadatos de LaunchBox**: Reestructurado por completo el bloque informativo para incluir exactamente las 12 columnas oficiales en el orden y denominación nativa de LaunchBox, añadiendo soporte y lógica de cálculo dinámico para `Modo de Juego`, `Progress`, `Región`, `Estado`, `Portable`, `Fecha de Lanzamiento` y `Tipo de Lanzamiento`.
-*   **Acciones y Diálogos Premium estilo LaunchBox**: 
+*   **Alineación Biblioteca Externa**: Soporte total para metadatos avanzados, hardware de plataformas y nombres alternativos.
+*   **Corrección de Calificación de Comunidad**: Solucionado el problema de solapamiento en el panel de detalles para evitar que etiquetas largas y valores amplios de calificación se superpongan en la UI (usando `DockPanel.Dock="Right"` y `TextTrimming="CharacterEllipsis"`). Además, se implementó el parseo y redondeo de la calificación a un decimal (ej. `3.6` en lugar de `3,6084742268041`), emulando perfectamente la estética de Biblioteca Externa, incorporando un fallback automático para que el indicador de estrellas y la calificación de la cabecera (bajo el banner) muestre de forma dinámica la calificación de la comunidad si el usuario aún no ha valorado el juego personalmente.
+*   **Réplica Exacta de Metadatos de Biblioteca Externa**: Reestructurado por completo el bloque informativo para incluir exactamente las 12 columnas oficiales en el orden y denominación nativa de Biblioteca Externa, añadiendo soporte y lógica de cálculo dinámico para `Modo de Juego`, `Progress`, `Región`, `Estado`, `Portable`, `Fecha de Lanzamiento` y `Tipo de Lanzamiento`.
+*   **Acciones y Diálogos Premium estilo Biblioteca Externa**: 
     - Implementados ToolTips interactivos detallados en el badge de estrellas de la cabecera (con desglose de calificación personal, promedio de comunidad a 2 decimales y votos totales) y en el botón de progreso rápido.
     - Se rediseñó el banner de acciones rápidas añadiendo un selector desplegable de estado (`BtnProgressQuick`) y un menú de más opciones (`•••`) con "Borrar" en color rojo.
-    - Desarrollado el cuadro de diálogo de confirmación de borrado modal (`OverlayDeleteConfirm`) idéntico a LaunchBox, que incluye un mensaje personalizado para cada juego, los botones "Yes" y "No" estilizados, y el checkbox funcional "Delete associated media" que elimina por completo los archivos extra e imágenes asociadas del juego de `GestorCovers.db`.
+    - Desarrollado el cuadro de diálogo de confirmación de borrado modal (`OverlayDeleteConfirm`) idéntico a Biblioteca Externa, que incluye un mensaje personalizado para cada juego, los botones "Yes" y "No" estilizados, y el checkbox funcional "Delete associated media" que elimina por completo los archivos extra e imágenes asociadas del juego de `GestorCovers.db`.
 
 
 
 
 
 ### v1.1.2.5-Dev (Actual)
-*   **Réplica de Detalles de Plataforma y Categorías (LaunchBox exacto)**: Reestructurado por completo el panel derecho de la aplicación para que al seleccionar una plataforma (como Amstrad CPC) o una categoría (como Computers) en el panel izquierdo, se visualicen sus estadísticas y metadatos con el mismo formato premium de LaunchBox.
-*   **Independencia Total de LaunchBox**: Todos los datos técnicos de las plataformas (CPU, RAM, Gráficos, Sonido, Soporte de Carga, Desarrollador, Fabricante, Fecha de Estreno, Notas Históricas) y su foto física de hardware (`HardwareImage` binario) se almacenan de forma local en la base de datos `GestorJuegos.db` para que la aplicación funcione de forma autónoma.
-*   **Importador de Metadatos y Consolas en Segundo Plano**: Potenciado `ImportLaunchBoxAssets` para conectarse a la base de datos maestra `LaunchBox.Metadata.db` localmente e importar todas las especificaciones y descripciones de las plataformas, así como leer las fotos de consolas físicas de la carpeta `Console` de LaunchBox y guardarlas binariamente en SQLite.
+*   **Réplica de Detalles de Plataforma y Categorías (Biblioteca Externa exacto)**: Reestructurado por completo el panel derecho de la aplicación para que al seleccionar una plataforma (como Amstrad CPC) o una categoría (como Computers) en el panel izquierdo, se visualicen sus estadísticas y metadatos con el mismo formato premium de Biblioteca Externa.
+*   **Independencia Total de Biblioteca Externa**: Todos los datos técnicos de las plataformas (CPU, RAM, Gráficos, Sonido, Soporte de Carga, Desarrollador, Fabricante, Fecha de Estreno, Notas Históricas) y su foto física de hardware (`HardwareImage` binario) se almacenan de forma local en la base de datos `GestorJuegos.db` para que la aplicación funcione de forma autónoma.
+*   **Importador de Metadatos y Consolas en Segundo Plano**: Potenciado `ImportBiblioteca ExternaAssets` para conectarse a la base de datos maestra `Biblioteca Externa.Metadata.db` localmente e importar todas las especificaciones y descripciones de las plataformas, así como leer las fotos de consolas físicas de la carpeta `Console` de Biblioteca Externa y guardarlas binariamente en SQLite.
 *   **Estadísticas Dinámicas Agregadas**: Al navegar por categorías o plataformas en la barra lateral, se calculan automáticamente métricas locales de tu biblioteca (juegos totales, completados, veces jugados, tiempo total jugado, último juego jugado y juego más jugado).
 *   **Auto-parcheo de Esquema SQLite**: Implementadas migraciones controladas en caliente para crear columnas técnicas y campos binarios en la tabla `Platforms` y el campo de descripción `Notes` en `PlatformCategories`.
-*   **Rediseño de Rejilla de Juegos Estilo LaunchBox**: Removido por completo el marco oscuro limitante alrededor de las carátulas y cambiado el modo de estiramiento a `Uniform`. La sombra se adapta ahora proporcional y exactamente al contorno y dimensiones reales de la carátula, flotando de forma inmersiva.
-*   **Metadatos bajo la Portada**: El Título y el Desarrollador se posicionan de manera limpia e integrada bajo la imagen de portada, en consonancia directa con la interfaz de LaunchBox.
+*   **Rediseño de Rejilla de Juegos Estilo Biblioteca Externa**: Removido por completo el marco oscuro limitante alrededor de las carátulas y cambiado el modo de estiramiento a `Uniform`. La sombra se adapta ahora proporcional y exactamente al contorno y dimensiones reales de la carátula, flotando de forma inmersiva.
+*   **Metadatos bajo la Portada**: El Título y el Desarrollador se posicionan de manera limpia e integrada bajo la imagen de portada, en consonancia directa con la interfaz de Biblioteca Externa.
 *   **Estrategia de Fallback en Rejilla**: El subtexto evalúa la propiedad calculada `GridSubtext` (Desarrollador -> Distribuidor -> Año) de forma inteligente para rellenar de forma coherente las fichas de los juegos.
 *   **Resplandor Azul Neón de Selección**: Añadido un efecto luminoso de glow (`#00a2ff`) alrededor del borde de la carátula o placeholder seleccionado para mejorar significativamente la interactividad de la UI.
 
 ### v1.1.2.4-Dev
-*   **Barra Lateral Jerárquica (`TreeView`)**: Rediseño completo del panel izquierdo sustituyendo la lista plana por un árbol jerárquico al estilo LaunchBox, agrupando las plataformas por categorías ("Computers", "Consoles", "Handhelds").
+*   **Barra Lateral Jerárquica (`TreeView`)**: Rediseño completo del panel izquierdo sustituyendo la lista plana por un árbol jerárquico al estilo Biblioteca Externa, agrupando las plataformas por categorías ("Computers", "Consoles", "Handhelds").
 *   **Selector de Vista Dinámico**: Añadido un combobox superior para cambiar instantáneamente la vista de la barra lateral entre: Categoría de plataforma, Plataformas (lista plana), Géneros, Regiones y Biblioteca (Favoritos).
-*   **Gestión y Sincronización de Iconos de Categoría**: Carga automática e importación a la base de datos de iconos pixel-art oficiales y Clear Logos de LaunchBox para cada plataforma y categoría.
+*   **Gestión y Sincronización de Iconos de Categoría**: Carga automática e importación a la base de datos de iconos pixel-art oficiales y Clear Logos de Biblioteca Externa para cada plataforma y categoría.
 *   **Clasificación Inteligente Automática**: Reclasificación automatizada y persistente de las plataformas de "Consoles" a "Computers" o "Handhelds" según el nombre de la plataforma (ej. Game Boy, Amiga, Spectrum).
 *   **Actualizaciones del Esquema en Caliente**: Implementado auto-parcheo en caliente del esquema de base de datos local SQLite al arrancar el programa, creando dinámicamente la tabla `PlatformCategories` y las columnas `Logo` e `Icon` si la base de datos ya existía, previniendo crashes.
 
 ### v1.1.2.3-Dev
-*   **Rediseño de Detalles estilo LaunchBox**: Reestructurado por completo el panel derecho de detalles para emular con fidelidad la experiencia premium de LaunchBox (banner inmersivo, logotipo flotante transparente, calificación dinámica y estrellas celestes).
+*   **Rediseño de Detalles estilo Biblioteca Externa**: Reestructurado por completo el panel derecho de detalles para emular con fidelidad la experiencia premium de Biblioteca Externa (banner inmersivo, logotipo flotante transparente, calificación dinámica y estrellas celestes).
 *   **Mejoras y Correcciones de Banner e Imágenes**:
     - **Solapamiento resuelto**: El banner/fanart del juego se mantiene visible debajo del logotipo del juego para una estética inmersiva real en lugar de un fondo plano, y se oculta el botón flotante "Ver todas las imágenes" cuando el juego dispone de logotipo, eliminando la superposición de texto y mejorando la legibilidad.
     - **Controlador de Captura**: Se solventó el bug de Avalonia XAML controlando programáticamente el placeholder "Sin captura de pantalla" desde el código de C#, eliminando la superposición del texto gray sobre las imágenes de fallback.
@@ -129,9 +137,9 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 *   **Sincronización de Arte Mejorada**: El tipo de arte seleccionado en el formulario de edición se sincroniza instantáneamente con la vista de la biblioteca.
 
 ### v1.1.1.0-Dev
-*   **Autonomía de Multimedia**: Migración completa de la visualización de imágenes a la base de datos local. La aplicación ya no requiere acceso a la carpeta de LaunchBox para mostrar logotipos o fondos de juegos ya importados.
+*   **Autonomía de Multimedia**: Migración completa de la visualización de imágenes a la base de datos local. La aplicación ya no requiere acceso a la carpeta de Biblioteca Externa para mostrar logotipos o fondos de juegos ya importados.
 *   **Gestión de ExtraImages**: `GameService` actualizado para soportar el almacenamiento y actualización de múltiples tipos de arte por juego (Clear Logo, Fanart, Screenshot, etc.).
-*   **Importador LaunchBox Potenciado**: Ahora captura automáticamente hasta 15 tipos diferentes de arte multimedia durante la importación inicial.
+*   **Importador Biblioteca Externa Potenciado**: Ahora captura automáticamente hasta 15 tipos diferentes de arte multimedia durante la importación inicial.
 *   **Corrección de Estabilidad**: Solucionados errores de compilación relacionados con directivas de espacio de nombres y propiedades de XAML no compatibles.
 
 ### v1.1.0.8
@@ -160,18 +168,18 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 *   **Gestión de Categorías**: 
     - Selector de categorías (Consolas, Portátiles, Ordenadores, Arcade) en diálogos de creación y gestión.
     - Motor de detección automática de categorías basado en nombres de plataforma.
-    - Integración total en importaciones de LaunchBox, Drag & Drop y escaneo de carpetas.
+    - Integración total en importaciones de Biblioteca Externa, Drag & Drop y escaneo de carpetas.
 *   **Migración de DB**: Sistema de auto-parche para asegurar la columna `Category` en instalaciones existentes.
 
 ### v1.1.0.3
-*   **Layout Desktop (estilo LaunchBox)**: Nueva rejilla central de 3 columnas con árbol lateral y panel de detalles.
+*   **Layout Desktop (estilo Biblioteca Externa)**: Nueva rejilla central de 3 columnas con árbol lateral y panel de detalles.
 *   **Categorización de Plataformas**: Las plataformas ahora se agrupan por categorías (Computers, Consoles, Handhelds) en el árbol lateral.
 *   **Migración de DB Automática**: Script de emergencia para añadir la columna `Category` a la tabla `Platforms`.
 
 ### v1.1.0.2
-- **Grupos de Imagen LaunchBox**: Implementado el sistema de organización de imágenes idéntico a LaunchBox (Background, 3D Boxes, Marquee, etc.).
-- **Búsqueda Inteligente de Multimedia**: El sistema mapea automáticamente los nombres amigables a las carpetas físicas de LaunchBox.
-- **Mejoras en Importación**: Corregidas las rutas de escaneo para carátulas de juegos, asegurando que se encuentren en la estructura estándar de LaunchBox.
+- **Grupos de Imagen Biblioteca Externa**: Implementado el sistema de organización de imágenes idéntico a Biblioteca Externa (Background, 3D Boxes, Marquee, etc.).
+- **Búsqueda Inteligente de Multimedia**: El sistema mapea automáticamente los nombres amigables a las carpetas físicas de Biblioteca Externa.
+- **Mejoras en Importación**: Corregidas las rutas de escaneo para carátulas de juegos, asegurando que se encuentren en la estructura estándar de Biblioteca Externa.
 
 ### v1.1.0.1
 - **Selector de Tipo de Arte**: Añadido menú desplegable para alternar carátulas en tiempo real.
@@ -183,17 +191,17 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ### v1.0.9.8
 - **Optimización Crítica de Rendimiento**: Implementación de inserciones y actualizaciones por lotes (Batch Insert) en todos los importadores.
-- **Configuración Global Persistente**: Nuevo panel de configuración para gestionar rutas de LaunchBox, preferencias de arte y credenciales de EmuMovies.
-- **Integración Avanzada con LaunchBox**: Importación automática de carátulas locales (Box Front, 3D, etc.) durante el escaneo de plataformas.
+- **Configuración Global Persistente**: Nuevo panel de configuración para gestionar rutas de Biblioteca Externa, preferencias de arte y credenciales de EmuMovies.
+- **Integración Avanzada con Biblioteca Externa**: Importación automática de carátulas locales (Box Front, 3D, etc.) durante el escaneo de plataformas.
 - **Selector Dinámico de Arte**: Posibilidad de alternar entre diferentes tipos de imágenes locales desde el panel de detalles.
 - **Refuerzo de Arquitectura Dual**: Eliminación de datos multimedia redundantes de la base de datos principal y uso de `[NotMapped]` para mayor integridad.
 
 ### v1.0.9.7
-- **Persistencia de Configuración**: La ruta de LaunchBox se guarda en `appsettings.json` tras la primera selección.
-- **UX de Importación**: Validación inteligente de carpetas de LaunchBox para asegurar instalaciones válidas.
+- **Persistencia de Configuración**: La ruta de Biblioteca Externa se guarda en `appsettings.json` tras la primera selección.
+- **UX de Importación**: Validación inteligente de carpetas de Biblioteca Externa para asegurar instalaciones válidas.
 
 ### v1.0.9.6
-- **Importador Nativo LaunchBox**: Lectura directa de XML de plataformas con extracción de metadatos (Géneros, Años, Rutas, Favoritos).
+- **Importador Nativo Biblioteca Externa**: Lectura directa de XML de plataformas con extracción de metadatos (Géneros, Años, Rutas, Favoritos).
 - **Limpieza de Scrapers**: Eliminación de IGDB, TGDB, GameTDB y PalSnes. Vimm's Lair queda como única fuente online.
 - **Refactorización**: Creación de `IgdbSearchResult.cs` como modelo compartido para desacoplar la UI de los servicios eliminados.
 

@@ -7,7 +7,7 @@ namespace GestorJuegos.Models
     {
         public string AppPath { get; set; } = "";
         public string CommandLineArgs { get; set; } = "";
-        public string StartWith { get; set; } = "LaunchBox";
+        public string StartWith { get; set; } = "Biblioteca Externa";
         public bool AllowMultipleInstances { get; set; } = false;
     }
 
@@ -35,12 +35,12 @@ namespace GestorJuegos.Models
 
     public class AppSettings
     {
-        public string LaunchBoxPath { get; set; } = @"H:\LaunchBox";
+        public string ExternalLibraryPath { get; set; } = @"C:\BibliotecaExterna";
         public string PreferredArtType { get; set; } = "Box - Front";
         public bool AutoImportCovers { get; set; } = true;
         public bool EnableSoundEffects { get; set; } = true;
 
-        // --- Tematización estilo LaunchBox ---
+        // --- Tematización estilo Biblioteca Externa ---
         public string Theme { get; set; } = "Default";
         public string ColorTheme { get; set; } = "Default";
 
@@ -167,8 +167,8 @@ namespace GestorJuegos.Models
         };
 
         // --- Buscar ---
-        public bool EnableLaunchBoxMetadataSearch { get; set; } = true;
-        public bool LoadLaunchBoxRatings { get; set; } = true;
+        public bool EnableExternalMetadataSearch { get; set; } = true;
+        public bool LoadExternalRatings { get; set; } = true;
         public bool UseCommunityRatings { get; set; } = true;
         public int MinCommunityRatings { get; set; } = 5;
         public bool UseAdvancedSearchSyntax { get; set; } = true;

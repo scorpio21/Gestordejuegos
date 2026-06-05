@@ -161,7 +161,7 @@
         <!-- Plantilla Jerárquica para Nodos del Árbol de la Barra Lateral -->
         <TreeDataTemplate x:Key="SidebarNodeTemplate" DataType="models:SidebarNode" ItemsSource="{Binding Children}">
             <Grid ColumnDefinitions="Auto, Auto, *, Auto" Height="36" Background="Transparent">
-                <!-- Icono en Byte Array (Logo o Icono de LaunchBox) -->
+                <!-- Icono en Byte Array (Logo o Icono de Biblioteca Externa) -->
                 <Image Grid.Column="0" 
                        Source="{Binding IconBytes, Converter={StaticResource ByteToBitmap}}" 
                        Width="22" Height="22" 
@@ -321,14 +321,15 @@
                                 <Separator/>
                                 <MenuItem Header="IMPORTACIONES DE BIBLIOTECA" IsEnabled="False" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
                                 <MenuItem Name="MenuImportFolders" Header="Importar Colección desde Carpeta..." Click="MenuImportFolders_Click"/>
-                                <MenuItem Name="MenuImportLaunchBox" Header="Importar desde LaunchBox..." Click="MenuImportLaunchBox_Click"/>
+                                <MenuItem Name="MenuImportExternalLib" Header="Importar desde Biblioteca Externa..." Click="MenuImportExternalLib_Click"/>
                                 <MenuItem Name="MenuImportDat" Header="Importar lista desde DAT/XML..." Click="MenuImportDat_Click"/>
                                 
                                 <Separator/>
                                 <MenuItem Header="SINCRONIZACIÓN Y METADATOS" IsEnabled="False" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
-                                <MenuItem Name="MenuSyncLaunchBox" Header="Sincronizar Rutas con LaunchBox XML..." Click="MenuSyncLaunchBox_Click"/>
-                                <MenuItem Name="MenuSyncMasterDb" Header="Importar Metadatos desde Master DB (LaunchBox)..." Click="MenuSyncMasterDb_Click"/>
-                                <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales..." Click="MenuScanLocalCovers_Click"/>
+                                <MenuItem Name="MenuSyncExternalLib" Header="Sincronizar Rutas con Biblioteca Externa (XML)..." Click="MenuSyncExternalLib_Click"/>
+                                <MenuItem Name="MenuSyncMasterDb" Header="Importar Metadatos desde Base Maestra Externa..." Click="MenuSyncMasterDb_Click"/>
+                                <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales (Plat. Actual)..." Click="MenuScanLocalCovers_Click"/>
+                                <MenuItem Name="MenuMassiveScanCovers" Header="Escaneo Masivo de Arte (Toda la Biblioteca)..." Click="MenuMassiveScanCovers_Click"/>
                                 
                                 <Separator/>
                                 <MenuItem Header="MANTENIMIENTO Y UTILERÍA" IsEnabled="False" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
@@ -369,7 +370,7 @@
                                     <MenuItem Name="SubSortByIsFavorite" Header="Favorito" Click="MenuSortFavorite_Click"/>
                                     <MenuItem Name="SubSortByGenre" Header="Género" Click="MenuSortGenre_Click"/>
                                     <MenuItem Name="SubSortByLastPlayed" Header="Última vez jugado" Click="MenuSortLastPlayed_Click"/>
-                                    <MenuItem Name="SubSortByLaunchBoxDbId" Header="ID de LaunchBox" Click="MenuSortLaunchBoxDbId_Click"/>
+                                    <MenuItem Name="SubSortByExternalDbId" Header="ID de Biblioteca Externa" Click="MenuSortExternalDbId_Click"/>
                                     <MenuItem Name="SubSortByMaxPlayers" Header="Cantidad Máx. de Jugadores" Click="MenuSortMaxPlayers_Click"/>
                                     <MenuItem Name="SubSortByPlayCount" Header="Veces Jugado" Click="MenuSortPlayCount_Click"/>
                                     <MenuItem Name="SubSortByPlayTime" Header="Tiempo Jugado" Click="MenuSortPlayTime_Click"/>
@@ -399,7 +400,7 @@
                                 <MenuItem Name="SortByIsFavorite" Header="Favorito" Click="MenuSortFavorite_Click"/>
                                 <MenuItem Name="SortByGenre" Header="Género" Click="MenuSortGenre_Click"/>
                                 <MenuItem Name="SortByLastPlayed" Header="Última vez jugado" Click="MenuSortLastPlayed_Click"/>
-                                <MenuItem Name="SortByLaunchBoxDbId" Header="ID de LaunchBox" Click="MenuSortLaunchBoxDbId_Click"/>
+                                <MenuItem Name="SortByExternalDbId" Header="ID de Biblioteca Externa" Click="MenuSortExternalDbId_Click"/>
                                 <MenuItem Name="SortByMaxPlayers" Header="Cantidad Máx. de Jugadores" Click="MenuSortMaxPlayers_Click"/>
                                 <MenuItem Name="SortByPlayCount" Header="Veces Jugado" Click="MenuSortPlayCount_Click"/>
                                 <MenuItem Name="SortByPlayTime" Header="Tiempo Jugado" Click="MenuSortPlayTime_Click"/>
@@ -476,6 +477,9 @@
                         <Button Name="BtnHelpMenu" Content="AYUDA" Background="{DynamicResource BorderBrush}" Foreground="White" FontWeight="Bold" CornerRadius="8" Padding="12,8" ToolTip.Tip="Ayuda y Acerca de...">
                             <Button.Flyout>
                                 <MenuFlyout>
+                                    <MenuItem Header="Importar Biblioteca Externa" Click="MenuHelpExternalLib_Click"/>
+                                    <MenuItem Header="Importar desde Carpeta" Click="MenuHelpImportFolder_Click"/>
+                                    <Separator/>
                                     <MenuItem Name="MenuHelpEmulator" Header="Emuladores" Click="MenuHelpEmulator_Click"/>
                                     <MenuItem Name="MenuHelpMultiDisk" Header="Multi-Disco" Click="MenuHelpMultiDisk_Click"/>
                                     <MenuItem Name="MenuHelpDatabase" Header="Base de Datos" Click="MenuHelpDatabase_Click"/>
@@ -502,7 +506,7 @@
                             </Image.Transitions>
                         </Image>
                         
-                        <!-- Selector de Vista estilo LaunchBox -->
+                        <!-- Selector de Vista estilo Biblioteca Externa -->
                         <Border DockPanel.Dock="Top" Background="{DynamicResource PanelBrush}" CornerRadius="8" Margin="5,5,5,10" Padding="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                             <ComboBox Name="CmbSidebarView" SelectedIndex="0" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" CornerRadius="6">
                                 <ComboBoxItem Content="Categoría de Plataforma"/>
@@ -723,7 +727,7 @@
                                 </ListBox.Styles>
                             </ListBox>
 
-                            <!-- NUEVA VISTA: WHEEL VERTICAL (Estilo LaunchBox) -->
+                            <!-- NUEVA VISTA: WHEEL VERTICAL (Estilo Biblioteca Externa) -->
                             <ListBox Name="LstGamesWheelVertical" IsVisible="False" Background="Transparent" BorderThickness="0" Padding="0,200">
                                 <ListBox.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -857,7 +861,7 @@
                     </DockPanel>
                 </Border>
 
-                <!-- DERECHA: Info (Premium LaunchBox Style) -->
+                <!-- DERECHA: Info (Premium Biblioteca Externa Style) -->
                 <Border Grid.Column="2" Background="{DynamicResource DeepDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,0,0">
                     <ScrollViewer>
                         <Panel>
@@ -868,7 +872,7 @@
                                     </Transitions>
                                 </StackPanel.Transitions>
                                 
-                                <!-- Banner Superior inmersivo estilo LaunchBox -->
+                                <!-- Banner Superior inmersivo estilo Biblioteca Externa -->
                                 <Panel Height="240">
                                     <Border Background="{DynamicResource PanelBrush}" ClipToBounds="True">
                                         <Image Name="ImgDetailBackground" Stretch="UniformToFill" Opacity="0.3">
@@ -1038,7 +1042,7 @@
                                                     </ListBox>
                                                 </StackPanel>
 
-                                                <!-- Botón JUGAR Gigante Verde LaunchBox -->
+                                                <!-- Botón JUGAR Gigante Verde Biblioteca Externa -->
                                                 <Button Name="BtnLaunchGame" Background="#22c55e" Foreground="White" Height="52" CornerRadius="10" HorizontalAlignment="Stretch" Margin="10,0" Padding="0" Click="BtnLaunchGame_Click">
                                                     <Button.Styles>
                                                         <Style Selector="Button:pointerover">
@@ -1081,7 +1085,7 @@
                                                     </Grid>
                                                 </Border>
 
-                                                <!-- Selector de Tipo de Arte Principal (Dropdown de LaunchBox para portadas) -->
+                                                <!-- Selector de Tipo de Arte Principal (Dropdown de Biblioteca Externa para portadas) -->
                                                 <StackPanel Spacing="5" Margin="10,0" IsVisible="False">
                                                     <TextBlock Text="TIPO DE CARÁTULA / MULTIMEDIA" Classes="Header" Foreground="#64748b" FontSize="11" FontWeight="Bold"/>
                                                     <ComboBox Name="CmbArtType" SelectedIndex="3" HorizontalAlignment="Stretch" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" SelectionChanged="CmbArtType_SelectionChanged">
@@ -1259,7 +1263,7 @@
                                 
                             </StackPanel>
 
-                            <!-- DERECHA: Info de Plataforma o Categoría (LaunchBox Style) -->
+                            <!-- DERECHA: Info de Plataforma o Categoría (Biblioteca Externa Style) -->
                             <StackPanel Name="PnlPlatformDetails" IsVisible="False" Spacing="0">
                                 <!-- Banner Superior de Plataforma/Categoría -->
                                 <Panel Height="200">
@@ -1442,7 +1446,7 @@
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5" VerticalAlignment="Bottom">
                                             <Button Name="BtnSyncMasterDbLocal" Content="🏠 BD Local" Background="#8b5cf6" Foreground="White" Click="BtnSyncMasterDbLocal_Click" ToolTip.Tip="Buscar metadatos en la base de datos local de RevisaDB"/>
-                                            <Button Name="BtnSyncLaunchBox" Content="🔄 XML" Background="#3b82f6" Foreground="White" Click="BtnSyncLaunchBox_Click" ToolTip.Tip="Sincronizar desde los archivos XML de LaunchBox"/>
+                                            <Button Name="BtnSyncExternalLibLocal" Content="🔄 XML" Background="#3b82f6" Foreground="White" Click="BtnSyncExternalLib_Click" ToolTip.Tip="Sincronizar desde los archivos XML de la Biblioteca Externa"/>
                                             <Button Name="BtnSearchIgdb" Content="🔍 Vimm" Click="BtnSearchIgdb_Click" ToolTip.Tip="Buscar en Vimm's Lair"/>
                                         </StackPanel>
                                     </Grid>
@@ -1718,14 +1722,14 @@
             </Border>
         </Border>
 
-        <!-- Diálogo de Confirmación de Borrado estilo LaunchBox -->
+        <!-- Diálogo de Confirmación de Borrado estilo Biblioteca Externa -->
         <Border Name="OverlayDeleteConfirm" Background="#AA000000" IsVisible="False" ZIndex="400">
             <Border Background="#252830" BorderBrush="#3f424a" BorderThickness="1" Width="480" CornerRadius="4" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <DockPanel>
                     <!-- Barra de Título del Diálogo -->
                     <Border Background="#1f2128" Height="30" Padding="10,0" DockPanel.Dock="Top">
                         <Grid ColumnDefinitions="*, Auto">
-                            <TextBlock Grid.Column="0" Text="LaunchBox" Foreground="#9ba1af" FontSize="11" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Column="0" Text="Gestor de Juegos" Foreground="#9ba1af" FontSize="11" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <Button Grid.Column="1" Name="BtnCloseDeleteConfirm" Background="Transparent" BorderThickness="0" Padding="5,0" Click="BtnCloseDeleteConfirm_Click">
                                 <TextBlock Text="✕" Foreground="#9ba1af" FontSize="10"/>
                             </Button>

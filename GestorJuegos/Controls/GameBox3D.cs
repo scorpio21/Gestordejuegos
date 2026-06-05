@@ -45,27 +45,27 @@ namespace GestorJuegos.Controls
             {
                 _root = new Panel
                 {
-                    Width = 320,
-                    Height = 380,
+                    Width = 220,
+                    Height = 300,
                     ClipToBounds = false
                 };
 
-                // CAPA 0: SOMBRA PROYECTADA (Sigue el giro)
+                // CAPA 0: SOMBRA PROYECTADA
                 _shadow = new Border
                 {
-                    Width = 240,
-                    Height = 350,
+                    Width = 160,
+                    Height = 250,
                     Background = new SolidColorBrush(Color.Parse("#A0000000")),
                     CornerRadius = new CornerRadius(4),
-                    Effect = new BlurEffect { Radius = 30 },
+                    Effect = new BlurEffect { Radius = 20 },
                     IsHitTestVisible = false
                 };
 
                 // CAPA 1: EL LOMO (Spine)
                 _spine = new Border
                 {
-                    Width = 45,
-                    Height = 350,
+                    Width = 30,
+                    Height = 250,
                     Background = new LinearGradientBrush
                     {
                         StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
@@ -86,8 +86,8 @@ namespace GestorJuegos.Controls
                 // CAPA 2: CARA FRONTAL
                 _front = new Border
                 {
-                    Width = 240,
-                    Height = 350,
+                    Width = 160,
+                    Height = 250,
                     Background = new SolidColorBrush(Color.Parse("#1e1e1e")),
                     BorderBrush = new SolidColorBrush(Color.Parse("#444444")),
                     BorderThickness = new Thickness(0.5),
@@ -144,46 +144,42 @@ namespace GestorJuegos.Controls
             double cos = Math.Cos(rad);
             double sin = Math.Sin(rad);
 
-            // GEOMETRÍA DE LA CAJA PERFECTA
-            // El ancho visual del frontal depende del coseno (proyección perspectiva)
-            double visualFrontWidth = 240 * cos;
-            // El ancho visual del lomo depende del seno (proyección lateral)
-            double visualSpineWidth = 45 * Math.Abs(sin);
+            // GEOMETRÍA DE LA CAJA REDUCIDA (Basada en frontal de 160 y lomo de 30)
+            double visualFrontWidth = 160 * cos;
+            double visualSpineWidth = 30 * Math.Abs(sin);
 
-            double centerX = 160;
+            double centerX = 110; // Centro de 220
 
-            // 1. Transformación del Frontal (Efecto de rotación con perspectiva falsa)
+            // 1. Transformación del Frontal
             var frontGroup = new TransformGroup();
             frontGroup.Children.Add(new ScaleTransform(Math.Max(0.01, cos), 1.0));
-            // Añadimos un pequeño Skew vertical para simular punto de fuga
-            frontGroup.Children.Add(new SkewTransform(0, sin * 8));
-            // Posicionamos el frontal para que pivote desde el borde izquierdo del lomo
+            frontGroup.Children.Add(new SkewTransform(0, sin * 6));
+            
             double frontX = centerX - (visualFrontWidth / 2) + (visualSpineWidth / 2 * (angle < 0 ? 1 : -1));
-            frontGroup.Children.Add(new TranslateTransform(frontX - (centerX - 120), 0));
+            frontGroup.Children.Add(new TranslateTransform(frontX - (centerX - 80), 0));
             _front.RenderTransform = frontGroup;
 
-            // 2. Transformación del Lomo (Solo visible si rotamos positivo)
+            // 2. Transformación del Lomo
             _spine.IsVisible = angle > -85;
             var spineGroup = new TransformGroup();
             spineGroup.Children.Add(new ScaleTransform(Math.Max(0.01, Math.Abs(sin)), 0.98));
-            spineGroup.Children.Add(new SkewTransform(0, -cos * 10));
+            spineGroup.Children.Add(new SkewTransform(0, -cos * 8));
             double spineX = frontX - (visualSpineWidth * (angle > 0 ? 1 : 0));
-            spineGroup.Children.Add(new TranslateTransform(spineX - (centerX - 120), 0));
+            spineGroup.Children.Add(new TranslateTransform(spineX - (centerX - 80), 0));
             _spine.RenderTransform = spineGroup;
 
             // 3. Sombra dinámica
             var shadowGroup = new TransformGroup();
             shadowGroup.Children.Add(new ScaleTransform(cos, 1.0));
-            shadowGroup.Children.Add(new SkewTransform(sin * 0.2, 0));
-            shadowGroup.Children.Add(new TranslateTransform(frontX - (centerX - 120) + 15, 15));
+            shadowGroup.Children.Add(new SkewTransform(sin * 0.15, 0));
+            shadowGroup.Children.Add(new TranslateTransform(frontX - (centerX - 80) + 10, 10));
             _shadow.RenderTransform = shadowGroup;
-            _shadow.Opacity = Math.Max(0.2, cos * 0.8);
+            _shadow.Opacity = Math.Max(0.15, cos * 0.7);
 
-            // 4. Sombreado de caras para realismo
-            _front.Opacity = 0.6 + (0.4 * cos);
-            _spine.Opacity = 0.3 + (0.7 * Math.Abs(sin));
+            // 4. Sombreado de caras
+            _front.Opacity = 0.7 + (0.3 * cos);
+            _spine.Opacity = 0.4 + (0.6 * Math.Abs(sin));
             
-            // Ajustar ZIndex dinámico para que el lomo pase por detrás o delante
             _spine.ZIndex = angle > 0 ? 1 : 2;
             _front.ZIndex = angle > 0 ? 2 : 1;
         }
@@ -191,7 +187,7 @@ namespace GestorJuegos.Controls
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             var properties = e.GetCurrentPoint(this).Properties;
-            if (properties.IsRightButtonPressed)
+            if (properties.IsLeftButtonPressed)
             {
                 _isDragging = true;
                 _lastMousePosition = e.GetPosition(this);

@@ -200,16 +200,16 @@
                         <!-- PANEL 3: RUTAS DE DATOS (FUNCIONAL) -->
                         <StackPanel Name="PnlRutas" Spacing="15" IsVisible="False">
                             <TextBlock Text="Rutas de Instalación y Directorios" Foreground="White" FontWeight="Bold" FontSize="13"/>
-                            <TextBlock Text="Especifica las rutas del sistema para integrar las herramientas de terceros. El Gestor de Juegos necesita la ruta de LaunchBox para sincronizar metadatos y arte correctamente." 
+                            <TextBlock Text="Especifica las rutas del sistema para integrar las herramientas de terceros. El Gestor de Juegos necesita la ruta de la Biblioteca Externa para sincronizar metadatos y arte correctamente." 
                                        Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
                             
                             <StackPanel Spacing="5">
-                                <TextBlock Text="Ruta de instalación de LaunchBox:" Foreground="#9ba1af" FontSize="11"/>
+                                <TextBlock Text="Ruta de instalación de la Biblioteca Externa:" Foreground="#9ba1af" FontSize="11"/>
                                 <Grid ColumnDefinitions="*, Auto">
-                                    <TextBox Name="TxtLaunchBoxPath" Grid.Column="0" PlaceholderText="Ej: C:\Users\TuUsuario\LaunchBox"/>
+                                    <TextBox Name="TxtExternalLibraryPath" Grid.Column="0" PlaceholderText="Ej: C:\Users\TuUsuario\BibliotecaExterna"/>
                                     <Button Name="BtnBrowseLb" Grid.Column="1" Content="Examinar..." Classes="OptionBtn" Margin="10,0,0,0" Click="BtnBrowseLb_Click"/>
                                 </Grid>
-                                <TextBlock Text="Esta carpeta debe contener los directorios 'Metadata' e 'Images' oficiales de LaunchBox para la importación y escaneo de carátulas." 
+                                <TextBlock Text="Esta carpeta debe contener los directorios 'Metadata' e 'Images' oficiales para la importación y escaneo de carátulas." 
                                            Foreground="#64748b" FontSize="10" FontStyle="Italic" TextWrapping="Wrap"/>
                             </StackPanel>
                         </StackPanel>
@@ -374,7 +374,7 @@
                         <StackPanel Name="PnlDepuracion" Spacing="15" IsVisible="False">
                             <TextBlock Text="Depuración" Foreground="White" FontWeight="Bold" FontSize="13"/>
                             <CheckBox Name="ChkEnableDebugLogs" Content="Habilitar Registros de Depuración"/>
-                            <TextBlock Text="Al habilitar los registros de depuración, se crearán archivos de registro en su carpeta LaunchBox\Logs para cada inicio de LaunchBox o Big Box, lo que puede ser útil para depurar varias cosas.&#x0a;&#x0a;Ten en cuenta que habilitar los registros de depuración dará lugar a una pequeña disminución en el rendimiento, por lo que no se recomiendan para el uso diario. Además, los archivos de registro no se eliminan automáticamente, por lo que tendrás que limpiar la carpeta con el tiempo para evitar que su tamaño crezca constantemente." 
+                            <TextBlock Text="Al habilitar los registros de depuración, se crearán archivos de registro en su carpeta de la Biblioteca Externa para cada inicio del sistema, lo que puede ser útil para depurar varias cosas.&#x0a;&#x0a;Ten en cuenta que habilitar los registros de depuración dará lugar a una pequeña disminución en el rendimiento, por lo que no se recomiendan para el uso diario. Además, los archivos de registro no se eliminan automáticamente, por lo que tendrás que limpiar la carpeta con el tiempo para evitar que su tamaño crezca constantemente." 
                                        Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap" LineHeight="16"/>
                         </StackPanel>
 
@@ -388,56 +388,56 @@
                                     <ComboBoxItem Content="Bandeja de sistema"/>
                                 </ComboBox>
                             </StackPanel>
-                            <TextBlock Text="Esta configuración cambia qué sistema usa LaunchBox para mostrar notificaciones. Las notificaciones también se podrán ver a través del centro de notificaciones, independientemente del sistema seleccionado." 
+                            <TextBlock Text="Esta configuración cambia qué sistema usa la Biblioteca Externa para mostrar notificaciones. Las notificaciones también se podrán ver a través del centro de notificaciones, independientemente del sistema seleccionado." 
                                        Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap" LineHeight="16"/>
                         </StackPanel>
 
                         <!-- PANEL: IMPORTACIONES AUTOMATIZADAS (NUEVO) -->
                         <StackPanel Name="PnlImportacionesAuto" Spacing="15" IsVisible="False">
                             <TextBlock Text="Importaciones automatizadas" Foreground="White" FontWeight="Bold" FontSize="13"/>
-                            <CheckBox Name="ChkEnableAutomaticRomImports" Content="Enable Automatic ROM Imports"/>
-                            <TextBlock Text="This feature will automatically scan for new ROMs on startup and while the application is open. This will import ROMs for both existing and new platforms." 
+                            <CheckBox Name="ChkEnableAutomaticRomImports" Content="Habilitar Importaciones Automáticas de ROMs"/>
+                            <TextBlock Text="Esta función buscará automáticamente nuevas ROMs al iniciar y mientras la aplicación esté abierta. Esto importará ROMs tanto para plataformas existentes como nuevas." 
                                        Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap" LineHeight="16"/>
                         </StackPanel>
 
-                        <!-- PANEL: SAVE MANAGEMENT (NUEVO) -->
+                        <!-- PANEL: GESTIÓN DE GUARDADOS (NUEVO) -->
                         <StackPanel Name="PnlSaveManagement" Spacing="15" IsVisible="False">
-                            <TextBlock Text="Save Management" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Gestión de partidas guardadas" Foreground="White" FontWeight="Bold" FontSize="13"/>
                             
-                            <CheckBox Name="ChkEnableSaveManagement" Content="Enable Save Management"/>
-                            <TextBlock Text="Enabling save management allows the app to track game saves and save state files for games in your library." 
+                            <CheckBox Name="ChkEnableSaveManagement" Content="Habilitar Gestión de Partidas Guardadas"/>
+                            <TextBlock Text="Habilitar la gestión de partidas guardadas permite a la aplicación rastrear archivos de guardado y estados de guardado para los juegos en tu biblioteca." 
                                        Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap" LineHeight="16"/>
                             
                             <Border Name="BrdSaveBackupOptions" Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1" IsEnabled="False" Margin="15,0,0,0">
                                 <StackPanel Spacing="10">
-                                    <CheckBox Name="ChkEnableAutoSaveBackups" Content="Enable Automatic Save Backups"/>
+                                    <CheckBox Name="ChkEnableAutoSaveBackups" Content="Habilitar Copias de Seguridad Automáticas"/>
                                     
                                     <StackPanel Name="PnlBackupSubOptions" Spacing="10" Margin="20,0,0,0" IsEnabled="False">
-                                        <CheckBox Name="ChkBackupOnGameClose" Content="Backup Saves on Game Close"/>
-                                        <CheckBox Name="ChkEnablePeriodicBackups" Content="Enable Periodic Background Backups"/>
+                                        <CheckBox Name="ChkBackupOnGameClose" Content="Copia de seguridad al cerrar el juego"/>
+                                        <CheckBox Name="ChkEnablePeriodicBackups" Content="Habilitar copias de seguridad periódicas en segundo plano"/>
                                         
                                         <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,5,0,0">
-                                            <TextBlock Text="Max Backup Versions per Game:" Foreground="#d1d5db" FontSize="12" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Máximas versiones por juego:" Foreground="#d1d5db" FontSize="12" VerticalAlignment="Center"/>
                                             <NumericUpDown Name="NumMaxBackupVersions" Minimum="1" Maximum="100" Value="25" Width="120" FontSize="12"/>
                                         </StackPanel>
                                     </StackPanel>
                                     
                                     <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,5,0,0">
-                                        <Button Name="BtnBackupNow" Content="Backup Now" Classes="OptionBtn"/>
-                                        <TextBlock Text="Last scan: Not yet run" Foreground="#64748b" FontSize="11" VerticalAlignment="Center"/>
+                                        <Button Name="BtnBackupNow" Content="Respaldar Ahora" Classes="OptionBtn"/>
+                                        <TextBlock Text="Último escaneo: Aún no ejecutado" Foreground="#64748b" FontSize="11" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
 
-                            <!-- Maintenance Tools -->
+                            <!-- Herramientas de Mantenimiento -->
                             <Border Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1">
                                 <StackPanel Spacing="10">
-                                    <TextBlock Text="Maintenance Tools" Foreground="White" FontWeight="Bold" FontSize="12"/>
-                                    <TextBlock Text="These tools rebuild or clean LaunchBox save metadata. They do not delete save files, but they can change save records and badges." 
+                                    <TextBlock Text="Herramientas de Mantenimiento" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                    <TextBlock Text="Estas herramientas reconstruyen o limpian los metadatos de guardado de la Biblioteca Externa. No eliminan archivos de guardado, pero pueden cambiar los registros y emblemas." 
                                                Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
                                     <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,5,0,0">
-                                        <Button Name="BtnRepairSaveMetadata" Content="Repair Save Metadata" Classes="OptionBtn"/>
-                                        <Button Name="BtnClearSaveMetadata" Content="Clear All and Re-scan Save Metadata" Classes="OptionBtn"/>
+                                        <Button Name="BtnRepairSaveMetadata" Content="Reparar Metadatos" Classes="OptionBtn"/>
+                                        <Button Name="BtnClearSaveMetadata" Content="Limpiar y Re-escanear Metadatos" Classes="OptionBtn"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -446,7 +446,7 @@
                         <!-- PANEL: APLICACIONES DE INICIO (NUEVO) -->
                         <StackPanel Name="PnlAppsInicio" Spacing="15" IsVisible="False">
                             <TextBlock Text="Aplicaciones de inicio" Foreground="White" FontWeight="Bold" FontSize="13"/>
-                            <TextBlock Text="Inicia las siguientes aplicaciones cuando se inicien LaunchBox y/o Big Box:" 
+                            <TextBlock Text="Inicia las siguientes aplicaciones cuando se inicie el Gestor de Juegos:" 
                                        Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
                             
                             <!-- Cabecera de la Tabla -->
@@ -485,14 +485,14 @@
                             <TextBlock Text="Bandeja de Sistema" Foreground="White" FontWeight="Bold" FontSize="13"/>
                             
                             <StackPanel Spacing="10" Margin="0,5">
-                                <CheckBox Name="ChkEnableSystemTray" Content="Enable System Tray"/>
+                                <CheckBox Name="ChkEnableSystemTray" Content="Habilitar Bandeja de Sistema"/>
                                 <CheckBox Name="ChkMinimizeToSystemTray" Content="Minimizar a la Bandeja de Sistema" Margin="20,0,0,0"/>
                                 <CheckBox Name="ChkCloseToSystemTray" Content="Cerrar a la Bandeja de Sistema" Margin="20,0,0,0"/>
-                                <CheckBox Name="ChkShowNotificationOnTraySend" Content="Mostrar notificación cuando LaunchBox se haya enviado a la bandeja del sistema" Margin="20,0,0,0"/>
+                                <CheckBox Name="ChkShowNotificationOnTraySend" Content="Mostrar notificación cuando la aplicación se haya enviado a la bandeja" Margin="20,0,0,0"/>
                             </StackPanel>
 
                             <Border Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1" Margin="0,10,0,0">
-                                <TextBlock Text="Has deshabilitado las notificaciones. Perderás la visibilidad de cualquier indicación de mensaje mientras LaunchBox esté cerrado o minimizado en la bandeja del sistema. Para habilitar estas notificaciones, ve a Configuración de Windows, Sistema, Notificaciones y acciones y establece 'Recibir notificaciones de aplicaciones y otros remitentes' en Activado." 
+                                <TextBlock Text="Has deshabilitado las notificaciones. Perderás la visibilidad de cualquier indicación de mensaje mientras la aplicación esté cerrada o minimizada en la bandeja del sistema. Para habilitar estas notificaciones, ve a Configuración de Windows, Sistema, Notificaciones y acciones y establece 'Recibir notificaciones de aplicaciones y otros remitentes' en Activado." 
                                            Foreground="#64748b" FontSize="10.5" FontStyle="Italic" TextWrapping="Wrap" LineHeight="16"/>
                             </Border>
                         </StackPanel>
@@ -517,7 +517,7 @@
                         <StackPanel Name="PnlCopiasSeguridad" Spacing="15" IsVisible="False">
                             <TextBlock Text="Copias de Seguridad" Foreground="White" FontWeight="Bold" FontSize="13"/>
                             
-                            <CheckBox Name="ChkAutoBackupXmlData" Content="Realiza una copia de seguridad automática de los archivos de datos XML de LaunchBox (recomendado)" Margin="0,5"/>
+                            <CheckBox Name="ChkAutoBackupXmlData" Content="Realiza una copia de seguridad automática de los archivos de datos XML de la Biblioteca Externa (recomendado)" Margin="0,5"/>
                         </StackPanel>
 
                         <!-- PANEL: ACTUALIZACIONES -->
@@ -692,14 +692,14 @@
                         <!-- PANEL: BUSCAR (NUEVO) -->
                         <StackPanel Name="PnlBuscar" Spacing="15" IsVisible="False">
                             <TextBlock Text="Buscar" Foreground="White" FontWeight="Bold" FontSize="13"/>
-                            <TextBlock Text="Configura las opciones de búsqueda y recuperación de metadatos de LaunchBox:" 
+                            <TextBlock Text="Configura las opciones de búsqueda y recuperación de metadatos de la Biblioteca Externa:" 
                                        Foreground="#9ba1af" FontSize="11" TextWrapping="Wrap"/>
                             
                             <Border Background="#1b1c21" Padding="15" CornerRadius="4" BorderBrush="#3f424a" BorderThickness="1">
                                 <StackPanel Spacing="12">
-                                    <CheckBox Name="ChkEnableLaunchBoxMetadataSearch" Content="Habilitar búsqueda en la base de datos de LaunchBox"/>
-                                    <CheckBox Name="ChkLoadLaunchBoxRatings" Content="Cargar calificaciones oficiales de LaunchBox"/>
-                                    <CheckBox Name="ChkUseCommunityRatings" Content="Usar calificaciones promedio de la comunidad de LaunchBox"/>
+                                    <CheckBox Name="ChkEnableExternalMetadataSearch" Content="Habilitar búsqueda en la base de datos externa"/>
+                                    <CheckBox Name="ChkLoadExternalRatings" Content="Cargar calificaciones oficiales externas"/>
+                                    <CheckBox Name="ChkUseCommunityRatings" Content="Usar calificaciones promedio de la comunidad externa"/>
                                     
                                     <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,0,0,0">
                                         <TextBlock Text="Mínimo de calificaciones de comunidad:" Foreground="#d1d5db" FontSize="11" VerticalAlignment="Center"/>
@@ -864,8 +864,8 @@
                         <!-- PANEL: PLACEHOLDER -->
                         <StackPanel Name="PnlPlaceholder" Spacing="20" IsVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <TextBlock Text="⚙️" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
-                            <TextBlock Text="Ajustes de LaunchBox Integrados" Foreground="White" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Esta sección contiene opciones avanzadas de LaunchBox que se configuran automáticamente para optimizar el rendimiento del Gestor de Juegos." 
+                            <TextBlock Text="Ajustes de Biblioteca Externa Integrados" Foreground="White" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Esta sección contiene opciones avanzadas de la biblioteca externa que se configuran automáticamente para optimizar el rendimiento del Gestor de Juegos." 
                                        Foreground="#9ba1af" FontSize="11" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="350" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Panel>
