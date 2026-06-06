@@ -5462,7 +5462,7 @@ public partial class MainWindow : Window
 
                     using (var context = new GestorJuegos.Data.AppDbContext())
                     {
-                        var allPlatforms = context.Platforms.ToList();
+                        var allPlatforms = context.Platforms.Include(p => p.AlternateNames).ToList();
                         int totalPlats = allPlatforms.Count;
 
                         for (int p = 0; p < totalPlats; p++)
@@ -5470,8 +5470,22 @@ public partial class MainWindow : Window
                             if (_cts.IsCancellationRequested) { cancelled = true; break; }
                             var plat = allPlatforms[p];
 
-                            string platformPath = Path.Combine(rootPath, plat.Name);
-                            if (!Directory.Exists(platformPath)) continue;
+                            // Búsqueda robusta de carpeta de plataforma (Nombre principal o alternativos)
+                            string platformPath = "";
+                            var possibleFolderNames = new List<string> { plat.Name };
+                            if (plat.AlternateNames != null) possibleFolderNames.AddRange(plat.AlternateNames.Select(a => a.AlternateName));
+
+                            foreach (var folderName in possibleFolderNames)
+                            {
+                                string checkPath = Path.Combine(rootPath, folderName);
+                                if (Directory.Exists(checkPath))
+                                {
+                                    platformPath = checkPath;
+                                    break;
+                                }
+                            }
+
+                            if (string.IsNullOrEmpty(platformPath)) continue;
 
                             int currentPlatIndex = p;
                             Avalonia.Threading.Dispatcher.UIThread.Post(() => {
@@ -5480,7 +5494,6 @@ public partial class MainWindow : Window
                             });
 
                             // 1. Recolectar e Indexar archivos para esta plataforma (MUCHO MÁS RÁPIDO)
-                            // Dictionary<NombreLimpio, List<(Ruta, Tipo)>>
                             var imageMap = new Dictionary<string, List<(string Path, string Type)>>(StringComparer.OrdinalIgnoreCase);
                             var stack = new Stack<string>();
                             stack.Push(platformPath);
@@ -5513,6 +5526,8 @@ public partial class MainWindow : Window
                                             if (fileName.Length > 3 && fileName[fileName.Length-3] == '-') fileName = fileName.Substring(0, fileName.Length - 3);
                                             
                                             string cleanKey = Regex.Replace(fileName, @"[^a-zA-Z0-9]", "").ToLower();
+                                            if (string.IsNullOrEmpty(cleanKey)) continue;
+
                                             if (!imageMap.ContainsKey(cleanKey)) imageMap[cleanKey] = new List<(string, string)>();
                                             imageMap[cleanKey].Add((f, detectedType));
                                         }
@@ -5521,38 +5536,87 @@ public partial class MainWindow : Window
                                 } catch { }
                             }
 
+                            // OPTIMIZACIÓN: Crear lista ordenada de llaves para búsqueda ultra-rápida de prefijos
+                            var sortedKeys = imageMap.Keys.OrderBy(k => k).ToList();
+
                             // 2. Procesar juegos usando el mapa indexado con verificación de caché
                             var games = context.Games.Where(g => g.PlatformId == plat.Id).ToList();
-                            var gamesToUpdate = new List<Game>();
                             
-                            // Cargar tipos de imágenes ya existentes para esta plataforma para saltar duplicados rápido
-                            var existingImagesMap = context.GameImages
-                                .Where(img => games.Select(g => g.Id).Contains(img.GameId))
-                                .Select(img => new { img.GameId, img.ImageType })
-                                .ToLookup(x => x.GameId, x => x.ImageType);
+                            // Obtener qué imágenes YA existen para estos juegos (para no repetir escaneo innecesario)
+                            ILookup<int, string> existingImagesMap;
+                            using (var coversContext = new GestorJuegos.Data.CoversDbContext())
+                            {
+                                var gameIds = games.Select(g => g.Id).ToList();
+                                existingImagesMap = coversContext.Images
+                                    .Where(img => gameIds.Contains(img.GameId))
+                                    .Select(img => new { img.GameId, img.ImageType })
+                                    .ToLookup(x => x.GameId, x => x.ImageType);
+                            }
+
+                            var gamesToUpdateBatch = new List<Game>();
 
                             for (int i = 0; i < games.Count; i++)
                             {
                                 if (_cts.IsCancellationRequested) { cancelled = true; break; }
                                 var game = games[i];
                                 
-                                // RESTAURADO: Actualización visual de nombres y progreso
-                                string currentGameName = game.Name;
-                                int currentIdx = i;
-                                int totalG = games.Count;
-                                int currentPlatIdx = p; // Usando el índice del bucle de plataformas
+                                // Actualización de UI controlada
+                                if (i % 10 == 0 || i == games.Count - 1)
+                                {
+                                    string currentGameName = game.Name;
+                                    int currentIdx = i;
+                                    int totalG = games.Count;
+                                    int currentPlatIdx = p;
 
-                                Avalonia.Threading.Dispatcher.UIThread.Post(() => {
-                                    TxtProgressDetail.Text = $"[{plat.Name}] Escaneando: {currentGameName}";
-                                    ProgBarImport.Value = ((double)currentPlatIdx / totalPlats * 100) + ((double)currentIdx / totalG * (100.0 / totalPlats));
-                                });
+                                    Avalonia.Threading.Dispatcher.UIThread.Post(() => {
+                                        TxtProgressDetail.Text = $"[{plat.Name}] {currentIdx}/{totalG}: {currentGameName}";
+                                        ProgBarImport.Value = ((double)currentPlatIdx / totalPlats * 100) + ((double)currentIdx / totalG * (100.0 / totalPlats));
+                                    });
+                                }
 
                                 string cleanGameName = Regex.Replace(game.Name, @"[^a-zA-Z0-9]", "").ToLower();
+                                if (string.IsNullOrEmpty(cleanGameName)) continue;
 
-                                if (imageMap.TryGetValue(cleanGameName, out var matches))
+                                // BÚSQUEDA INTELIGENTE BIDIRECCIONAL (Fix #18 mejorado)
+                                List<(string Path, string Type)> matches = new List<(string, string)>();
+                                
+                                // 1. Intentar coincidencia exacta primero
+                                if (imageMap.TryGetValue(cleanGameName, out var exactMatches))
+                                {
+                                    matches.AddRange(exactMatches);
+                                }
+                                
+                                // 2. Búsqueda Binaria de prefijo y sufijo (Bidireccional)
+                                int index = sortedKeys.BinarySearch(cleanGameName, StringComparer.OrdinalIgnoreCase);
+                                if (index < 0) index = ~index;
+
+                                // Escanear hacia adelante (archivos que EMPIEZAN por el nombre del juego)
+                                for (int j = index; j < sortedKeys.Count; j++)
+                                {
+                                    string key = sortedKeys[j];
+                                    if (key.StartsWith(cleanGameName, StringComparison.OrdinalIgnoreCase))
+                                        matches.AddRange(imageMap[key]);
+                                    else break;
+                                }
+
+                                // Escanear hacia atrás (nombres de juego que EMPIEZAN por el nombre del archivo)
+                                // Útil si el juego es "Super Mario World (USA)" y el archivo es "Super Mario World"
+                                for (int j = index - 1; j >= 0; j--)
+                                {
+                                    string key = sortedKeys[j];
+                                    if (cleanGameName.StartsWith(key, StringComparison.OrdinalIgnoreCase) && key.Length > 3)
+                                        matches.AddRange(imageMap[key]);
+                                    else if (!key.StartsWith(cleanGameName.Substring(0, Math.Min(3, cleanGameName.Length))))
+                                        break; // Detener si ya no comparten ni las primeras 3 letras
+                                }
+
+                                if (matches.Any())
                                 {
                                     try
                                     {
+                                        // Eliminar duplicados de rutas en los matches
+                                        matches = matches.GroupBy(m => m.Path).Select(g => g.First()).ToList();
+
                                         var mainMatch = matches.OrderByDescending(m => m.Type == "Box_3D").ThenByDescending(m => m.Type == "Box").First();
 
                                         bool needsUpdate = false;
@@ -5564,7 +5628,7 @@ public partial class MainWindow : Window
                                             needsUpdate = true;
                                         }
 
-                                        // Imágenes extra: Solo añadir las que NO existan ya (Caché activo)
+                                        // Imágenes extra: Solo añadir las que NO existan ya
                                         var currentExtras = existingImagesMap[game.Id].ToHashSet();
                                         foreach (var m in matches)
                                         {
@@ -5572,21 +5636,34 @@ public partial class MainWindow : Window
                                             
                                             if (!currentExtras.Contains(m.Type))
                                             {
-                                                context.GameImages.Add(new GameImage { GameId = game.Id, ImageType = m.Type, ImageData = File.ReadAllBytes(m.Path) });
+                                                game.ExtraImages.Add(new GameImage { GameId = game.Id, ImageType = m.Type, ImageData = File.ReadAllBytes(m.Path) });
                                                 totalImagesAdded++;
                                                 currentExtras.Add(m.Type);
+                                                needsUpdate = true;
                                             }
                                         }
                                         
                                         if (needsUpdate)
                                         {
+                                            gamesToUpdateBatch.Add(game);
                                             totalGamesUpdated++;
-                                            if (totalGamesUpdated % 50 == 0) context.SaveChanges();
+                                            
+                                            if (gamesToUpdateBatch.Count >= 50)
+                                            {
+                                                _gameService.UpdateGamesBatch(gamesToUpdateBatch);
+                                                gamesToUpdateBatch.Clear();
+                                            }
                                         }
                                     } catch { }
                                 }
                             }
-                            context.SaveChanges();
+
+                            // Guardar resto de la plataforma
+                            if (gamesToUpdateBatch.Any())
+                            {
+                                _gameService.UpdateGamesBatch(gamesToUpdateBatch);
+                                gamesToUpdateBatch.Clear();
+                            }
                         }
                     }
 

@@ -14,6 +14,14 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
+### v1.4.3-Dev (6 Junio 2026)
+*   **Reparación Integral del Escaneo Masivo (v2.2)**: 
+    - **Persistencia Garantizada**: Corregido el error crítico donde las carátulas no se guardaban en la base de datos. Ahora se utiliza `GameService` para asegurar que todo el arte multimedia se persista correctamente en `GestorCovers.db`.
+    - **Matching Inteligente Bidireccional (Fix #18)**: Potenciado el motor de búsqueda de arte. Ahora detecta coincidencias incluso si el nombre del archivo es más corto que el del juego (ej: encuentra `Game.png` para `Game (USA)`) o viceversa, eliminando el problema de las plataformas que quedaban vacías por diferencias de región o sufijos.
+    - **Detección de Plataformas por Alias**: El escáner ahora reconoce carpetas usando nombres alternativos (ej: vincula automáticamente la carpeta "SNES" a la plataforma "Super Nintendo Entertainment System").
+    - **Optimización de Caché**: Implementada verificación de duplicados durante el escaneo para evitar procesar imágenes que ya existen en el caché local, acelerando drásticamente los escaneos repetidos.
+*   **Estabilización de Compilación**: Eliminadas advertencias y errores de referencia de nulidad en `MainWindow.axaml.cs`, asegurando una compilación limpia en `.NET 9`.
+
 ### v1.4.2-Dev (5 Junio 2026)
 *   **Corrección Crítica de Estabilidad**: Solucionado el error `System.ObjectDisposedException` que ocurría al cambiar rápidamente de plataforma en la barra lateral.
     - Se ha refactorizado la lógica de `TvSidebar_SelectionChanged` para asegurar que las referencias a la plataforma seleccionada se obtengan antes de cerrar el contexto de la base de datos.
