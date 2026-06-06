@@ -468,12 +468,7 @@ public partial class MainWindow : Window
 
         BtnAddGame.Click += BtnAddGame_Click;
         BtnEditGame.Click += BtnEditGame_Click;
-        BtnCancelEditGame.Click += BtnCancelEditGame_Click;
-        BtnSave.Click += BtnSave_Click;
         BtnDelete.Click += BtnDelete_Click;
-        BtnSelectCover.Click += BtnSelectCover_Click;
-        BtnClearCover.Click += BtnClearCover_Click;
-        CmbEditArtType.SelectionChanged += CmbEditArtType_SelectionChanged;
         
         BtnCancelProgress.Click += (s, e) => _cts?.Cancel();
 
@@ -497,7 +492,6 @@ public partial class MainWindow : Window
         BtnClosePlatformsWall.Click += (s, e) => { GestorJuegos.Utils.SoundHelper.PlayBack(); OverlayPlatformsWall.IsVisible = false; };
         
         BtnShowStats.Click += (s, e) => { GestorJuegos.Utils.SoundHelper.PlaySelect(); ShowFullStats(); };
-        BtnCloseFullStats.Click += (s, e) => { GestorJuegos.Utils.SoundHelper.PlayBack(); OverlayFullStats.IsVisible = false; };
         
         BtnViewList.Click += BtnViewList_Click;
         BtnViewGrid.Click += BtnViewGrid_Click;
@@ -529,6 +523,11 @@ public partial class MainWindow : Window
         BtnToggleFilters.Click += BtnToggleFilters_Click;
         BtnApplyFilters.Click += BtnApplyFilters_Click;
         BtnClearFilters.Click += BtnClearFilters_Click;
+
+        // Suscripciones al nuevo control modular de edición
+        OverlayEditGame.RequestClose += (s, e) => OverlayEditGame.IsVisible = false;
+        OverlayEditGame.GameSaved += (s, e) => LoadGames();
+        OverlayEditGame.RequestMessage += (msg) => ShowMessage(msg);
     }
 
     private string GetExternalFolderName(string friendlyName)
@@ -569,7 +568,6 @@ public partial class MainWindow : Window
 
         // Efecto Fade Out
         ImgCover.Opacity = 0;
-        ImgEditCover.Opacity = 0;
 
         // 1. Intentar cargar el tipo específico de la base de datos (extra images)
         byte[]? dbImage = _gameService.GetGameExtraImage(_selectedGame.Id, dbTypeName);
@@ -587,7 +585,6 @@ public partial class MainWindow : Window
         UpdateCoverImage();
         // Fade In
         ImgCover.Opacity = 1;
-        ImgEditCover.Opacity = 1;
     }
 
     private void CmbArtType_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -608,42 +605,6 @@ public partial class MainWindow : Window
         }
         
         LoadArtTypeImage(friendlyName);
-    }
-
-    private void CmbEditArtType_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        if (_selectedGame == null || _isSelectingGame) return;
-
-        string friendlyName = (CmbEditArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Box 3D";
-        string artFolderName = GetExternalFolderName(friendlyName);
-
-        // Cargar imagen de la DB para previsualización (independiente de _currentCover)
-        byte[]? dbImage = _gameService.GetGameExtraImage(_selectedGame.Id, artFolderName);
-        
-        if (dbImage != null && dbImage.Length > 0)
-        {
-            try
-            {
-                using var ms = new MemoryStream(dbImage);
-                ImgEditCover.Source = new Bitmap(ms);
-            }
-            catch { ImgEditCover.Source = null; }
-        }
-        else
-        {
-            // Si no existe, intentar la carátula principal como fallback visual pero NO actualizar _currentCover
-            byte[]? mainCover = _gameService.GetGameFullCover(_selectedGame.Id);
-            if (mainCover != null)
-            {
-                try
-                {
-                    using var ms = new MemoryStream(mainCover);
-                    ImgEditCover.Source = new Bitmap(ms);
-                }
-                catch { ImgEditCover.Source = null; }
-            }
-            else { ImgEditCover.Source = null; }
-        }
     }
 
     private void LstGlobalSearchResults_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -965,7 +926,8 @@ public partial class MainWindow : Window
             }
             if (OverlayIgdbSearch.IsVisible)
             {
-                BtnSelectIgdb_Click(null, new RoutedEventArgs());
+                // BtnSelectIgdb_Click eliminado tras modularización
+                OverlayIgdbSearch.IsVisible = false;
                 return;
             }
             if (_gamepadInHeader)
@@ -2725,24 +2687,19 @@ public partial class MainWindow : Window
         int totalPlatforms = context.Platforms.Count();
         int totalGenres = context.Games.Select(g => g.Genre).Distinct().Count();
 
-        FullStatsTotalGames.Text = totalGames.ToString();
-        FullStatsTotalPlatforms.Text = totalPlatforms.ToString();
-        FullStatsTotalGenres.Text = totalGenres.ToString();
-
         var platformStats = _gameService.GetGamesCountByPlatform()
-            .Select(p => new { Key = p.Key, Value = p.Value })
+            .Select(p => new KeyValuePair<string, int>(p.Key, p.Value))
             .OrderByDescending(p => p.Value)
             .ToList();
-        FullStatsPlatformList.ItemsSource = platformStats;
 
         var regionStats = context.Games
             .Where(g => !string.IsNullOrEmpty(g.Region))
             .GroupBy(g => g.Region)
             .OrderByDescending(g => g.Count())
-            .Select(g => new { Key = g.Key, Value = g.Count() })
+            .Select(g => new KeyValuePair<string, int>(g.Key ?? "Unknown", g.Count()))
             .ToList();
-        FullStatsRegionList.ItemsSource = regionStats;
 
+        OverlayFullStats.UpdateStats(totalGames, totalPlatforms, totalGenres, platformStats, regionStats);
         OverlayFullStats.IsVisible = true;
     }
 
@@ -3439,132 +3396,9 @@ public partial class MainWindow : Window
         });
     }
 
-    private void BtnSyncMasterDbLocal_Click(object? sender, RoutedEventArgs e)
-    {
-        if (_selectedGame == null || _selectedPlatform == null) return;
-
-        GestorJuegos.Utils.SoundHelper.PlaySelect();
-        var metadataService = new ExternalMetadataService();
-
-        if (!metadataService.IsDatabaseAvailable)
-        {
-            ShowMessage("La base de datos maestra no se encontró en RevisaDB ni en la instalación externa.\nPor favor, asegúrate de que Biblioteca Externa.Metadata.db esté en K:\\GestorJuegos\\RevisaDB\\");
-            return;
-        }
-
-        try
-        {
-            // Creamos un clon temporal para no ensuciar el objeto real hasta confirmar
-            var tempGame = new Models.Game { Name = TxtName.Text ?? _selectedGame.Name };
-            _gameService.EnrichGameWithMetadata(tempGame, _selectedPlatform.Name);
-
-            if (!string.IsNullOrEmpty(tempGame.Description))
-            {
-                TxtDescription.Text = tempGame.Description;
-                TxtGenre.Text = tempGame.Genre;
-                TxtDeveloper.Text = tempGame.Developer;
-                TxtPublisher.Text = tempGame.Publisher;
-                NumYear.Value = tempGame.Year > 0 ? tempGame.Year : NumYear.Value;
-                
-                // Nuevos campos en el formulario (si los hubiera, si no se guardan en el objeto al dar a guardar)
-                _selectedGame.ExternalDbId = tempGame.ExternalDbId;
-                _selectedGame.ReleaseDate = tempGame.ReleaseDate;
-                _selectedGame.MaxPlayers = tempGame.MaxPlayers;
-                _selectedGame.Cooperative = tempGame.Cooperative;
-                _selectedGame.VideoURL = tempGame.VideoURL;
-                _selectedGame.WikipediaURL = tempGame.WikipediaURL;
-                _selectedGame.ESRB = tempGame.ESRB;
-                _selectedGame.CommunityRating = tempGame.CommunityRating;
-                _selectedGame.CommunityRatingCount = tempGame.CommunityRatingCount;
-
-                ShowMessage($"Metadatos encontrados para '{tempGame.Name}'.\nLos campos han sido actualizados en el formulario.");
-            }
-            else
-            {
-                ShowMessage("No se encontraron metadatos para este juego en la base de datos local.");
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowMessage($"Error al buscar en BD local: {ex.Message}");
-        }
-    }
-
-    private async void BtnSearchIgdb_Click(object? sender, RoutedEventArgs e)
-    {
-        string query = TxtName.Text?.Trim() ?? "";
-        if (string.IsNullOrEmpty(query))
-        {
-            ShowMessage("Por favor, escriba el nombre del juego antes de buscar.");
-            return;
-        }
-
-        GestorJuegos.Utils.SoundHelper.PlaySelect();
-
-        if (_selectedPlatform == null)
-        {
-            ShowMessage("Por favor, selecciona primero la plataforma principal.");
-            return;
-        }
-
-        var systemCode = VimmVaultService.GetSystemCode(_selectedPlatform.Name);
-        if (string.IsNullOrEmpty(systemCode))
-        {
-            ShowMessage($"Plataforma '{_selectedPlatform.Name}' no soportada por Vimm's Lair.");
-            return;
-        }
-
-        OverlayIgdbSearch.IsVisible = true;
-        TxtIgdbStatus.Text = $"Buscando '{query}' en Vimm's Lair...";
-        LstIgdbResults.ItemsSource = null;
-
-        try
-        {
-            var results = await _vimmService.SearchGamesAsync(systemCode, query);
-            LstIgdbResults.ItemsSource = results;
-            if (results.Count == 0)
-            {
-                TxtIgdbStatus.Text = "No se encontraron resultados.";
-            }
-            else
-            {
-                TxtIgdbStatus.Text = "Resultados de Búsqueda (Vimm's Lair)";
-            }
-        }
-        catch (Exception ex)
-        {
-            TxtIgdbStatus.Text = "Error al buscar en Vimm's Lair.";
-            ShowMessage($"Error de API: {ex.Message}");
-        }
-    }
-
     private void BtnCancelIgdb_Click(object? sender, RoutedEventArgs e)
     {
         OverlayIgdbSearch.IsVisible = false;
-    }
-
-    private async void BtnSelectIgdb_Click(object? sender, RoutedEventArgs e)
-    {
-        if (LstIgdbResults.SelectedItem is IgdbSearchResult result)
-        {
-            TxtName.Text = result.Name;
-            OverlayIgdbSearch.IsVisible = false;
-
-            if (!string.IsNullOrEmpty(result.CoverUrl) && int.TryParse(result.CoverUrl, out var vimmId))
-            {
-                try
-                {
-                    ShowMessage("Descargando carátula...");
-                    _currentCover = await _vimmService.DownloadBoxArtAsync(vimmId);
-                    UpdateCoverImage();
-                    OverlayMessage.IsVisible = false;
-                }
-                catch
-                {
-                    ShowMessage("No se pudo descargar la carátula.");
-                }
-            }
-        }
     }
 
     private void LstManagePlatforms_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -4068,42 +3902,10 @@ public partial class MainWindow : Window
             if (TxtPlaytimeExtra != null) TxtPlaytimeExtra.Text = string.IsNullOrEmpty(game.PlaytimeExtra) ? "--" : game.PlaytimeExtra;
             if (TxtPlaytimeCompletionist != null) TxtPlaytimeCompletionist.Text = string.IsNullOrEmpty(game.PlaytimeCompletionist) ? "--" : game.PlaytimeCompletionist;
 
-            // --- Preparar Formulario de Edición (Overlay) ---
-            TxtName.Text = game.Name;
-            NumYear.Value = game.Year;
-            TxtGenre.Text = game.Genre;
-            TxtDeveloper.Text = game.Developer;
-            TxtPublisher.Text = game.Publisher;
-            TxtDescription.Text = game.Description;
-            TxtLanguages.Text = game.Languages;
-
-            _currentRoms.Clear();
-            if (!string.IsNullOrEmpty(game.RomPath)) _currentRoms.Add(game.RomPath);
-            if (!string.IsNullOrEmpty(game.AdditionalRoms))
-            {
-                foreach(var r in game.AdditionalRoms.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    _currentRoms.Add(r);
-                }
-            }
-            LstRoms.ItemsSource = _currentRoms;
-
-            TxtOverrideEmulator.Text = game.OverrideEmulatorPath;
-            TxtOverrideArgs.Text = game.OverrideLaunchArguments;
-            ChkIsFavorite.IsChecked = game.IsFavorite;
-
-            var regionItem = CmbRegion.Items.Cast<ComboBoxItem>().FirstOrDefault(i => i.Content?.ToString() == game.Region);
-            if (regionItem != null) CmbRegion.SelectedItem = regionItem;
-            else CmbRegion.SelectedIndex = 0;
-
-            // Sincronizar CmbEditArtType
-            string targetType = !string.IsNullOrEmpty(game.SelectedArtType) ? game.SelectedArtType : _settings.PreferredArtType;
-            var artTypeItem = CmbEditArtType.Items.Cast<ComboBoxItem>().FirstOrDefault(i => i.Content?.ToString() == targetType);
-            if (artTypeItem != null) CmbEditArtType.SelectedItem = artTypeItem;
-            else CmbEditArtType.SelectedIndex = 0;
-
             var coverObj = _gameService.GetGameCover(game.Id);
             _selectedGame.CoverType = coverObj?.ImageType ?? "Box - Front";
+
+            string targetType = !string.IsNullOrEmpty(game.SelectedArtType) ? game.SelectedArtType : _settings.PreferredArtType;
 
             // Sincronizar el selector de tipo de arte con la preferencia del usuario o del juego específico
             if (CmbArtType != null)
@@ -4234,222 +4036,18 @@ public partial class MainWindow : Window
 
         GestorJuegos.Utils.SoundHelper.PlaySelect();
         _selectedGame = new Game { PlatformId = _selectedPlatform.Id, Year = DateTime.Now.Year, DateAdded = DateTime.Now };
-        TxtEditGameTitle.Text = "Añadir Nuevo Juego";
         
-        TxtName.Text = string.Empty;
-        NumYear.Value = _selectedGame.Year;
-        TxtGenre.Text = string.Empty;
-        TxtDeveloper.Text = string.Empty;
-        TxtPublisher.Text = string.Empty;
-        TxtDescription.Text = string.Empty;
-        TxtLanguages.Text = string.Empty;
-        TxtVersion.Text = string.Empty;
-        CmbPlayStatus.SelectedIndex = 0;
-        SldRating.Value = 0;
-        TxtPlayCount.Text = "0";
-        TxtDateAdded.Text = DateTime.Now.ToString("dd/MM/yyyy");
-
-        _currentRoms.Clear();
-        LstRoms.ItemsSource = _currentRoms;
-        TxtOverrideEmulator.Text = string.Empty;
-        TxtOverrideArgs.Text = string.Empty;
-        ChkIsFavorite.IsChecked = false;
-        CmbRegion.SelectedIndex = 0;
-        _currentCover = null;
-        ImgEditCover.Source = null;
-
+        OverlayEditGame.Initialize(_selectedGame, _selectedPlatform, _gameService, _settings);
         OverlayEditGame.IsVisible = true;
     }
 
     private void BtnEditGame_Click(object? sender, RoutedEventArgs e)
     {
-        if (_selectedGame == null) return;
+        if (_selectedGame == null || _selectedPlatform == null) return;
         GestorJuegos.Utils.SoundHelper.PlaySelect();
-        TxtEditGameTitle.Text = "Editar Juego";
-
-        // Cargar datos actuales
-        TxtName.Text = _selectedGame.Name;
-        NumYear.Value = _selectedGame.Year;
-        TxtGenre.Text = _selectedGame.Genre;
-        TxtDeveloper.Text = _selectedGame.Developer;
-        TxtPublisher.Text = _selectedGame.Publisher;
-        TxtDescription.Text = _selectedGame.Description;
-        TxtLanguages.Text = _selectedGame.Languages;
-        TxtVersion.Text = _selectedGame.Version;
         
-        // Estado
-        foreach (var rawItem in CmbPlayStatus.Items)
-        {
-            if (rawItem is ComboBoxItem item && item.Content?.ToString() == _selectedGame.PlayStatus)
-            {
-                CmbPlayStatus.SelectedItem = item;
-                break;
-            }
-        }
-        if (CmbPlayStatus.SelectedItem == null) CmbPlayStatus.SelectedIndex = 0;
-
-        SldRating.Value = _selectedGame.Rating;
-        TxtPlayCount.Text = _selectedGame.PlayCount.ToString();
-        TxtDateAdded.Text = _selectedGame.DateAdded.ToString("dd/MM/yyyy");
-
-        _currentRoms.Clear();
-        if (!string.IsNullOrEmpty(_selectedGame.RomPath)) _currentRoms.Add(_selectedGame.RomPath);
-        if (!string.IsNullOrEmpty(_selectedGame.AdditionalRoms))
-        {
-            foreach (var r in _selectedGame.AdditionalRoms.Split('|')) _currentRoms.Add(r);
-        }
-        LstRoms.ItemsSource = _currentRoms;
-
-        TxtOverrideEmulator.Text = _selectedGame.OverrideEmulatorPath;
-        TxtOverrideArgs.Text = _selectedGame.OverrideLaunchArguments;
-        ChkIsFavorite.IsChecked = _selectedGame.IsFavorite;
-
-        // Región
-        foreach (var rawItem in CmbRegion.Items)
-        {
-            if (rawItem is ComboBoxItem item && item.Content?.ToString() == _selectedGame.Region)
-            {
-                CmbRegion.SelectedItem = item;
-                break;
-            }
-        }
-        if (CmbRegion.SelectedItem == null) CmbRegion.SelectedIndex = 0;
-
-        _currentCover = _selectedGame.Cover;
-        UpdateCoverImage();
-
+        OverlayEditGame.Initialize(_selectedGame, _selectedPlatform, _gameService, _settings);
         OverlayEditGame.IsVisible = true;
-    }
-
-    private void BtnCancelEditGame_Click(object? sender, RoutedEventArgs e)
-    {
-        GestorJuegos.Utils.SoundHelper.PlayBack();
-        OverlayEditGame.IsVisible = false;
-    }
-
-    private void BtnSave_Click(object? sender, RoutedEventArgs e)
-    {
-        if (_selectedGame == null || _selectedPlatform == null) return;
-
-        GestorJuegos.Utils.SoundHelper.PlaySelect();
-        _selectedGame.Name = TxtName.Text ?? string.Empty;
-        _selectedGame.Year = (int)(NumYear.Value ?? DateTime.Now.Year);
-        _selectedGame.Genre = TxtGenre.Text ?? string.Empty;
-        _selectedGame.Developer = TxtDeveloper.Text ?? string.Empty;
-        _selectedGame.Publisher = TxtPublisher.Text ?? string.Empty;
-        _selectedGame.Description = TxtDescription.Text ?? string.Empty;
-        _selectedGame.Languages = TxtLanguages.Text ?? string.Empty;
-        _selectedGame.Version = TxtVersion.Text ?? string.Empty;
-        _selectedGame.PlayStatus = (CmbPlayStatus.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Pendiente";
-        _selectedGame.Rating = (int)SldRating.Value;
-        
-        if (_currentRoms.Count > 0)
-        {
-            _selectedGame.RomPath = _currentRoms[0];
-            if (_currentRoms.Count > 1)
-                _selectedGame.AdditionalRoms = string.Join("|", _currentRoms.Skip(1));
-            else
-                _selectedGame.AdditionalRoms = string.Empty;
-        }
-        else
-        {
-            _selectedGame.RomPath = string.Empty;
-            _selectedGame.AdditionalRoms = string.Empty;
-        }
-        _selectedGame.OverrideEmulatorPath = TxtOverrideEmulator.Text ?? string.Empty;
-        _selectedGame.OverrideLaunchArguments = TxtOverrideArgs.Text ?? string.Empty;
-        _selectedGame.IsFavorite = ChkIsFavorite.IsChecked ?? false;
-        _selectedGame.Region = (CmbRegion.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "🇺🇸 US";
-        
-        // Guardar preferencia de arte desde el overlay
-        string editArtType = (CmbEditArtType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Box 3D";
-        _selectedGame.SelectedArtType = editArtType;
-        _selectedGame.CoverType = GetExternalFolderName(editArtType);
-
-        _selectedGame.Cover = _currentCover;
-
-        if (_selectedGame.Id == 0)
-        {
-            _gameService.AddGame(_selectedGame);
-        }
-        else
-        {
-            _gameService.UpdateGame(_selectedGame);
-        }
-
-        OverlayEditGame.IsVisible = false;
-        LoadGames();
-        
-        // Refrescar selección en panel derecho tras guardar
-        var updatedGame = _currentPlatformGames.FirstOrDefault(g => g.Id == _selectedGame.Id);
-        if (updatedGame != null)
-        {
-            if (LstGames.IsVisible) LstGames.SelectedItem = updatedGame;
-            else LstGamesGrid.SelectedItem = updatedGame;
-            
-            LstGames_SelectionChanged(null, new SelectionChangedEventArgs(null, new List<object>(), new List<object>()));
-        }
-    }
-
-    private void BtnSyncExternalLib_Click(object? sender, RoutedEventArgs e)
-    {
-        if (_selectedGame == null || _selectedPlatform == null) return;
-        
-        GestorJuegos.Utils.SoundHelper.PlaySelect();
-        
-        // Buscar en el XML de Biblioteca Externa
-        string lbPath = _settings.ExternalLibraryPath;
-        if (!Directory.Exists(lbPath))
-        {
-            ShowMessage("Configura primero la ruta de la Biblioteca Externa en Ajustes.");
-            return;
-        }
-
-        string xmlPath = Path.Combine(lbPath, "Data", "Platforms", $"{_selectedPlatform.Name}.xml");
-        if (!File.Exists(xmlPath))
-        {
-            ShowMessage($"No se encontró el XML de metadatos para la plataforma: {_selectedPlatform.Name}");
-            return;
-        }
-
-        try
-        {
-            var xdoc = System.Xml.Linq.XDocument.Load(xmlPath);
-            var gameElement = xdoc.Descendants("Game")
-                .FirstOrDefault(x => x.Element("Title")?.Value?.Equals(_selectedGame.Name, StringComparison.OrdinalIgnoreCase) == true);
-
-            if (gameElement != null)
-            {
-                // Extraer metadatos
-                TxtGenre.Text = gameElement.Element("Genre")?.Value ?? TxtGenre.Text;
-                TxtDeveloper.Text = gameElement.Element("Developer")?.Value ?? TxtDeveloper.Text;
-                TxtPublisher.Text = gameElement.Element("Publisher")?.Value ?? TxtPublisher.Text;
-                TxtDescription.Text = gameElement.Element("Notes")?.Value ?? TxtDescription.Text;
-                TxtVersion.Text = gameElement.Element("Version")?.Value ?? TxtVersion.Text;
-                
-                string? releaseYear = gameElement.Element("ReleaseDate")?.Value;
-                if (!string.IsNullOrEmpty(releaseYear) && DateTime.TryParse(releaseYear, out var dt))
-                {
-                    NumYear.Value = dt.Year;
-                }
-
-                string? ratingStr = gameElement.Element("StarRating")?.Value;
-                if (float.TryParse(ratingStr, out var rating))
-                {
-                    SldRating.Value = (int)(rating * 20); // De 0-5 a 0-100
-                }
-
-                ShowMessage("Metadatos sincronizados desde Biblioteca Externa correctamente.");
-            }
-            else
-            {
-                ShowMessage("No se encontró información exacta para este título en Biblioteca Externa.");
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowMessage($"Error al leer el XML: {ex.Message}");
-        }
     }
 
     private void BtnDelete_Click(object? sender, RoutedEventArgs e)
@@ -4599,18 +4197,15 @@ public partial class MainWindow : Window
                 using var ms = new MemoryStream(_currentCover);
                 var bitmap = new Bitmap(ms);
                 ImgCover.Source = bitmap;
-                ImgEditCover.Source = bitmap;
             }
             catch
             {
                 ImgCover.Source = null;
-                ImgEditCover.Source = null;
             }
         }
         else
         {
             ImgCover.Source = null;
-            ImgEditCover.Source = null;
         }
     }
 
@@ -4628,54 +4223,6 @@ public partial class MainWindow : Window
         if (files.Count >= 1)
         {
             TxtEmulatorPath.Text = files[0].Path.LocalPath;
-        }
-    }
-
-    private async void BtnAddRom_Click(object? sender, RoutedEventArgs e)
-    {
-        var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel == null) return;
-
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = "Añadir Archivo de Juego / ROM",
-            AllowMultiple = true
-        });
-
-        foreach (var file in files)
-        {
-            _currentRoms.Add(file.Path.LocalPath);
-        }
-    }
-
-    private void BtnRemoveRom_Click(object? sender, RoutedEventArgs e)
-    {
-        if (LstRoms.SelectedItem is string selectedPath)
-        {
-            _currentRoms.Remove(selectedPath);
-        }
-    }
-
-    private async void BtnSelectOverrideEmulator_Click(object? sender, RoutedEventArgs e)
-    {
-        var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel == null) return;
-
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = "Seleccionar Ejecutable del Emulador (Override)",
-            AllowMultiple = false,
-            FileTypeFilter = new[] { new FilePickerFileType("Ejecutables") { Patterns = new[] { "*.exe", "*.bat", "*.cmd" } } }
-        });
-
-        if (files.Count > 0)
-        {
-            TxtOverrideEmulator.Text = files[0].TryGetLocalPath() ?? files[0].Name;
-            // Si los argumentos estaban vacíos, ponemos el default
-            if (string.IsNullOrWhiteSpace(TxtOverrideArgs.Text))
-            {
-                TxtOverrideArgs.Text = "\"{0}\"";
-            }
         }
     }
 
@@ -4843,7 +4390,7 @@ public partial class MainWindow : Window
             if (string.IsNullOrEmpty(finalEmulatorPath))
             {
                 logLines.Add("Aviso: EmulatorPath vacío. Usando UseShellExecute = true con RomPath.");
-                string targetRom = LstRoms.SelectedItem as string ?? _selectedGame.RomPath;
+                string targetRom = _selectedGame.RomPath;
                 psi.FileName = targetRom;
                 psi.UseShellExecute = true;
             }
@@ -4862,7 +4409,7 @@ public partial class MainWindow : Window
                 psi.FileName = finalEmulatorPath;
                 psi.WorkingDirectory = System.IO.Path.GetDirectoryName(finalEmulatorPath) ?? string.Empty;
                 
-                string targetRom = LstRoms.SelectedItem as string ?? _selectedGame.RomPath;
+                string targetRom = _selectedGame.RomPath;
                 string args = string.IsNullOrEmpty(finalLaunchArgs) ? "\"{0}\"" : finalLaunchArgs;
                 logLines.Add($"Args base: {args}");
                 psi.Arguments = args.Replace("{0}", targetRom);

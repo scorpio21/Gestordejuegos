@@ -1,0 +1,180 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:GestorJuegos.Models"
+        xmlns:services="clr-namespace:GestorJuegos.Services"
+        xmlns:utils="clr-namespace:GestorJuegos.Utils"
+        xmlns:controls="clr-namespace:GestorJuegos.Controls"
+        xmlns:local="clr-namespace:GestorJuegos">
+
+    <Styles.Resources>
+        <utils:ByteArrayToBitmapConverter x:Key="ByteToBitmap"/>
+        <utils:RegionToFlagConverter x:Key="RegionToFlag"/>
+        
+        <!-- Recursos Dinámicos de Tema (Cargados por código) -->
+        <FontFamily x:Key="MainFont">Default</FontFamily>
+        <FontFamily x:Key="HeaderFont">Default</FontFamily>
+        <CornerRadius x:Key="ThemeCornerRadius">8</CornerRadius>
+        
+        <SolidColorBrush x:Key="AccentBrush" Color="#10b981"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#1e293b"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#334155"/>
+        <SolidColorBrush x:Key="SecondaryTextBrush" Color="#64748b"/>
+        <Color x:Key="DeepDarkColor">#0f172a</Color>
+        <SolidColorBrush x:Key="DeepDarkBrush" Color="#0f172a"/>
+
+        <!-- Plantilla para Items de Sidebar -->
+        <DataTemplate x:Key="SidebarItemTemplate" x:DataType="models:SidebarItem">
+            <controls:SidebarItemControl/>
+        </DataTemplate>
+        
+        <!-- Plantilla Jerárquica para Nodos del Árbol de la Barra Lateral -->
+        <TreeDataTemplate x:Key="SidebarNodeTemplate" DataType="models:SidebarNode" ItemsSource="{Binding Children}">
+            <Grid ColumnDefinitions="Auto, Auto, *, Auto" Height="36" Background="Transparent">
+                <Image Grid.Column="0" 
+                       Source="{Binding IconBytes, Converter={StaticResource ByteToBitmap}}" 
+                       Width="22" Height="22" 
+                       Margin="0,0,8,0" 
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding HasIconBytes}"/>
+                       
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding ResortIcon}" 
+                           Margin="0,0,8,0" 
+                           VerticalAlignment="Center" 
+                           FontSize="16"
+                           IsVisible="{Binding !HasIconBytes}"/>
+                           
+                <TextBlock Grid.Column="2" 
+                           Text="{Binding Name}" 
+                           VerticalAlignment="Center" 
+                           Foreground="#cbd5e1" 
+                           FontSize="13"
+                           FontWeight="{Binding FontWeight}"/>
+                           
+                <Border Grid.Column="3" 
+                        Background="{DynamicResource BorderBrush}" 
+                        CornerRadius="10" 
+                        Padding="8,1" 
+                        VerticalAlignment="Center" 
+                        Margin="5,0,5,0"
+                        IsVisible="{Binding ShowCount}">
+                    <TextBlock Text="{Binding Count}" FontSize="10" Foreground="#94a3b8" FontWeight="Bold"/>
+                </Border>
+            </Grid>
+        </TreeDataTemplate>
+
+        <!-- Plantilla para Rejilla de Juegos (Premium) -->
+        <DataTemplate x:Key="GameGridTemplate" x:DataType="models:Game">
+            <local:GameGridItemView/>
+        </DataTemplate>
+    </Styles.Resources>
+
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
+    </Style>
+
+    <Style Selector="MenuItem">
+        <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
+    </Style>
+
+    <Style Selector="TreeView">
+        <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
+    </Style>
+
+    <!-- Estilos para TabControl Moderno -->
+    <Style Selector="TabControl.Modern">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="TabControl.Modern TabItem">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="#94a3b8"/>
+        <Setter Property="Padding" Value="15,10"/>
+        <Setter Property="Margin" Value="0,0,5,0"/>
+        <Setter Property="BorderThickness" Value="0,0,0,2"/>
+    </Style>
+    <Style Selector="TabControl.Modern TabItem:selected">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderBrush" Value="#10b981"/>
+    </Style>
+    <Style Selector="TabControl.Modern TabItem:pointerover">
+        <Setter Property="Foreground" Value="#cbd5e1"/>
+    </Style>
+
+    <!-- Estilos Globales para Inputs -->
+    <Style Selector="TextBox">
+        <Setter Property="Background" Value="{DynamicResource DeepDarkBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource ThemeCornerRadius}"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="#10b981"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    
+    <Style Selector="ComboBox">
+        <Setter Property="Background" Value="{DynamicResource DeepDarkBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource ThemeCornerRadius}"/>
+        <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
+    </Style>
+
+    <Style Selector="NumericUpDown">
+        <Setter Property="Background" Value="{DynamicResource DeepDarkBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource ThemeCornerRadius}"/>
+        <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
+    </Style>
+
+    <Style Selector="Button.Secondary">
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource ThemeCornerRadius}"/>
+        <Setter Property="FontFamily" Value="{DynamicResource MainFont}"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.2"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.Secondary:pointerover">
+        <Setter Property="Background" Value="#475569"/>
+    </Style>
+
+    <Style Selector="TextBlock.Header">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="#64748b"/>
+    </Style>
+
+    <!-- Estilos Premium para la Barra de Menú Superior -->
+    <Style Selector="Menu">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#cbd5e1"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="Menu > MenuItem">
+        <Setter Property="Foreground" Value="#cbd5e1"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Menu > MenuItem:pointerover">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
+    </Style>
+    <Style Selector="Menu > MenuItem:selected">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
+    </Style>
+    <Style Selector="MenuItem MenuItem">
+        <Setter Property="Foreground" Value="#cbd5e1"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="Background" Value="{DynamicResource PanelBrush}"/>
+    </Style>
+</Styles>

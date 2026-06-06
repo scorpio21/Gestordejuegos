@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:GestorJuegos.Models"
+             xmlns:utils="clr-namespace:GestorJuegos.Utils"
+             x:Class="GestorJuegos.Controls.GameGridItemControl"
+             x:DataType="models:Game">
+    
+    <UserControl.Resources>
+        <utils:ByteArrayToBitmapConverter x:Key="ByteToBitmap"/>
+    </UserControl.Resources>
+
+    <Border Name="RootBorder" Margin="8" CornerRadius="10" Background="Transparent" PointerEntered="OnPointerEntered">
+        <StackPanel Spacing="0">
+            <Panel Height="220" Width="160">
+                <Border Name="PlaceholderBorder" 
+                        Background="#2e384d" 
+                        CornerRadius="8" 
+                        Width="150" 
+                        Height="210"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding #GameCoverImage.Source, Converter={x:Static ObjectConverters.IsNull}}">
+                    <Panel>
+                        <TextBlock Text="🎮" 
+                                   FontSize="36" 
+                                   Opacity="0.15" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center"/>
+                    </Panel>
+                </Border>
+
+                <Border Name="CoverBorder" 
+                        CornerRadius="8" 
+                        ClipToBounds="True" 
+                        BoxShadow="0 5 12 0 #90000000"
+                        Background="Transparent"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Bottom"
+                        IsVisible="{Binding #GameCoverImage.Source, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <Image Name="GameCoverImage" 
+                           Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" 
+                           Stretch="Uniform" 
+                           MaxHeight="220" 
+                           MaxWidth="160"
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"/>
+                </Border>
+                
+                <TextBlock Text="⭐" 
+                           IsVisible="{Binding IsFavorite}" 
+                           HorizontalAlignment="Right" 
+                           VerticalAlignment="Top" 
+                           Margin="6" 
+                           FontSize="14"
+                           Effect="drop-shadow(0 2 4 #aa000000)"/>
+            </Panel>
+            
+            <StackPanel Spacing="2" Margin="2,8,2,0">
+                <TextBlock Text="{Binding Name}" 
+                           Foreground="White" 
+                           FontWeight="SemiBold" 
+                           FontSize="12" 
+                           TextWrapping="Wrap" 
+                           MaxLines="2"
+                           TextTrimming="CharacterEllipsis"
+                           HorizontalAlignment="Left"/>
+                <TextBlock Text="{Binding GridSubtext}" 
+                           Foreground="#8a99ad" 
+                           FontSize="10" 
+                           TextWrapping="NoWrap" 
+                           TextTrimming="CharacterEllipsis"
+                           HorizontalAlignment="Left"
+                           IsVisible="{Binding GridSubtext, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

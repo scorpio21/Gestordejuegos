@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:GestorJuegos.Models"
+             x:Class="GestorJuegos.Controls.SidebarItemControl"
+             x:DataType="models:SidebarItem">
+    <Panel Margin="0,2">
+        <TextBlock Text="{Binding Name}" 
+                   IsVisible="{Binding IsHeader}" 
+                   FontSize="11" FontWeight="Bold" Foreground="#64748b" Margin="5,15,0,5"/>
+        
+        <Grid ColumnDefinitions="Auto, *, Auto" IsVisible="{Binding !IsHeader}" Height="32" Background="Transparent" PointerEntered="OnPointerEntered">
+            <TextBlock Grid.Column="0" Text="{Binding Icon}" Margin="5,0,10,0" VerticalAlignment="Center" FontSize="16"/>
+            <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Foreground="#cbd5e1" FontSize="13"/>
+            <Border Grid.Column="2" Background="{DynamicResource BorderBrush}" CornerRadius="10" Padding="8,1" VerticalAlignment="Center" Margin="0,0,5,0">
+                <TextBlock Text="{Binding Count}" FontSize="10" Foreground="#94a3b8" FontWeight="Bold"/>
+            </Border>
+        </Grid>
+    </Panel>
+</UserControl>
