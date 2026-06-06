@@ -57,6 +57,14 @@ namespace GestorJuegos.Models
         public string? CommunityRating { get; set; }
         public int CommunityRatingCount { get; set; }
 
+        // --- Playtime Commitment (HowLongToBeat) ---
+        public string? PlaytimeMain { get; set; }
+        public string? PlaytimeExtra { get; set; }
+        public string? PlaytimeCompletionist { get; set; }
+
+        [NotMapped]
+        public List<Achievement> Achievements { get; set; } = new();
+
         // --- Campos de compatibilidad (Ahora mapeados para persistencia) ---
         public string SelectedArtType { get; set; } = string.Empty;
         public string Languages { get; set; } = string.Empty;

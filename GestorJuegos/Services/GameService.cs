@@ -50,6 +50,12 @@ namespace GestorJuegos.Services
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN ESRB TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN CommunityRating TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN CommunityRatingCount INTEGER DEFAULT 0"); } catch { }
+                    
+                    // --- Playtime Commitment ---
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN PlaytimeMain TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN PlaytimeExtra TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN PlaytimeCompletionist TEXT"); } catch { }
+
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN LastScanDate TEXT;"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Logo BLOB"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Platforms ADD COLUMN Icon BLOB"); } catch { }

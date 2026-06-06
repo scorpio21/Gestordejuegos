@@ -4063,6 +4063,11 @@ public partial class MainWindow : Window
             // Descripción
             TxtInfoDescription.Text = string.IsNullOrEmpty(game.Description) ? "Sin descripción disponible." : game.Description;
 
+            // --- Playtime Commitment (HowLongToBeat) ---
+            if (TxtPlaytimeMain != null) TxtPlaytimeMain.Text = string.IsNullOrEmpty(game.PlaytimeMain) ? "--" : game.PlaytimeMain;
+            if (TxtPlaytimeExtra != null) TxtPlaytimeExtra.Text = string.IsNullOrEmpty(game.PlaytimeExtra) ? "--" : game.PlaytimeExtra;
+            if (TxtPlaytimeCompletionist != null) TxtPlaytimeCompletionist.Text = string.IsNullOrEmpty(game.PlaytimeCompletionist) ? "--" : game.PlaytimeCompletionist;
+
             // --- Preparar Formulario de Edición (Overlay) ---
             TxtName.Text = game.Name;
             NumYear.Value = game.Year;
@@ -6392,97 +6397,5 @@ public partial class MainWindow : Window
         UpdateMenuCheckmarks();
         ApplySearchFilter();
     }
-
-    private void UpdateWheels()
-    {
-        UpdateWheelCurvature();
-        UpdateHorizontalWheelCurvature();
-    }
-
-    private void UpdateWheelCurvature()
-    {
-        if (LstGamesWheelVertical == null || !LstGamesWheelVertical.IsVisible) return;
-
-        double centerOfList = LstGamesWheelVertical.Bounds.Height / 2;
-        if (centerOfList <= 0) return;
-
-        var itemsSource = LstGamesWheelVertical.ItemsSource as System.Collections.IList;
-        if (itemsSource == null) return;
-
-        foreach (var item in itemsSource)
-        {
-            var container = LstGamesWheelVertical.ContainerFromItem(item) as ListBoxItem;
-            if (container == null) continue;
-
-            var position = container.TranslatePoint(new Point(0, 0), LstGamesWheelVertical);
-            if (position.HasValue)
-            {
-                double itemCenterY = position.Value.Y + (container.Bounds.Height / 2);
-                double distanceFromCenter = itemCenterY - centerOfList;
-                double maxDistance = centerOfList;
-
-                // Parábola más suave para evitar que se salgan de la pantalla
-                double ratio = Math.Clamp(distanceFromCenter / maxDistance, -1.2, 1.2);
-                double shiftX = -80 * (ratio * ratio); // Reducido de -120 a -80
-                
-                // Rotación sutil para simular la inclinación de la rueda
-                double rotation = ratio * 15; 
-
-                bool isSelected = container.IsSelected;
-                double scale = isSelected ? 1.2 : (1.0 - Math.Abs(ratio) * 0.2); // Escala más moderada
-                double opacity = 1.0 - Math.Abs(ratio) * 0.4;
-
-                container.ZIndex = isSelected ? 100 : (int)(50 - Math.Abs(distanceFromCenter) / 5);
-                container.Opacity = opacity;
-
-                var group = new TransformGroup();
-                group.Children.Add(new RotateTransform(rotation));
-                group.Children.Add(new ScaleTransform(scale, scale));
-                group.Children.Add(new TranslateTransform(shiftX + (isSelected ? 40 : 0), 0)); // Añadido margen derecho al seleccionado
-                container.RenderTransform = group;
-            }
-        }
-    }
-
-    private void UpdateHorizontalWheelCurvature()
-    {
-        if (LstGamesWheelHorizontal == null || !LstGamesWheelHorizontal.IsVisible) return;
-
-        double centerOfList = LstGamesWheelHorizontal.Bounds.Width / 2;
-        if (centerOfList <= 0) return;
-
-        var itemsSource = LstGamesWheelHorizontal.ItemsSource as System.Collections.IList;
-        if (itemsSource == null) return;
-
-        foreach (var item in itemsSource)
-        {
-            var container = LstGamesWheelHorizontal.ContainerFromItem(item) as ListBoxItem;
-            if (container == null) continue;
-
-            var position = container.TranslatePoint(new Point(0, 0), LstGamesWheelHorizontal);
-            if (position.HasValue)
-            {
-                double itemCenterX = position.Value.X + (container.Bounds.Width / 2);
-                double distanceFromCenter = itemCenterX - centerOfList;
-                double maxDistance = centerOfList;
-
-                // Efecto CoverFlow/Rueda Horizontal
-                double ratio = Math.Clamp(distanceFromCenter / maxDistance, -1.0, 1.0);
-                double shiftY = 60 * (ratio * ratio); 
-                double rotationY = ratio * 45; // Inclinación lateral estilo CoverFlow
-
-                bool isSelected = container.IsSelected;
-                double scale = isSelected ? 1.2 : 0.8;
-                
-                container.ZIndex = isSelected ? 100 : (int)(50 - Math.Abs(distanceFromCenter) / 10);
-
-                var group = new TransformGroup();
-                // Simulación de rotación 3D usando Skew y ScaleX
-                group.Children.Add(new ScaleTransform(scale * (1.0 - Math.Abs(ratio) * 0.2), scale));
-                group.Children.Add(new SkewTransform(0, ratio * 10)); 
-                group.Children.Add(new TranslateTransform(0, shiftY));
-                container.RenderTransform = group;
-            }
-        }
-    }
 }
+

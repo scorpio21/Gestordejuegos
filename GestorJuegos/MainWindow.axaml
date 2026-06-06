@@ -1221,10 +1221,63 @@
                                                 </StackPanel>
 
                                                 <!-- Sección DESCRIPCIÓN (Caja Redondeada) -->
-                                                <StackPanel Spacing="8" Margin="10,0,10,20">
+                                                <StackPanel Spacing="8" Margin="10,0,10,0">
                                                     <TextBlock Text="DESCRIPCIÓN" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy"/>
                                                     <Border Background="{DynamicResource PanelBrush}" Padding="15" CornerRadius="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                                                         <TextBlock Name="TxtInfoDescription" Foreground="#cbd5e1" FontSize="13" TextWrapping="Wrap" Opacity="0.95" LineHeight="20"/>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <!-- Sección PLAYTIME COMMITMENT (Estilo HowLongToBeat) -->
+                                                <StackPanel Spacing="8" Margin="10,16,10,20">
+                                                    <TextBlock Text="PLAYTIME COMMITMENT" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy"/>
+                                                    <Border Background="{DynamicResource PanelBrush}" Padding="15" CornerRadius="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                                        <Grid ColumnDefinitions="*, *, *">
+                                                            <!-- Historia Principal -->
+                                                            <StackPanel Grid.Column="0" Spacing="4" HorizontalAlignment="Center">
+                                                                <TextBlock Text="HISTORIA" Foreground="#64748b" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                                <TextBlock Name="TxtPlaytimeMain" Text="--" Foreground="#00a2ff" FontSize="16" FontWeight="Heavy" HorizontalAlignment="Center"/>
+                                                                <TextBlock Text="Mínimo" Foreground="#475569" FontSize="9" HorizontalAlignment="Center"/>
+                                                            </StackPanel>
+
+                                                            <!-- Extras / Mixto -->
+                                                            <StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Center">
+                                                                <TextBlock Text="HISTORIA + EXTRA" Foreground="#64748b" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                                <TextBlock Name="TxtPlaytimeExtra" Text="--" Foreground="#10b981" FontSize="16" FontWeight="Heavy" HorizontalAlignment="Center"/>
+                                                                <TextBlock Text="Promedio" Foreground="#475569" FontSize="9" HorizontalAlignment="Center"/>
+                                                            </StackPanel>
+
+                                                            <!-- Completista -->
+                                                            <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
+                                                                <TextBlock Text="COMPLETISTA" Foreground="#64748b" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                                <TextBlock Name="TxtPlaytimeCompletionist" Text="--" Foreground="#f59e0b" FontSize="16" FontWeight="Heavy" HorizontalAlignment="Center"/>
+                                                                <TextBlock Text="Máximo" Foreground="#475569" FontSize="9" HorizontalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <!-- Sección RETRO ACHIEVEMENTS (Vista Colapsada) -->
+                                                <StackPanel Spacing="8" Margin="10,0,10,20" Name="PanelAchievementsSmall">
+                                                    <TextBlock Name="TxtAchievementsTitle" Text="RETRO ACHIEVEMENTS (0/0)" Classes="Header" Foreground="#94a3b8" FontSize="11" FontWeight="Heavy"/>
+                                                    <Border Background="#28282C" Padding="15" CornerRadius="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                                        <StackPanel Spacing="12">
+                                                            <!-- Barra de Progreso Fina -->
+                                                            <ProgressBar Name="ProgAchievements" Value="0" Maximum="100" Height="4" Background="#1e1e22" Foreground="#00a2ff" CornerRadius="2"/>
+                                                            
+                                                            <!-- Fila de Iconos -->
+                                                            <Grid ColumnDefinitions="*, Auto">
+                                                                <StackPanel Name="StackAchievementIcons" Orientation="Horizontal" Spacing="8">
+                                                                    <!-- Se rellena dinámicamente desde C# -->
+                                                                    <TextBlock Text="No hay logros disponibles" Foreground="#475569" FontSize="11" VerticalAlignment="Center"/>
+                                                                </StackPanel>
+
+                                                                <!-- Botón Expandir -->
+                                                                <Button Grid.Column="1" Content="Expandir" Click="BtnExpandAchievements_Click"
+                                                                        Padding="12,4" FontSize="10" FontWeight="Bold"
+                                                                        Background="Transparent" BorderBrush="#475569" BorderThickness="1" CornerRadius="15"/>
+                                                            </Grid>
+                                                        </StackPanel>
                                                     </Border>
                                                 </StackPanel>
                                                 
@@ -1917,6 +1970,51 @@
                 <Button Name="BtnCloseImageViewer" Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="25" Width="50" Height="50" Background="#33000000" Foreground="White" CornerRadius="25" Click="BtnCloseImageViewer_Click" FontSize="20"/>
             </Panel>
         </Border>
+
+        <!-- Overlay de Logros Expandido -->
+        <Panel Name="OverlayAchievements" IsVisible="False" Background="#88000000" ZIndex="700">
+            <Border Background="#1A1A1E" Width="480" HorizontalAlignment="Right" VerticalAlignment="Stretch" 
+                    BorderBrush="#333333" BorderThickness="1,0,0,0" Padding="20">
+                <Grid RowDefinitions="Auto, *">
+                    <!-- Cabecera -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,10,0,25">
+                        <TextBlock Text="RETRO ACHIEVEMENTS" FontSize="16" FontWeight="Heavy" Foreground="White" VerticalAlignment="Center"/>
+                        <Button Grid.Column="1" Content="✕" Click="BtnCloseAchievements_Click" 
+                                Background="Transparent" Foreground="Gray" FontSize="22" Padding="10"/>
+                    </Grid>
+
+                    <!-- Lista de Logros con Scroll -->
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl Name="ItemsAchievementsList" x:CompileBindings="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#232327" Margin="0,6" Padding="15" CornerRadius="15" BorderBrush="#2d2d31" BorderThickness="1">
+                                        <Grid ColumnDefinitions="Auto, *, Auto">
+                                            <!-- Icono -->
+                                            <Border Grid.Column="0" Width="54" Height="54" CornerRadius="10" ClipToBounds="True" Background="#1a1a1d">
+                                                <Image Source="{Binding IconUrl, Converter={StaticResource ByteToBitmap}}" Opacity="1" Stretch="UniformToFill"/>
+                                            </Border>
+                                            
+                                            <!-- Textos -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0">
+                                                <TextBlock Text="{Binding Title}" Foreground="White" FontWeight="Bold" FontSize="14"/>
+                                                <TextBlock Text="{Binding Description}" Foreground="#94a3b8" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Estado -->
+                                            <Panel Grid.Column="2" VerticalAlignment="Center" Margin="10,0,0,0">
+                                                <TextBlock Text="✓" Foreground="#10b981" FontSize="22" IsVisible="{Binding IsUnlocked}"/>
+                                                <TextBlock Text="🔒" Foreground="#475569" FontSize="18" IsVisible="{Binding !IsUnlocked}"/>
+                                            </Panel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Panel>
 
     </Grid>
 </Window>
