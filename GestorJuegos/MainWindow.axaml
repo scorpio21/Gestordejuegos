@@ -15,9 +15,6 @@
         WindowState="Maximized"
         Icon="/img/iconoventana.png">
 
-    <Window.Styles>
-        <StyleInclude Source="/Styles.axaml"/>
-    </Window.Styles>
 
     <Grid>
         <!-- FONDO DINÁMICO (Inmersivo) -->

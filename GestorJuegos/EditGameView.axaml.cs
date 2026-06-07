@@ -24,7 +24,6 @@ public partial class EditGameView : UserControl
     private byte[]? _currentCover;
     private ObservableCollection<string> _currentRoms = new();
 
-    // Eventos para comunicación con MainWindow
     public event EventHandler? GameSaved;
     public event EventHandler? RequestClose;
     public event Action<string>? RequestMessage;
@@ -37,7 +36,6 @@ public partial class EditGameView : UserControl
 
     private void SetupInternalEvents()
     {
-        // Enlazamos los eventos que antes estaban en el XAML del MainWindow
         this.FindControl<Button>("BtnCancelEditGameTop")!.Click += (s, e) => OnCancel();
         this.FindControl<Button>("BtnCancelEditGame")!.Click += (s, e) => OnCancel();
         this.FindControl<Button>("BtnSave")!.Click += BtnSave_Click;
@@ -60,7 +58,6 @@ public partial class EditGameView : UserControl
 
         this.FindControl<TextBlock>("TxtEditGameTitle")!.Text = game.Id == 0 ? "Añadir Nuevo Juego" : "Editar Juego";
 
-        // Cargar datos en controles
         this.FindControl<TextBox>("TxtName")!.Text = game.Name;
         this.FindControl<NumericUpDown>("NumYear")!.Value = game.Year;
         this.FindControl<TextBox>("TxtGenre")!.Text = game.Genre;
@@ -71,7 +68,6 @@ public partial class EditGameView : UserControl
         this.FindControl<TextBox>("TxtVersion")!.Text = game.Version;
         this.FindControl<CheckBox>("ChkIsFavorite")!.IsChecked = game.IsFavorite;
 
-        // Play Status
         var cmbStatus = this.FindControl<ComboBox>("CmbPlayStatus")!;
         cmbStatus.SelectedIndex = 0;
         foreach (var item in cmbStatus.Items.OfType<ComboBoxItem>())
@@ -87,7 +83,6 @@ public partial class EditGameView : UserControl
         this.FindControl<TextBlock>("TxtPlayCount")!.Text = game.PlayCount.ToString();
         this.FindControl<TextBlock>("TxtDateAdded")!.Text = game.DateAdded.ToString("dd/MM/yyyy");
 
-        // ROMs
         _currentRoms.Clear();
         if (!string.IsNullOrEmpty(game.RomPath)) _currentRoms.Add(game.RomPath);
         if (!string.IsNullOrEmpty(game.AdditionalRoms))
@@ -99,7 +94,6 @@ public partial class EditGameView : UserControl
         this.FindControl<TextBox>("TxtOverrideEmulator")!.Text = game.OverrideEmulatorPath;
         this.FindControl<TextBox>("TxtOverrideArgs")!.Text = game.OverrideLaunchArguments;
 
-        // Región
         var cmbRegion = this.FindControl<ComboBox>("CmbRegion")!;
         cmbRegion.SelectedIndex = 0;
         foreach (var item in cmbRegion.Items.OfType<ComboBoxItem>())
@@ -111,7 +105,6 @@ public partial class EditGameView : UserControl
             }
         }
 
-        // Arte
         var cmbArt = this.FindControl<ComboBox>("CmbEditArtType")!;
         cmbArt.SelectedIndex = 0;
         foreach (var item in cmbArt.Items.OfType<ComboBoxItem>())
@@ -320,8 +313,6 @@ public partial class EditGameView : UserControl
 
     private void BtnSyncMasterDbLocal_Click(object? sender, RoutedEventArgs e)
     {
-        // Esta lógica solía estar en MainWindow, si es necesaria se puede implementar aquí 
-        // llamando a un servicio de metadatos.
         RequestMessage?.Invoke("Sincronización con Base de Datos Local no implementada en este módulo aún.");
     }
 

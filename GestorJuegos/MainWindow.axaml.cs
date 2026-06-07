@@ -235,10 +235,10 @@ public partial class MainWindow : Window
                                 }
 
                                 // 8. Carga Dinámica de Efectos Hover
-                                if (themeConfig != null)
+                                if (themeConfig != null && themeConfig.Colors != null)
                                 {
                                     // Determinar el color del hover (si no está definido en el tema, se usa el color de acento)
-                                    if (!themeConfig.Colors.TryGetValue("HoverBorderBrush", out string? hoverColorStr))
+                                    if (!themeConfig.Colors.TryGetValue("HoverBorderBrush", out string? hoverColorStr) || string.IsNullOrEmpty(hoverColorStr))
                                     {
                                         this.Resources["HoverBorderBrush"] = this.Resources["AccentBrush"];
                                     }
@@ -249,13 +249,13 @@ public partial class MainWindow : Window
 
                                     // Determinar el desenfoque de brillo hover (HoverGlowBlur) desde Metrics
                                     double glowBlur = 12; // Valor por defecto
-                                    if (themeConfig.Metrics != null && themeConfig.Metrics.TryGetValue("HoverGlowBlur", out string? glowStr) && double.TryParse(glowStr, out double gb))
+                                    if (themeConfig.Metrics != null && themeConfig.Metrics.TryGetValue("HoverGlowBlur", out string? glowStr) && glowStr != null && double.TryParse(glowStr, out double gb))
                                     {
                                         glowBlur = gb;
                                     }
 
-                                    var hoverBrush = (Avalonia.Media.SolidColorBrush)this.Resources["HoverBorderBrush"];
-                                    if (glowBlur > 0)
+                                    var hoverBrush = this.Resources["HoverBorderBrush"] as Avalonia.Media.SolidColorBrush;
+                                    if (hoverBrush != null && glowBlur > 0)
                                     {
                                         this.Resources["HoverBoxShadow"] = new Avalonia.Media.BoxShadows(new Avalonia.Media.BoxShadow
                                         {
@@ -613,9 +613,10 @@ public partial class MainWindow : Window
         {
             // Al seleccionar un juego de la búsqueda global, cargamos su plataforma
             _selectedPlatform = game.Platform;
+            if (_selectedPlatform == null) return;
+
             PnlGlobalSearch.IsVisible = false;
             PnlDashboard.IsVisible = false;
-            // PnlHeaderToggles.IsVisible = true; (Eliminado)
             PnlPagination.IsVisible = true;
             
             TxtSelectedPlatform.Text = $"Plataforma: {_selectedPlatform.Name}";
@@ -2188,7 +2189,7 @@ public partial class MainWindow : Window
                 {
                     if (filter.Item1 == "PLATFORM") 
                     { 
-                        query = query.Where(g => g.Platform.Name == filter.Item2); 
+                        query = query.Where(g => g.Platform != null && g.Platform.Name == filter.Item2); 
                     }
                     else if (filter.Item1 == "CATEGORY") 
                     { 
@@ -2198,7 +2199,7 @@ public partial class MainWindow : Window
                             .Where(p => p.Category == filter.Item2)
                             .Select(p => p.Name)
                             .ToList();
-                        query = query.Where(g => platformNames.Contains(g.Platform.Name)); 
+                        query = query.Where(g => g.Platform != null && platformNames.Contains(g.Platform.Name)); 
                     }
                     else if (filter.Item1 == "GENRE") 
                     { 

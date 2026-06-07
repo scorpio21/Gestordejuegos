@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Recursos Dinámicos de Tema (Cargados por código) -->
+    <FontFamily x:Key="MainFont">Default</FontFamily>
+    <FontFamily x:Key="HeaderFont">Default</FontFamily>
+    <CornerRadius x:Key="ThemeCornerRadius">8</CornerRadius>
+    
+    <SolidColorBrush x:Key="AccentBrush" Color="#10b981"/>
+    <SolidColorBrush x:Key="PanelBrush" Color="#1e293b"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#334155"/>
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#64748b"/>
+    <Color x:Key="DeepDarkColor">#0f172a</Color>
+    <SolidColorBrush x:Key="DeepDarkBrush" Color="#0f172a"/>
+</ResourceDictionary>
