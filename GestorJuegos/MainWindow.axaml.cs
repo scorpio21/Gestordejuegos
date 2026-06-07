@@ -528,6 +528,10 @@ public partial class MainWindow : Window
         OverlayEditGame.RequestClose += (s, e) => OverlayEditGame.IsVisible = false;
         OverlayEditGame.GameSaved += (s, e) => LoadGames();
         OverlayEditGame.RequestMessage += (msg) => ShowMessage(msg);
+
+        // Forzar Vista Galería al inicio
+        BtnViewGrid_Click(null, new RoutedEventArgs());
+        UpdateMenuCheckmarks();
     }
 
     private string GetExternalFolderName(string friendlyName)
