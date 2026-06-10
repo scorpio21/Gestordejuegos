@@ -27,6 +27,11 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 *   **Limpieza de ScannerService**:
     - Corregidos errores de tipado y namespaces faltantes.
     - Sincronización de metadatos de géneros y regiones mejorada.
+*   **Limpieza de Scrapers Online**:
+    - Eliminada por completo la búsqueda y raspado de Vimm's Lair en favor de la exportación local desde carpetas.
+    - Eliminadas todas las referencias, logs y menús relacionados con Vimm en la ventana principal.
+*   **Corrección de Errores de UI**:
+    - Restaurados manejadores de eventos críticos (`GameItem_PointerEntered`) que causaban fallos de compilación tras la limpieza de código.
 
 ### v1.5.0-Dev (7 Junio 2026) - Fase 4: Arquitectura Modular y ScannerService
 *   **Modularización de Overlays (Logros y Plataformas)**:
@@ -238,7 +243,9 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ### v1.0.9.6
 - **Importador Nativo Biblioteca Externa**: Lectura directa de XML de plataformas con extracción de metadatos (Géneros, Años, Rutas, Favoritos).
-- **Limpieza de Scrapers**: Eliminación de IGDB, TGDB, GameTDB y PalSnes. Vimm's Lair queda como única fuente online.
+*   **Limpieza de Scrapers**:
+    - Eliminadas por completo todas las fuentes online (IGDB, Vimm, TGDB, GameTDB y PalSnes) en favor de la exportación local y gestión de base de datos multimedia propia.
+    - La aplicación es ahora 100% offline y autónoma.
 - **Refactorización**: Creación de `IgdbSearchResult.cs` como modelo compartido para desacoplar la UI de los servicios eliminados.
 
 ### v1.0.9.5

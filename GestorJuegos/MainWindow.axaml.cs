@@ -30,7 +30,6 @@ public partial class MainWindow : Window
     private string? _selectedCategory;
     private Game? _selectedGame;
     private byte[]? _currentCover;
-    private readonly VimmVaultService _vimmService;
     private System.Collections.Generic.List<Game> _currentPlatformGames = new System.Collections.Generic.List<Game>();
     private int _currentPage = 1;
     private const int PageSize = 100;
@@ -221,20 +220,20 @@ public partial class MainWindow : Window
                                 {
                                     if (themeConfig.PreferredView.Equals("List", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        if (BtnViewList != null) BtnViewList_Click(null, new RoutedEventArgs());
+                                        BtnViewList_Click(null, new RoutedEventArgs());
                                     }
                                     else if (themeConfig.PreferredView.Equals("Wheel", StringComparison.OrdinalIgnoreCase) || 
                                              themeConfig.PreferredView.Equals("VerticalWheel", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        if (BtnViewWheelVertical != null) BtnViewWheelVertical_Click(null, new RoutedEventArgs());
+                                        BtnViewWheelVertical_Click(null, new RoutedEventArgs());
                                     }
                                     else if (themeConfig.PreferredView.Equals("HorizontalWheel", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal_Click(null, new RoutedEventArgs());
+                                        BtnViewWheelHorizontal_Click(null, new RoutedEventArgs());
                                     }
                                     else
                                     {
-                                        if (BtnViewGrid != null) BtnViewGrid_Click(null, new RoutedEventArgs());
+                                        BtnViewGrid_Click(null, new RoutedEventArgs());
                                     }
                                 }
 
@@ -462,7 +461,6 @@ public partial class MainWindow : Window
         }
 
         _gameService = new GameService();
-        _vimmService = new VimmVaultService();
         _scannerService = new ScannerService(_gameService);
         _launcherService = new LauncherService(_gameService, _settings);
 
@@ -485,7 +483,6 @@ public partial class MainWindow : Window
 
         AddHandler(DragDrop.DropEvent, Window_Drop);
 
-        BtnAddGame.Click += BtnAddGame_Click;
         BtnEditGame.Click += BtnEditGame_Click;
         BtnDelete.Click += BtnDelete_Click;
         
@@ -510,15 +507,24 @@ public partial class MainWindow : Window
 
         BtnClosePlatformsWall.Click += (s, e) => { GestorJuegos.Utils.SoundHelper.PlayBack(); OverlayPlatformsWall.IsVisible = false; };
         
-        BtnShowStats.Click += (s, e) => { GestorJuegos.Utils.SoundHelper.PlaySelect(); ShowFullStats(); };
-        
-        BtnViewList.Click += BtnViewList_Click;
-        BtnViewGrid.Click += BtnViewGrid_Click;
-        BtnPrevPage.Click += BtnPrevPage_Click;
-        BtnNextPage.Click += BtnNextPage_Click;
+        TopBar.SearchTextChanged += (s, search) => {
+            _currentPage = 1;
+            ApplySearchFilter();
+        };
+        TopBar.QuickFavoriteClicked += (s, e) => BtnQuickFavorite_Click(null, new RoutedEventArgs());
+        TopBar.ToggleThemeRequested += (s, e) => BtnToggleTheme_Click(null, new RoutedEventArgs());
+        TopBar.AddGameRequested += (s, e) => BtnAddGame_Click(null, new RoutedEventArgs());
+        TopBar.ShowStatsRequested += (s, e) => { SoundHelper.PlaySelect(); ShowFullStats(); };
+        TopBar.ManagePlatformsRequested += (s, e) => BtnManagePlatforms_Click(null, new RoutedEventArgs());
+        TopBar.ViewToggleClicked += OnTopBarViewToggle;
+        TopBar.MenuActionRequested += OnTopBarMenuAction;
+        TopBar.ViewActionRequested += OnTopBarViewAction;
+        TopBar.SortActionRequested += OnTopBarSortAction;
+        TopBar.ArtTypeActionRequested += OnTopBarArtTypeAction;
+        TopBar.BadgeActionRequested += OnTopBarBadgeAction;
+        TopBar.HelpActionRequested += OnTopBarHelpAction;
+        TopBar.SortAscendingToggled += (s, e) => MenuSortAscending_Click(null, new RoutedEventArgs());
 
-        BtnManagePlatforms.Click += BtnManagePlatforms_Click;
-        BtnToggleTheme.Click += BtnToggleTheme_Click;
         BtnEditPlatformQuick.Click += BtnEditPlatformQuick_Click;
         BtnClosePlatformDetails.Click += BtnClosePlatformDetails_Click;
 
@@ -660,93 +666,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void BtnConfirmVimm_Click(object? sender, RoutedEventArgs e)
-    {
-        SoundHelper.PlaySelect();
-        if (CmbVimmSystem.SelectedItem is KeyValuePair<string, string> selected)
-        {
-            // Validar existencia rápida antes de empezar el lote
-            BtnConfirmVimm.IsEnabled = false;
-            var testGame = _currentPlatformGames.FirstOrDefault()?.Name ?? "Sonic";
-            var testResult = await _vimmService.FindGameIdAsync(selected.Value, testGame);
-            
-            if (testResult == null)
-            {
-                // Si falla el primero, probamos con una búsqueda genérica para confirmar si el sistema existe
-                var checkSystem = await _vimmService.SearchGamesAsync(selected.Value, "A");
-                if (checkSystem.Count == 0)
-                {
-                    ShowMessage($"El sistema '{selected.Key}' no parece devolver resultados en Vimm's Lair.\nVerifique la selección.");
-                    BtnConfirmVimm.IsEnabled = true;
-                    return;
-                }
-            }
-
-            OverlayVimmSystem.IsVisible = false;
-            BtnConfirmVimm.IsEnabled = true;
-            StartVimmBatchScrape(selected.Value);
-        }
-    }
-
-    private async void StartVimmBatchScrape(string systemCode)
-    {
-        if (_selectedPlatform == null) return;
-
-        var gamesWithoutCover = _gameService.GetGamesByPlatform(_selectedPlatform.Id)
-                                            .Where(g => g.Cover == null || g.Cover.Length == 0)
-                                            .ToList();
-
-        if (gamesWithoutCover.Count == 0)
-        {
-            ShowMessage("Todos los juegos de esta plataforma ya tienen carátula.");
-            return;
-        }
-
-        ShowMessage($"Iniciando descarga desde Vimm's Lair ({systemCode}) para {gamesWithoutCover.Count} juegos...");
-        BtnCloseMessage.IsEnabled = false;
-
-        await System.Threading.Tasks.Task.Run(async () =>
-        {
-            int successCount = 0;
-            for (int i = 0; i < gamesWithoutCover.Count; i++)
-            {
-                var game = gamesWithoutCover[i];
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    TxtMessageContent.Text = $"[Vimm] Descargando '{game.Name}' ({i + 1}/{gamesWithoutCover.Count})...";
-                });
-
-                try
-                {
-                    var vimmId = await _vimmService.FindGameIdAsync(systemCode, game.Name, game.Region, game.Languages);
-                    if (vimmId.HasValue)
-                    {
-                        var coverData = await _vimmService.DownloadBoxArtAsync(vimmId.Value);
-                        if (coverData != null && coverData.Length > 0)
-                        {
-                            game.Cover = coverData;
-                            using (var context = new GestorJuegos.Data.AppDbContext())
-                            {
-                                context.Games.Update(game);
-                                context.SaveChanges();
-                            }
-                            successCount++;
-                        }
-                    }
-                    await System.Threading.Tasks.Task.Delay(500); // Respetar servidor
-                }
-                catch { }
-            }
-
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                BtnCloseMessage.IsEnabled = true;
-                LoadGames();
-                ShowMessage($"¡Proceso Vimm completado! Se descargaron {successCount} carátulas.");
-            });
-        });
-    }
-
     private string[][] _keyboardLayout = new string[][]
     {
         new string[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" },
@@ -809,16 +728,16 @@ public partial class MainWindow : Window
 
     private void BtnToggleGamepad_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (BtnToggleGamepad.IsChecked == true)
+        if (TopBar.IsGamepadModeEnabled)
         {
-            BtnToggleGamepad.Content = "🎮 Mando: ON";
-            BtnToggleGamepad.Foreground = Avalonia.Media.Brush.Parse("#10b981");
+            TopBar.GamepadButtonContent = "🎮 Mando: ON";
+            TopBar.GamepadButtonForeground = Avalonia.Media.Brush.Parse("#10b981");
             _gamepadTimer?.Start();
         }
         else
         {
-            BtnToggleGamepad.Content = "🎮 Mando: OFF";
-            BtnToggleGamepad.Foreground = Avalonia.Media.Brush.Parse("#ef4444");
+            TopBar.GamepadButtonContent = "🎮 Mando: OFF";
+            TopBar.GamepadButtonForeground = Avalonia.Media.Brush.Parse("#ef4444");
             _gamepadTimer?.Stop();
         }
     }
@@ -909,7 +828,7 @@ public partial class MainWindow : Window
                 }
                 else if (key == "OK")
                 {
-                    TxtSearchGame.Text = TxtKeyboardInput.Text;
+                    TopBar.SetSearchText(TxtKeyboardInput.Text);
                     OverlayKeyboard.IsVisible = false;
                 }
                 else
@@ -923,7 +842,7 @@ public partial class MainWindow : Window
             }
             if (buttons.HasFlag(Vortice.XInput.GamepadButtons.Start))
             {
-                TxtSearchGame.Text = TxtKeyboardInput.Text;
+                TopBar.SetSearchText(TxtKeyboardInput.Text);
                 OverlayKeyboard.IsVisible = false;
             }
             return;
@@ -931,7 +850,7 @@ public partial class MainWindow : Window
 
         if (buttons.HasFlag(Vortice.XInput.GamepadButtons.X))
         {
-            BtnQuickFavorite.IsChecked = !BtnQuickFavorite.IsChecked;
+            TopBar.IsQuickFavoriteChecked = !TopBar.IsQuickFavoriteChecked;
             BtnQuickFavorite_Click(null, new RoutedEventArgs());
             return;
         }
@@ -948,21 +867,15 @@ public partial class MainWindow : Window
                 OverlayMessage.IsVisible = false;
                 return;
             }
-            if (OverlayIgdbSearch.IsVisible)
-            {
-                // BtnSelectIgdb_Click eliminado tras modularización
-                OverlayIgdbSearch.IsVisible = false;
-                return;
-            }
             if (_gamepadInHeader)
             {
                 var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
                 var focusedElement = topLevel?.FocusManager?.GetFocusedElement() as Avalonia.Controls.Control;
 
-                if (focusedElement == TxtSearchGame)
+                if (focusedElement == TopBar.SearchBox)
                 {
                     _kbdX = 0; _kbdY = 0;
-                    TxtKeyboardInput.Text = TxtSearchGame.Text;
+                    TxtKeyboardInput.Text = TopBar.GetSearchText();
                     UpdateKeyboardHighlight();
                     OverlayKeyboard.IsVisible = true;
                 }
@@ -998,16 +911,6 @@ public partial class MainWindow : Window
             if (OverlayMessage.IsVisible)
             {
                 OverlayMessage.IsVisible = false;
-                return;
-            }
-            if (OverlayIgdbSearch.IsVisible)
-            {
-                OverlayIgdbSearch.IsVisible = false;
-                return;
-            }
-            if (OverlayAddPlatform.IsVisible)
-            {
-                OverlayAddPlatform.IsVisible = false;
                 return;
             }
             if (OverlayManagePlatforms.IsVisible)
@@ -1143,7 +1046,7 @@ public partial class MainWindow : Window
             {
                 // Move focus to Header (Search)
                 _gamepadInHeader = true;
-                TxtSearchGame.Focus(); // Set native focus
+                TopBar.FocusSearch(); // Set native focus
                 activeList.SelectedIndex = -1;
                 return;
             }
@@ -1347,18 +1250,6 @@ public partial class MainWindow : Window
         OverlayMessage.IsVisible = false;
     }
 
-    private void BtnAddPlatform_Click(object? sender, RoutedEventArgs e)
-    {
-        TxtNewPlatformName.Text = string.Empty;
-        CmbNewPlatformCategory.SelectedIndex = 0; // Default to Consoles
-        OverlayAddPlatform.IsVisible = true;
-    }
-
-    private void BtnCancelPlatform_Click(object? sender, RoutedEventArgs e)
-    {
-        OverlayAddPlatform.IsVisible = false;
-    }
-
     private string DetectCategory(string platformName)
     {
         string name = platformName.ToLower();
@@ -1388,80 +1279,37 @@ public partial class MainWindow : Window
         return "Consoles";
     }
 
-    private void BtnSavePlatform_Click(object? sender, RoutedEventArgs e)
-    {
-        try
-        {
-            var platformName = TxtNewPlatformName.Text?.Trim();
-            if (!string.IsNullOrEmpty(platformName))
-            {
-                string category = (CmbNewPlatformCategory.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Consoles";
-                _gameService.AddPlatform(new Platform { Name = platformName, Category = category });
-                LoadPlatforms();
-            }
-            OverlayAddPlatform.IsVisible = false;
-        }
-        catch (Exception ex)
-        {
-            ShowMessage($"Error al guardar la plataforma: {ex.Message}");
-        }
-    }
-
     private void BtnViewList_Click(object? sender, RoutedEventArgs e)
     {
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
-        if (BtnViewList != null) BtnViewList.IsChecked = true;
-        if (BtnViewGrid != null) BtnViewGrid.IsChecked = false;
-        if (BtnViewWheelVertical != null) BtnViewWheelVertical.IsChecked = false;
-        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.IsChecked = false;
+        TopBar.SetViewMode(false);
         
         LstGames.IsVisible = true;
         LstGamesGrid.IsVisible = false;
         LstGamesWheelVertical.IsVisible = false;
         LstGamesWheelHorizontal.IsVisible = false;
-        
-        if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#444444");
-        if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
-        if (BtnViewWheelVertical != null) BtnViewWheelVertical.Background = Avalonia.Media.Brush.Parse("#222222");
-        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.Background = Avalonia.Media.Brush.Parse("#222222");
     }
 
     private void BtnViewGrid_Click(object? sender, RoutedEventArgs e)
     {
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
-        if (BtnViewGrid != null) BtnViewGrid.IsChecked = true;
-        if (BtnViewList != null) BtnViewList.IsChecked = false;
-        if (BtnViewWheelVertical != null) BtnViewWheelVertical.IsChecked = false;
-        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.IsChecked = false;
+        TopBar.SetViewMode(true);
         
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = true;
         LstGamesWheelVertical.IsVisible = false;
         LstGamesWheelHorizontal.IsVisible = false;
-        
-        if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
-        if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#444444");
-        if (BtnViewWheelVertical != null) BtnViewWheelVertical.Background = Avalonia.Media.Brush.Parse("#222222");
-        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.Background = Avalonia.Media.Brush.Parse("#222222");
     }
 
     private void BtnViewWheelVertical_Click(object? sender, RoutedEventArgs e)
     {
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
-        if (BtnViewWheelVertical != null) BtnViewWheelVertical.IsChecked = true;
-        if (BtnViewGrid != null) BtnViewGrid.IsChecked = false;
-        if (BtnViewList != null) BtnViewList.IsChecked = false;
-        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.IsChecked = false;
+        TopBar.SetViewMode(false, false, true, false);
 
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = false;
         LstGamesWheelVertical.IsVisible = true;
         LstGamesWheelHorizontal.IsVisible = false;
-
-        if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
-        if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
-        if (BtnViewWheelVertical != null) BtnViewWheelVertical.Background = Avalonia.Media.Brush.Parse("#444444");
-        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.Background = Avalonia.Media.Brush.Parse("#222222");
     }
 
     private bool _isLightTheme = false;
@@ -1471,10 +1319,7 @@ public partial class MainWindow : Window
         SoundHelper.PlaySelect();
         _isLightTheme = !_isLightTheme;
 
-        if (BtnToggleTheme != null)
-        {
-            BtnToggleTheme.Content = _isLightTheme ? "☀️" : "🌙";
-        }
+        TopBar.ThemeIcon = _isLightTheme ? "☀️" : "🌙";
 
         // Sobrescribir recursos dinámicos para el cambio en caliente
         if (_isLightTheme)
@@ -1496,27 +1341,19 @@ public partial class MainWindow : Window
     private void BtnViewWheelHorizontal_Click(object? sender, RoutedEventArgs e)
     {
         GestorJuegos.Utils.SoundHelper.PlayNavigation();
-        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.IsChecked = true;
-        if (BtnViewGrid != null) BtnViewGrid.IsChecked = false;
-        if (BtnViewList != null) BtnViewList.IsChecked = false;
-        if (BtnViewWheelVertical != null) BtnViewWheelVertical.IsChecked = false;
+        TopBar.SetViewMode(false, false, false, true);
 
         LstGames.IsVisible = false;
         LstGamesGrid.IsVisible = false;
         LstGamesWheelVertical.IsVisible = false;
         LstGamesWheelHorizontal.IsVisible = true;
-
-        if (BtnViewList != null) BtnViewList.Background = Avalonia.Media.Brush.Parse("#222222");
-        if (BtnViewGrid != null) BtnViewGrid.Background = Avalonia.Media.Brush.Parse("#222222");
-        if (BtnViewWheelVertical != null) BtnViewWheelVertical.Background = Avalonia.Media.Brush.Parse("#222222");
-        if (BtnViewWheelHorizontal != null) BtnViewWheelHorizontal.Background = Avalonia.Media.Brush.Parse("#444444");
     }
 
     private void RestoreActiveViewVisibility()
     {
-        if (BtnViewList?.IsChecked == true) BtnViewList_Click(null, new RoutedEventArgs());
-        else if (BtnViewWheelVertical?.IsChecked == true) BtnViewWheelVertical_Click(null, new RoutedEventArgs());
-        else if (BtnViewWheelHorizontal?.IsChecked == true) BtnViewWheelHorizontal_Click(null, new RoutedEventArgs());
+        if (TopBar.IsListView) BtnViewList_Click(null, new RoutedEventArgs());
+        else if (TopBar.IsWheelVerticalView) BtnViewWheelVertical_Click(null, new RoutedEventArgs());
+        else if (TopBar.IsWheelHorizontalView) BtnViewWheelHorizontal_Click(null, new RoutedEventArgs());
         else BtnViewGrid_Click(null, new RoutedEventArgs());
     }
 
@@ -2531,10 +2368,7 @@ public partial class MainWindow : Window
         try
         {
             int allGamesCount = context.Games.Count();
-            if (TxtGameStatusInfo != null)
-            {
-                TxtGameStatusInfo.Text = $"Mostrando 0 de {allGamesCount} del total de juegos.";
-            }
+            TopBar.SetGameStatusInfo($"Mostrando 0 de {allGamesCount} del total de juegos.");
         }
         catch { }
     }
@@ -2697,45 +2531,9 @@ public partial class MainWindow : Window
     {
         try
         {
-            File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vimm_debug_log.txt"), $"[UI Debug] {message}{Environment.NewLine}");
+            File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "debug_log.txt"), $"[UI Debug] {message}{Environment.NewLine}");
         }
         catch { }
-    }
-
-    private void RunBatchScrape(string source)
-    {
-        LogDebug($"RunBatchScrape llamado con source: {source}");
-        if (_selectedPlatform == null)
-        {
-            LogDebug("Error: _selectedPlatform es nulo");
-            ShowMessage("Por favor, selecciona primero la plataforma a la que quieres descargar carátulas.");
-            return;
-        }
-
-        if (source == "Vimm's Lair")
-        {
-            LogDebug("Iniciando flujo de Batch Scrape para Vimm's Lair");
-            var platforms = VimmVaultService.GetSupportedPlatforms();
-            CmbVimmSystem.ItemsSource = platforms;
-            
-            // Intentar pre-seleccionar la mejor coincidencia
-            var currentName = _selectedPlatform.Name.ToLower();
-            var bestMatch = platforms.FirstOrDefault(p => currentName.Contains(p.Key.ToLower()) || p.Key.ToLower().Contains(currentName));
-            
-            if (bestMatch.Key != null)
-            {
-                LogDebug($"Pre-seleccionando sistema Vimm: {bestMatch.Key} para plataforma: {_selectedPlatform.Name}");
-                CmbVimmSystem.SelectedItem = bestMatch;
-            }
-            else 
-            {
-                LogDebug($"No se encontró coincidencia automática para: {_selectedPlatform.Name}. Seleccionando primero por defecto.");
-                CmbVimmSystem.SelectedIndex = 0;
-            }
-
-            OverlayVimmSystem.IsVisible = true;
-            return;
-        }
     }
 
     private async void MenuImportDat_Click(object? sender, RoutedEventArgs e)
@@ -3205,17 +3003,12 @@ public partial class MainWindow : Window
         });
     }
 
-    private void BtnCancelIgdb_Click(object? sender, RoutedEventArgs e)
-    {
-        OverlayIgdbSearch.IsVisible = false;
-    }
-
-    private void GameItem_PointerEntered(object? sender, PointerEventArgs e)
+    private void SidebarItem_PointerEntered(object? sender, PointerEventArgs e)
     {
         SoundHelper.PlayNavigation();
     }
 
-    private void SidebarItem_PointerEntered(object? sender, PointerEventArgs e)
+    private void GameItem_PointerEntered(object? sender, PointerEventArgs e)
     {
         SoundHelper.PlayNavigation();
     }
@@ -3243,7 +3036,7 @@ public partial class MainWindow : Window
     {
         if (_currentPlatformGames == null) return;
         
-        var queryStr = TxtSearchGame?.Text?.Trim().ToLower() ?? "";
+        var queryStr = TopBar.GetSearchText().Trim().ToLower();
         var filtered = _currentPlatformGames.AsEnumerable();
 
         if (!string.IsNullOrEmpty(queryStr))
@@ -3251,7 +3044,7 @@ public partial class MainWindow : Window
             filtered = filtered.Where(g => g.Name.ToLower().Contains(queryStr) || (g.Genre != null && g.Genre.ToLower().Contains(queryStr)));
         }
 
-        if (BtnQuickFavorite?.IsChecked == true)
+        if (TopBar.IsQuickFavoriteChecked)
         {
             filtered = filtered.Where(g => g.IsFavorite);
         }
@@ -3384,10 +3177,7 @@ public partial class MainWindow : Window
             {
                 allGamesCount = context.Games.Count();
             }
-            if (TxtGameStatusInfo != null)
-            {
-                TxtGameStatusInfo.Text = $"Mostrando {totalItems} de {allGamesCount} del total de juegos.";
-            }
+            TopBar.SetGameStatusInfo($"Mostrando {totalItems} de {allGamesCount} del total de juegos.");
         }
         catch { }
     }
@@ -3412,7 +3202,7 @@ public partial class MainWindow : Window
 
     private void BtnClearFilters_Click(object? sender, RoutedEventArgs e)
     {
-        if (BtnQuickFavorite != null) BtnQuickFavorite.IsChecked = false;
+        TopBar.IsQuickFavoriteChecked = false;
         if (CmbFilterRegion != null) CmbFilterRegion.SelectedIndex = 0;
         if (NumFilterYear != null) NumFilterYear.Value = 0;
         
@@ -3963,7 +3753,7 @@ public partial class MainWindow : Window
             "PASOS A SEGUIR:\n" +
             "1. Selecciona la carpeta que contiene las ROMs o ejecutables de una consola.\n" +
             "2. El sistema creará entradas individuales por cada archivo compatible detectado.\n" +
-            "3. Tras la importación, puedes usar el botón 'Base Maestra' o 'Vimm' para descargar automáticamente carátulas y descripciones.\n\n" +
+            "3. Tras la importación, el sistema buscará automáticamente carátulas y descripciones en tu biblioteca local.\n\n" +
             "CONSEJO DE ORO:\n" +
             "Para un reconocimiento del 100%, intenta que el nombre del archivo coincida con el título oficial del juego.";
 
@@ -4022,9 +3812,7 @@ public partial class MainWindow : Window
             "• Sistema de Miniaturas con SkiaSharp.\n" +
             "• Drag & Drop recursivo de carpetas.\n" +
             "• Estadísticas visuales en el Dashboard.\n" +
-            "• Filtros temporales y ordenación avanzada.\n\n" +
-            "🙏 AGRADECIMIENTOS:\n" +
-            "IGDB, TheGamesDB, GameTDB, PalSnesCovers y Vimm's Lair.";
+            "• Filtros temporales y ordenación avanzada.";
 
         ShowMessage(aboutText);
     }
@@ -4325,30 +4113,6 @@ public partial class MainWindow : Window
             SaveSettings();
             ShowMessage("Configuración guardada correctamente.");
         }
-    }
-
-    private void MenuBatchScrapeVimm_Click(object? sender, RoutedEventArgs e)
-    {
-        // Abrir el selector de sistema de Vimm
-        var platforms = VimmVaultService.GetSupportedPlatforms();
-        CmbVimmSystem.ItemsSource = platforms;
-        
-        // Intentar pre-seleccionar si hay plataforma seleccionada
-        if (_selectedPlatform != null)
-        {
-            var bestMatch = platforms.FirstOrDefault(p => p.Key.Contains(_selectedPlatform.Name, StringComparison.OrdinalIgnoreCase) || 
-                                                        _selectedPlatform.Name.Contains(p.Key, StringComparison.OrdinalIgnoreCase));
-            if (bestMatch.Key != null) CmbVimmSystem.SelectedItem = bestMatch;
-            else CmbVimmSystem.SelectedIndex = 0;
-        }
-        else CmbVimmSystem.SelectedIndex = 0;
-
-        OverlayVimmSystem.IsVisible = true;
-    }
-
-    private void BtnCancelVimm_Click(object? sender, RoutedEventArgs e)
-    {
-        OverlayVimmSystem.IsVisible = false;
     }
 
     private void BtnCancelExport_Click(object? sender, RoutedEventArgs e)
@@ -4750,81 +4514,126 @@ public partial class MainWindow : Window
 
     // --- NUEVO SISTEMA DE MENÚ HORIZONTAL Y ORDENACIÓN ---
 
+    private void OnTopBarViewToggle(object? sender, string name)
+    {
+        switch (name)
+        {
+            case "BtnViewGrid": BtnViewGrid_Click(null, new RoutedEventArgs()); break;
+            case "BtnViewList": BtnViewList_Click(null, new RoutedEventArgs()); break;
+            case "BtnViewWheelVertical": BtnViewWheelVertical_Click(null, new RoutedEventArgs()); break;
+            case "BtnViewWheelHorizontal": BtnViewWheelHorizontal_Click(null, new RoutedEventArgs()); break;
+        }
+    }
+
+    private void OnTopBarMenuAction(object? sender, string name)
+    {
+        switch (name)
+        {
+            case "MenuExportDB": MenuExportDB_Click(null, new RoutedEventArgs()); break;
+            case "MenuImportDB": MenuImportDB_Click(null, new RoutedEventArgs()); break;
+            case "MenuImportFolders": MenuImportFolders_Click(null, new RoutedEventArgs()); break;
+            case "MenuImportExternalLib": MenuImportExternalLib_Click(null, new RoutedEventArgs()); break;
+            case "MenuImportDat": MenuImportDat_Click(null, new RoutedEventArgs()); break;
+            case "MenuSyncExternalLib": MenuSyncExternalLib_Click(null, new RoutedEventArgs()); break;
+            case "MenuSyncMasterDb": MenuSyncMasterDb_Click(null, new RoutedEventArgs()); break;
+            case "MenuScanLocalCovers": MenuScanLocalCovers_Click(null, new RoutedEventArgs()); break;
+            case "MenuMassiveScanCovers": MenuMassiveScanCovers_Click(null, new RoutedEventArgs()); break;
+            case "MenuCleanupOrphans": MenuCleanupOrphans_Click(null, new RoutedEventArgs()); break;
+            case "MenuManageDross": MenuManageDross_Click(null, new RoutedEventArgs()); break;
+            case "MenuShowStats": MenuShowStats_Click(null, new RoutedEventArgs()); break;
+            case "MenuManagePlatforms": MenuManagePlatforms_Click(null, new RoutedEventArgs()); break;
+            case "MenuSettings": MenuSettings_Click(null, new RoutedEventArgs()); break;
+        }
+    }
+
+    private void OnTopBarViewAction(object? sender, string name)
+    {
+        switch (name)
+        {
+            case "MenuViewGrid": MenuViewGrid_Click(null, new RoutedEventArgs()); break;
+            case "MenuViewList": MenuViewList_Click(null, new RoutedEventArgs()); break;
+            case "MenuToggleFilters": MenuToggleFilters_Click(null, new RoutedEventArgs()); break;
+        }
+    }
+
+    private void OnTopBarSortAction(object? sender, string name)
+    {
+        switch (name)
+        {
+            case "SortByName": case "SubSortByName": MenuSortTitle_Click(null, new RoutedEventArgs()); break;
+            case "SortByYear": case "SubSortByYear": MenuSortYear_Click(null, new RoutedEventArgs()); break;
+            case "SortByDateAdded": case "SubSortByDateAdded": MenuSortDateAdded_Click(null, new RoutedEventArgs()); break;
+            case "SortByDeveloper": case "SubSortByDeveloper": MenuSortDeveloper_Click(null, new RoutedEventArgs()); break;
+            case "SortByIsFavorite": case "SubSortByIsFavorite": MenuSortFavorite_Click(null, new RoutedEventArgs()); break;
+            case "SortByGenre": case "SubSortByGenre": MenuSortGenre_Click(null, new RoutedEventArgs()); break;
+            case "SortByLastPlayed": case "SubSortByLastPlayed": MenuSortLastPlayed_Click(null, new RoutedEventArgs()); break;
+            case "SortByExternalDbId": case "SubSortByExternalDbId": MenuSortExternalDbId_Click(null, new RoutedEventArgs()); break;
+            case "SortByMaxPlayers": case "SubSortByMaxPlayers": MenuSortMaxPlayers_Click(null, new RoutedEventArgs()); break;
+            case "SortByPlayCount": case "SubSortByPlayCount": MenuSortPlayCount_Click(null, new RoutedEventArgs()); break;
+            case "SortByPlayTime": case "SubSortByPlayTime": MenuSortPlayTime_Click(null, new RoutedEventArgs()); break;
+            case "SortByRating": case "SubSortByRating": MenuSortRating_Click(null, new RoutedEventArgs()); break;
+            case "SortByRegion": case "SubSortByRegion": MenuSortRegion_Click(null, new RoutedEventArgs()); break;
+            case "SortByReleaseDate": case "SubSortByReleaseDate": MenuSortReleaseDate_Click(null, new RoutedEventArgs()); break;
+            case "SortByPlayStatus": case "SubSortByPlayStatus": MenuSortPlayStatus_Click(null, new RoutedEventArgs()); break;
+            case "SortByVersion": case "SubSortByVersion": MenuSortVersion_Click(null, new RoutedEventArgs()); break;
+        }
+    }
+
+    private void OnTopBarArtTypeAction(object? sender, string name)
+    {
+        switch (name)
+        {
+            case "ArtTypeBackground": case "SubArtTypeBackground": MenuArtTypeBackground_Click(null, new RoutedEventArgs()); break;
+            case "ArtTypeBox": case "SubArtTypeBox": MenuArtTypeBox_Click(null, new RoutedEventArgs()); break;
+            case "ArtTypeBox3D": case "SubArtTypeBox3D": MenuArtTypeBox3D_Click(null, new RoutedEventArgs()); break;
+            case "ArtTypeCartFront": case "SubArtTypeCartFront": MenuArtTypeCartFront_Click(null, new RoutedEventArgs()); break;
+            case "ArtTypeCart3D": case "SubArtTypeCart3D": MenuArtTypeCart3D_Click(null, new RoutedEventArgs()); break;
+            case "ArtTypeClearLogo": case "SubArtTypeClearLogo": MenuArtTypeClearLogo_Click(null, new RoutedEventArgs()); break;
+            case "ArtTypeMarquee": case "SubArtTypeMarquee": MenuArtTypeMarquee_Click(null, new RoutedEventArgs()); break;
+            case "ArtTypeSnap": case "SubArtTypeSnap": MenuArtTypeSnap_Click(null, new RoutedEventArgs()); break;
+        }
+    }
+
+    private void OnTopBarBadgeAction(object? sender, string name)
+    {
+        switch (name)
+        {
+            case "MenuBadgeFavorite": MenuBadgeFavorite_Click(null, new RoutedEventArgs()); break;
+            case "MenuBadgeRegion": MenuBadgeRegion_Click(null, new RoutedEventArgs()); break;
+            case "MenuBadgePlayStatus": MenuBadgePlayStatus_Click(null, new RoutedEventArgs()); break;
+        }
+    }
+
+    private void OnTopBarHelpAction(object? sender, string name)
+    {
+        switch (name)
+        {
+            case "MenuHelpExternalLib": MenuHelpExternalLib_Click(null, new RoutedEventArgs()); break;
+            case "MenuHelpImportFolder": MenuHelpImportFolder_Click(null, new RoutedEventArgs()); break;
+            case "MenuHelpEmulator": MenuHelpEmulator_Click(null, new RoutedEventArgs()); break;
+            case "MenuHelpMultiDisk": MenuHelpMultiDisk_Click(null, new RoutedEventArgs()); break;
+            case "MenuHelpDatabase": MenuHelpDatabase_Click(null, new RoutedEventArgs()); break;
+            case "MenuAbout": MenuAbout_Click(null, new RoutedEventArgs()); break;
+        }
+    }
+
     private void UpdateMenuCheckmarks()
     {
-        try
-        {
-            // 1. Actualizar checkmarks de ordenación
-            if (SortByName != null) SortByName.Icon = _currentSortField == "Name" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByYear != null) SortByYear.Icon = _currentSortField == "Year" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByDateAdded != null) SortByDateAdded.Icon = _currentSortField == "DateAdded" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByDeveloper != null) SortByDeveloper.Icon = _currentSortField == "Developer" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByIsFavorite != null) SortByIsFavorite.Icon = _currentSortField == "IsFavorite" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByGenre != null) SortByGenre.Icon = _currentSortField == "Genre" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByLastPlayed != null) SortByLastPlayed.Icon = _currentSortField == "LastPlayed" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByExternalDbId != null) SortByExternalDbId.Icon = _currentSortField == "ExternalDbId" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByMaxPlayers != null) SortByMaxPlayers.Icon = _currentSortField == "MaxPlayers" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByPlayCount != null) SortByPlayCount.Icon = _currentSortField == "PlayCount" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByPlayTime != null) SortByPlayTime.Icon = _currentSortField == "PlayTime" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByRating != null) SortByRating.Icon = _currentSortField == "Rating" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByRegion != null) SortByRegion.Icon = _currentSortField == "Region" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByReleaseDate != null) SortByReleaseDate.Icon = _currentSortField == "ReleaseDate" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByPlayStatus != null) SortByPlayStatus.Icon = _currentSortField == "PlayStatus" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SortByVersion != null) SortByVersion.Icon = _currentSortField == "Version" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-
-            // Submenú de Ordenar Por (duplicado bajo "Ver" para redundancia cómoda)
-            if (SubSortByName != null) SubSortByName.Icon = _currentSortField == "Name" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByYear != null) SubSortByYear.Icon = _currentSortField == "Year" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByDateAdded != null) SubSortByDateAdded.Icon = _currentSortField == "DateAdded" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByDeveloper != null) SubSortByDeveloper.Icon = _currentSortField == "Developer" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByIsFavorite != null) SubSortByIsFavorite.Icon = _currentSortField == "IsFavorite" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByGenre != null) SubSortByGenre.Icon = _currentSortField == "Genre" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByLastPlayed != null) SubSortByLastPlayed.Icon = _currentSortField == "LastPlayed" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByExternalDbId != null) SubSortByExternalDbId.Icon = _currentSortField == "ExternalDbId" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByMaxPlayers != null) SubSortByMaxPlayers.Icon = _currentSortField == "MaxPlayers" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByPlayCount != null) SubSortByPlayCount.Icon = _currentSortField == "PlayCount" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByPlayTime != null) SubSortByPlayTime.Icon = _currentSortField == "PlayTime" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByRating != null) SubSortByRating.Icon = _currentSortField == "Rating" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByRegion != null) SubSortByRegion.Icon = _currentSortField == "Region" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByReleaseDate != null) SubSortByReleaseDate.Icon = _currentSortField == "ReleaseDate" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByPlayStatus != null) SubSortByPlayStatus.Icon = _currentSortField == "PlayStatus" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubSortByVersion != null) SubSortByVersion.Icon = _currentSortField == "Version" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-
-            // Dirección
-            if (ChkSortAscending != null) ChkSortAscending.Text = _isSortAscending ? "✓" : "";
-
-            // 2. Actualizar checkmarks de grupo de imagen
-            string prefArt = _settings.PreferredArtType;
-            if (ArtTypeBackground != null) ArtTypeBackground.Icon = prefArt == "Background" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (ArtTypeBox != null) ArtTypeBox.Icon = prefArt == "Box" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (ArtTypeBox3D != null) ArtTypeBox3D.Icon = prefArt == "Box 3D" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (ArtTypeCartFront != null) ArtTypeCartFront.Icon = prefArt == "Cart - Front" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (ArtTypeCart3D != null) ArtTypeCart3D.Icon = prefArt == "Cart - 3D" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (ArtTypeClearLogo != null) ArtTypeClearLogo.Icon = prefArt == "Clear Logo" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (ArtTypeMarquee != null) ArtTypeMarquee.Icon = prefArt == "Marquee" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (ArtTypeSnap != null) ArtTypeSnap.Icon = prefArt == "Snap" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-
-            // Submenú de Grupo de Imagen (bajo "Ver")
-            if (SubArtTypeBackground != null) SubArtTypeBackground.Icon = prefArt == "Background" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubArtTypeBox != null) SubArtTypeBox.Icon = prefArt == "Box" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubArtTypeBox3D != null) SubArtTypeBox3D.Icon = prefArt == "Box 3D" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubArtTypeCartFront != null) SubArtTypeCartFront.Icon = prefArt == "Cart - Front" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubArtTypeCart3D != null) SubArtTypeCart3D.Icon = prefArt == "Cart - 3D" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubArtTypeClearLogo != null) SubArtTypeClearLogo.Icon = prefArt == "Clear Logo" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubArtTypeMarquee != null) SubArtTypeMarquee.Icon = prefArt == "Marquee" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-            if (SubArtTypeSnap != null) SubArtTypeSnap.Icon = prefArt == "Snap" ? new TextBlock { Text = "✓", Foreground = Avalonia.Media.Brushes.LightGreen, FontWeight = Avalonia.Media.FontWeight.Bold } : null;
-
-            // 3. Vistas e interfaces
-            if (ChkViewGrid != null) ChkViewGrid.Text = LstGamesGrid != null && LstGamesGrid.IsVisible ? "✓" : "";
-            if (ChkViewList != null) ChkViewList.Text = LstGames != null && LstGames.IsVisible ? "✓" : "";
-            if (ChkShowFilters != null) ChkShowFilters.Text = PnlFilters != null && PnlFilters.IsVisible ? "✓" : "";
-
-            // 4. Insignias
-            if (ChkBadgeFavorite != null) ChkBadgeFavorite.Text = _showFavoriteBadge ? "✓" : "";
-            if (ChkBadgeRegion != null) ChkBadgeRegion.Text = _showRegionBadge ? "✓" : "";
-            if (ChkBadgePlayStatus != null) ChkBadgePlayStatus.Text = _showStatusBadge ? "✓" : "";
-        }
-        catch { }
+        if (TopBar == null) return;
+        
+        bool isGridView = LstGamesGrid != null && LstGamesGrid.IsVisible;
+        bool showFilters = PnlFilters != null && PnlFilters.IsVisible;
+        
+        TopBar.UpdateCheckmarks(
+            _currentSortField, 
+            _isSortAscending, 
+            _settings, 
+            _showFavoriteBadge, 
+            _showRegionBadge, 
+            _showStatusBadge,
+            isGridView,
+            showFilters
+        );
     }
 
     private void SetSortField(string field)

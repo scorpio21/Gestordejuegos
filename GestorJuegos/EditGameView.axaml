@@ -30,7 +30,6 @@
                                 <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5" VerticalAlignment="Bottom">
                                     <Button Name="BtnSyncMasterDbLocal" Content="🏠 BD Local" Background="#8b5cf6" Foreground="White" ToolTip.Tip="Buscar metadatos en la base de datos local de RevisaDB"/>
                                     <Button Name="BtnSyncExternalLibLocal" Content="🔄 XML" Background="#3b82f6" Foreground="White" ToolTip.Tip="Sincronizar desde los archivos XML de la Biblioteca Externa"/>
-                                    <Button Name="BtnSearchIgdb" Content="🔍 Vimm" ToolTip.Tip="Buscar en Vimm's Lair"/>
                                 </StackPanel>
                             </Grid>
 

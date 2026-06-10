@@ -41,7 +41,6 @@ public partial class EditGameView : UserControl
         this.FindControl<Button>("BtnSave")!.Click += BtnSave_Click;
         this.FindControl<Button>("BtnSyncMasterDbLocal")!.Click += BtnSyncMasterDbLocal_Click;
         this.FindControl<Button>("BtnSyncExternalLibLocal")!.Click += BtnSyncExternalLib_Click;
-        this.FindControl<Button>("BtnSearchIgdb")!.Click += BtnSearchIgdb_Click;
         this.FindControl<Button>("BtnAddRom")!.Click += BtnAddRom_Click;
         this.FindControl<Button>("BtnRemoveRom")!.Click += BtnRemoveRom_Click;
         this.FindControl<Button>("BtnSelectCover")!.Click += BtnSelectCover_Click;
@@ -314,10 +313,5 @@ public partial class EditGameView : UserControl
     private void BtnSyncMasterDbLocal_Click(object? sender, RoutedEventArgs e)
     {
         RequestMessage?.Invoke("Sincronización con Base de Datos Local no implementada en este módulo aún.");
-    }
-
-    private void BtnSearchIgdb_Click(object? sender, RoutedEventArgs e)
-    {
-        RequestMessage?.Invoke("La búsqueda en Vimm requiere integración con el diálogo global de búsqueda.");
     }
 }

@@ -1,0 +1,192 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="60"
+             x:Class="GestorJuegos.Views.Panels.TopBarView">
+
+    <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Height="60">
+        <Grid ColumnDefinitions="Auto, *, Auto" Margin="15,0">
+            <!-- Izquierda: Menu y Logo -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                <Menu VerticalAlignment="Center">
+                    <MenuItem Header="HERRAMIENTAS">
+                        <MenuItem Header="RESPALDOS DE BASE DE DATOS" IsEnabled="False" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
+                        <MenuItem Name="MenuExportDB" Header="Exportar Copia de Seguridad..." Click="OnMenuAction"/>
+                        <MenuItem Name="MenuImportDB" Header="Importar Copia de Seguridad..." Click="OnMenuAction"/>
+                        
+                        <Separator/>
+                        <MenuItem Header="IMPORTACIONES DE BIBLIOTECA" IsEnabled="False" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
+                        <MenuItem Name="MenuImportFolders" Header="Importar Colección desde Carpeta..." Click="OnMenuAction"/>
+                        <MenuItem Name="MenuImportExternalLib" Header="Importar desde Biblioteca Externa..." Click="OnMenuAction"/>
+                        <MenuItem Name="MenuImportDat" Header="Importar lista desde DAT/XML..." Click="OnMenuAction"/>
+                        
+                        <Separator/>
+                        <MenuItem Header="SINCRONIZACIÓN Y METADATOS" IsEnabled="False" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
+                        <MenuItem Name="MenuSyncExternalLib" Header="Sincronizar Rutas con Biblioteca Externa (XML)..." Click="OnMenuAction"/>
+                        <MenuItem Name="MenuSyncMasterDb" Header="Importar Metadatos desde Base Maestra Externa..." Click="OnMenuAction"/>
+                        <MenuItem Name="MenuScanLocalCovers" Header="Escanear Carátulas Locales (Plat. Actual)..." Click="OnMenuAction"/>
+                        <MenuItem Name="MenuMassiveScanCovers" Header="Escaneo Masivo de Arte (Toda la Biblioteca)..." Click="OnMenuAction"/>
+                        
+                        <Separator/>
+                        <MenuItem Header="MANTENIMIENTO Y UTILERÍA" IsEnabled="False" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
+                        <MenuItem Name="MenuCleanupOrphans" Header="Limpiar Juegos Huérfanos" Click="OnMenuAction"/>
+                        <MenuItem Name="MenuManageDross" Header="Gestionar Filtros de Importación" Click="OnMenuAction"/>
+                        
+                        <Separator/>
+                        <MenuItem Header="ACCESOS Y AJUSTES" IsEnabled="False" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
+                        <MenuItem Name="MenuShowStats" Header="Estadísticas de Biblioteca" Click="OnMenuAction"/>
+                        <MenuItem Name="MenuManagePlatforms" Header="Gestionar Plataformas" Click="OnMenuAction"/>
+                        <MenuItem Name="MenuSettings" Header="Configuración" Click="OnMenuAction"/>
+                    </MenuItem>
+                    
+                    <MenuItem Header="VER">
+                        <MenuItem Name="MenuViewGrid" Header="Vista de Imágenes" Click="OnViewAction" InputGesture="Ctrl+Alt+A">
+                            <MenuItem.Icon>
+                                <TextBlock Name="ChkViewGrid" Text="✓" Foreground="#10b981" FontWeight="Bold" FontSize="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuViewList" Header="Vista de Lista" Click="OnViewAction" InputGesture="Ctrl+Alt+T">
+                            <MenuItem.Icon>
+                                <TextBlock Name="ChkViewList" Text="" Foreground="#10b981" FontWeight="Bold" FontSize="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Name="MenuToggleFilters" Header="Mostrar / Ocultar Filtros" Click="OnViewAction">
+                            <MenuItem.Icon>
+                                <TextBlock Name="ChkShowFilters" Text="" Foreground="#10b981" FontWeight="Bold" FontSize="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Ordenar Por">
+                            <MenuItem Name="SubSortByName" Header="Título" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByYear" Header="Año de lanzamiento" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByDateAdded" Header="Fecha de Adición" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByDeveloper" Header="Desarrollador" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByIsFavorite" Header="Favorito" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByGenre" Header="Género" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByLastPlayed" Header="Última vez jugado" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByExternalDbId" Header="ID de Biblioteca Externa" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByMaxPlayers" Header="Cantidad Máx. de Jugadores" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByPlayCount" Header="Veces Jugado" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByPlayTime" Header="Tiempo Jugado" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByRating" Header="Calificación" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByRegion" Header="Región" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByReleaseDate" Header="Fecha de lanzamiento" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByPlayStatus" Header="Estado" Click="OnSortAction"/>
+                            <MenuItem Name="SubSortByVersion" Header="Versión" Click="OnSortAction"/>
+                        </MenuItem>
+                        <MenuItem Header="Grupo de Imagen">
+                            <MenuItem Name="SubArtTypeBackground" Header="Backgrounds" Click="OnArtTypeAction"/>
+                            <MenuItem Name="SubArtTypeBox" Header="Boxes" Click="OnArtTypeAction"/>
+                            <MenuItem Name="SubArtTypeBox3D" Header="3D Boxes" Click="OnArtTypeAction"/>
+                            <MenuItem Name="SubArtTypeCartFront" Header="Carts" Click="OnArtTypeAction"/>
+                            <MenuItem Name="SubArtTypeCart3D" Header="3D Carts" Click="OnArtTypeAction"/>
+                            <MenuItem Name="SubArtTypeClearLogo" Header="Clear Logos" Click="OnArtTypeAction"/>
+                            <MenuItem Name="SubArtTypeMarquee" Header="Marquees" Click="OnArtTypeAction"/>
+                            <MenuItem Name="SubArtTypeSnap" Header="Screenshots" Click="OnArtTypeAction"/>
+                        </MenuItem>
+                    </MenuItem>
+                    
+                    <MenuItem Header="ORDENAR POR" Name="MenuSortBy">
+                        <MenuItem Name="SortByName" Header="Título" Click="OnSortAction"/>
+                        <MenuItem Name="SortByYear" Header="Año de lanzamiento" Click="OnSortAction"/>
+                        <MenuItem Name="SortByDateAdded" Header="Fecha de Adición" Click="OnSortAction"/>
+                        <MenuItem Name="SortByDeveloper" Header="Desarrollador" Click="OnSortAction"/>
+                        <MenuItem Name="SortByIsFavorite" Header="Favorito" Click="OnSortAction"/>
+                        <MenuItem Name="SortByGenre" Header="Género" Click="OnSortAction"/>
+                        <MenuItem Name="SortByLastPlayed" Header="Última vez jugado" Click="OnSortAction"/>
+                        <MenuItem Name="SortByExternalDbId" Header="ID de Biblioteca Externa" Click="OnSortAction"/>
+                        <MenuItem Name="SortByMaxPlayers" Header="Cantidad Máx. de Jugadores" Click="OnSortAction"/>
+                        <MenuItem Name="SortByPlayCount" Header="Veces Jugado" Click="OnSortAction"/>
+                        <MenuItem Name="SortByPlayTime" Header="Tiempo Jugado" Click="OnSortAction"/>
+                        <MenuItem Name="SortByRating" Header="Calificación" Click="OnSortAction"/>
+                        <MenuItem Name="SortByRegion" Header="Región" Click="OnSortAction"/>
+                        <MenuItem Name="SortByReleaseDate" Header="Fecha de lanzamiento" Click="OnSortAction"/>
+                        <MenuItem Name="SortByPlayStatus" Header="Estado" Click="OnSortAction"/>
+                        <MenuItem Name="SortByVersion" Header="Versión" Click="OnSortAction"/>
+                        <Separator/>
+                        <MenuItem Name="MenuSortAscending" Header="Orden Ascendente" Click="OnSortAscendingAction">
+                            <MenuItem.Icon>
+                                <TextBlock Name="ChkSortAscending" Text="✓" Foreground="#10b981" FontWeight="Bold" FontSize="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+                    
+                    <MenuItem Header="GRUPO DE IMAGEN" Name="MenuImageGroup">
+                        <MenuItem Name="ArtTypeBackground" Header="Backgrounds" Click="OnArtTypeAction"/>
+                        <MenuItem Name="ArtTypeBox" Header="Boxes" Click="OnArtTypeAction"/>
+                        <MenuItem Name="ArtTypeBox3D" Header="3D Boxes" Click="OnArtTypeAction"/>
+                        <MenuItem Name="ArtTypeCartFront" Header="Carts" Click="OnArtTypeAction"/>
+                        <MenuItem Name="ArtTypeCart3D" Header="3D Carts" Click="OnArtTypeAction"/>
+                        <MenuItem Name="ArtTypeClearLogo" Header="Clear Logos" Click="OnArtTypeAction"/>
+                        <MenuItem Name="ArtTypeMarquee" Header="Marquees" Click="OnArtTypeAction"/>
+                        <MenuItem Name="ArtTypeSnap" Header="Screenshots" Click="OnArtTypeAction"/>
+                    </MenuItem>
+                    
+                    <MenuItem Header="INSIGNIAS">
+                        <MenuItem Name="MenuBadgeFavorite" Header="Mostrar Insignia de Favorito" Click="OnBadgeAction">
+                            <MenuItem.Icon>
+                                <TextBlock Name="ChkBadgeFavorite" Text="✓" Foreground="#10b981" FontWeight="Bold" FontSize="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuBadgeRegion" Header="Mostrar Insignia de Región" Click="OnBadgeAction">
+                            <MenuItem.Icon>
+                                <TextBlock Name="ChkBadgeRegion" Text="✓" Foreground="#10b981" FontWeight="Bold" FontSize="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuBadgePlayStatus" Header="Mostrar Insignia de Estado" Click="OnBadgeAction">
+                            <MenuItem.Icon>
+                                <TextBlock Name="ChkBadgePlayStatus" Text="✓" Foreground="#10b981" FontWeight="Bold" FontSize="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+                </Menu>
+                <Border Width="1" Height="16" Background="{DynamicResource BorderBrush}" Margin="8,0"/>
+                <TextBlock Name="TxtGameStatusInfo" Text="Mostrando -- de -- del total de juegos." Foreground="#94a3b8" VerticalAlignment="Center" FontSize="12"/>
+            </StackPanel>
+
+            <!-- Centro: Búsqueda -->
+            <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource DeepDarkBrush}" CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Width="550">
+                <Grid ColumnDefinitions="Auto, *, Auto, Auto">
+                    <TextBlock Text="🔍" Margin="10,0" VerticalAlignment="Center" Opacity="0.5"/>
+                    <TextBox Grid.Column="1" Name="TxtSearchGame" PlaceholderText="Buscar en tu biblioteca..." Background="Transparent" BorderThickness="0" Margin="0" VerticalAlignment="Center" TextChanged="OnSearchTextChanged"/>
+                    <ToggleButton Grid.Column="2" Name="BtnQuickFavorite" Content="⭐" Background="Transparent" BorderThickness="0" ToolTip.Tip="Solo Favoritos" Click="OnQuickFavoriteClick"/>
+                    <ToggleButton Grid.Column="3" Name="BtnToggleGamepad" Content="🎮" Background="Transparent" BorderThickness="0" ToolTip.Tip="Modo Mando (ON/OFF)" IsChecked="True"/>
+                </Grid>
+            </Border>
+
+            <!-- Derecha: Acciones y Vistas -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                <Border Background="{DynamicResource DeepDarkBrush}" CornerRadius="8" Padding="2" Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal">
+                        <ToggleButton Name="BtnViewGrid" Content="▦" ToolTip.Tip="Vista Galería" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6" Click="OnViewToggleClick" IsChecked="True"/>
+                        <ToggleButton Name="BtnViewList" Content="≡" ToolTip.Tip="Vista Lista" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6" Click="OnViewToggleClick"/>
+                        <ToggleButton Name="BtnViewWheelVertical" Content="🎡" ToolTip.Tip="Vista Rueda Vertical" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6" Click="OnViewToggleClick" IsVisible="False"/>
+                        <ToggleButton Name="BtnViewWheelHorizontal" Content="🎠" ToolTip.Tip="Vista Rueda Horizontal" Padding="12,6" Background="Transparent" BorderThickness="0" CornerRadius="6" Click="OnViewToggleClick" IsVisible="False"/>
+                    </StackPanel>
+                </Border>
+
+                <ToggleButton Name="BtnToggleTheme" Content="🌙" ToolTip.Tip="Cambiar Tema (Claro/Oscuro)" Background="{DynamicResource DeepDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8" Click="OnToggleThemeClick"/>
+                
+                <Button Name="BtnAddGame" Content="+ Añadir" Background="{DynamicResource AccentBrush}" Foreground="White" FontWeight="Bold" CornerRadius="8" Padding="15,8" Click="OnAddGameClick"/>
+                <Button Name="BtnShowStats" Content="📊" Background="{DynamicResource BorderBrush}" Foreground="White" CornerRadius="8" Padding="12,8" ToolTip.Tip="Estadísticas" Click="OnShowStatsClick"/>
+                <Button Name="BtnManagePlatforms" Content="⚙️" Background="{DynamicResource BorderBrush}" Foreground="White" CornerRadius="8" Padding="12,8" ToolTip.Tip="Gestionar Plataformas" Click="OnManagePlatformsClick"/>
+                <Button Name="BtnHelpMenu" Content="AYUDA" Background="{DynamicResource BorderBrush}" Foreground="White" FontWeight="Bold" CornerRadius="8" Padding="12,8" ToolTip.Tip="Ayuda y Acerca de...">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuItem Header="Importar Biblioteca Externa" Click="OnHelpAction" Name="MenuHelpExternalLib"/>
+                            <MenuItem Header="Importar desde Carpeta" Click="OnHelpAction" Name="MenuHelpImportFolder"/>
+                            <Separator/>
+                            <MenuItem Name="MenuHelpEmulator" Header="Emuladores" Click="OnHelpAction"/>
+                            <MenuItem Name="MenuHelpMultiDisk" Header="Multi-Disco" Click="OnHelpAction"/>
+                            <MenuItem Name="MenuHelpDatabase" Header="Base de Datos" Click="OnHelpAction"/>
+                            <Separator/>
+                            <MenuItem Name="MenuAbout" Header="Acerca de..." Click="OnHelpAction"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

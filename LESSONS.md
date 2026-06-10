@@ -40,4 +40,8 @@ Este archivo registra fallos técnicos, soluciones complejas y "trucos" arquitec
 *   **Solución**: Usar `DynamicResource` en el XAML y definir un diccionario centralizado (`Colors.axaml`). Para el toggle, sobrescribir dinámicamente las claves del diccionario (`this.Resources["PanelBrush"] = ...`) en tiempo de ejecución. Esto permite cambios instantáneos sin recargar la ventana.
 
 ---
-*Última actualización: 7 de junio de 2026*
+*Última actualización: 10 de junio de 2026*
+
+### ⚠️ 3. Limpieza de Código y Eventos XAML
+Al realizar limpiezas masivas de código (como la eliminación de servicios o scrapers), es crítico verificar que no se eliminen métodos de code-behind que todavía están referenciados en el XAML. El error `AVLN3000` en Avalonia indica que un evento (ej. `PointerEntered`) apunta a un método inexistente. Siempre revisar las referencias en el archivo `.axaml` antes de borrar métodos en `.axaml.cs`.
+
