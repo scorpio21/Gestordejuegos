@@ -684,6 +684,8 @@ appsettings.json
 
 # Logs de importación de la app
 import_covers_log.txt
+import_error_log.txt
+massive_scan_log.txt
 
 # Archivos XML pesados no deseados
 *.xml

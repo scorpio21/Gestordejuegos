@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:GestorJuegos.Models"
+             mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="800"
+             x:Class="GestorJuegos.AchievementsView">
+
+    <Panel Background="#88000000">
+        <Border Background="#1A1A1E" Width="480" HorizontalAlignment="Right" VerticalAlignment="Stretch" 
+                BorderBrush="#333333" BorderThickness="1,0,0,0" Padding="20">
+            <Grid RowDefinitions="Auto, *">
+                <!-- Cabecera -->
+                <Grid ColumnDefinitions="*, Auto" Margin="0,10,0,25">
+                    <TextBlock Text="RETRO ACHIEVEMENTS" FontSize="16" FontWeight="Heavy" Foreground="White" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Content="✕" Name="BtnClose"
+                            Background="Transparent" Foreground="Gray" FontSize="22" Padding="10"/>
+                </Grid>
+
+                <!-- Lista de Logros con Scroll -->
+                <ScrollViewer Grid.Row="1">
+                    <ItemsControl Name="ItemsAchievementsList" x:CompileBindings="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#232327" Margin="0,6" Padding="15" CornerRadius="15" BorderBrush="#2d2d31" BorderThickness="1">
+                                    <Grid ColumnDefinitions="Auto, *, Auto">
+                                        <!-- Icono -->
+                                        <Border Grid.Column="0" Width="54" Height="54" CornerRadius="10" ClipToBounds="True" Background="#1a1a1d">
+                                            <Image Source="{Binding IconUrl, Converter={StaticResource ByteToBitmap}}" Opacity="1" Stretch="UniformToFill"/>
+                                        </Border>
+                                        
+                                        <!-- Textos -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0">
+                                            <TextBlock Text="{Binding Title}" Foreground="White" FontWeight="Bold" FontSize="14"/>
+                                            <TextBlock Text="{Binding Description}" Foreground="#94a3b8" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                        
+                                        <!-- Estado -->
+                                        <Panel Grid.Column="2" VerticalAlignment="Center" Margin="10,0,0,0">
+                                            <TextBlock Text="✓" Foreground="#10b981" FontSize="22" IsVisible="{Binding IsUnlocked}"/>
+                                            <TextBlock Text="🔒" Foreground="#475569" FontSize="18" IsVisible="{Binding !IsUnlocked}"/>
+                                        </Panel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Panel>
+</UserControl>

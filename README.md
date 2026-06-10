@@ -14,6 +14,34 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
+### v1.5.5-Dev (10 Junio 2026) - Fase 5: Estabilización y LauncherService
+*   **LauncherService: Tracking de Tiempo y Estadísticas**:
+    - Implementado `LauncherService.cs` para centralizar la ejecución de juegos y emuladores.
+    - **Rastreo de Tiempo Real**: Monitoreo de procesos para calcular el tiempo de juego exacto y actualizarlo en la base de datos al cerrar el juego.
+    - **Auto-Progreso**: Actualización automática del estado del juego (ej: de "No Iniciado" a "En Progreso") basado en el tiempo jugado configurable en opciones.
+    - **Registro de Ejecución**: Registro de fecha de última partida y contador de ejecuciones mejorado.
+*   **Estabilización Post-Modularización**:
+    - Corregidos más de 40 errores de compilación derivados de la extracción de componentes en la Fase 4.
+    - Eliminación de lógica duplicada de importación y gestión de plataformas en `MainWindow.axaml.cs`.
+    - Optimización de la comunicación entre `MainWindow` y los controles modulares mediante nuevos métodos de inicialización y selección.
+*   **Limpieza de ScannerService**:
+    - Corregidos errores de tipado y namespaces faltantes.
+    - Sincronización de metadatos de géneros y regiones mejorada.
+
+### v1.5.0-Dev (7 Junio 2026) - Fase 4: Arquitectura Modular y ScannerService
+*   **Modularización de Overlays (Logros y Plataformas)**:
+    - Extraídos `OverlayAchievements` y `OverlayManagePlatforms` hacia sus propios `UserControl` (`AchievementsView.axaml` y `ManagePlatformsView.axaml`).
+    - Desacoplada la lógica de UI de `MainWindow.axaml.cs`, reduciendo su tamaño y complejidad.
+    - Implementado sistema de eventos (`RequestClose`, `PlatformsChanged`) para la comunicación entre componentes.
+*   **ScannerService: Desacoplamiento de Lógica de Negocio**:
+    - Creado `ScannerService.cs` para centralizar toda la lógica de escaneo de colecciones, carátulas y bibliotecas externas.
+    - Implementado soporte para progreso detallado (`ScanProgress`) y cancelación mediante `CancellationToken`.
+    - Eliminada la lógica de escaneo pesada de `MainWindow`, mejorando la mantenibilidad y permitiendo pruebas unitarias más sencillas.
+*   **Personalización Dinámica**:
+    - **Toggle de Tema Dark/Light**: Añadido un botón de cambio rápido de tema en la barra superior que alterna entre esquemas de colores claros y oscuros en caliente, utilizando `DynamicResource` y `Colors.axaml`.
+    - **Vista Predeterminada**: Forzado el inicio de la aplicación en **Vista Galería** por defecto para una mejor experiencia visual inicial.
+*   **Limpieza de Código**: Eliminados cientos de líneas de código redundante y métodos obsoletos de la ventana principal.
+
 ### v1.4.3-Dev (6 Junio 2026)
 *   **Reparación Integral del Escaneo Masivo (v2.2)**: 
     - **Persistencia Garantizada**: Corregido el error crítico donde las carátulas no se guardaban en la base de datos. Ahora se utiliza `GameService` para asegurar que todo el arte multimedia se persista correctamente en `GestorCovers.db`.

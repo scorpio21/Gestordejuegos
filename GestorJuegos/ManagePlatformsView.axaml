@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:GestorJuegos.Models"
+             mc:Ignorable="d" d:DesignWidth="650" d:DesignHeight="550"
+             x:Class="GestorJuegos.ManagePlatformsView">
+
+    <Panel Background="#AA000000">
+        <Border Background="{DynamicResource PanelBrush}" Width="650" Height="550" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <DockPanel>
+                <Button Name="BtnClose" DockPanel.Dock="Top" Content="✕" Background="Transparent" Foreground="#ef4444" FontSize="20" HorizontalAlignment="Right" Margin="0,0,0,20"/>
+                <Grid ColumnDefinitions="200, *">
+                    <!-- Lista de Plataformas -->
+                    <ListBox Name="LstPlatforms" Background="{DynamicResource DeepDarkBrush}" CornerRadius="8" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:Platform">
+                                <TextBlock Text="{Binding Name}" Foreground="White" Padding="5"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Panel de Edición -->
+                    <StackPanel Grid.Column="1" Name="PnlEdit" IsVisible="False" Spacing="10" Margin="20,0,0,0">
+                        <TextBlock Text="Nombre de la Plataforma" FontSize="11" Foreground="#64748b"/>
+                        <TextBox Name="TxtName"/>
+                        
+                        <TextBlock Text="Categoría" FontSize="11" Foreground="#64748b"/>
+                        <ComboBox Name="CmbCategory" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="Consoles"/>
+                            <ComboBoxItem Content="Handhelds"/>
+                            <ComboBoxItem Content="Computers"/>
+                            <ComboBoxItem Content="Arcade"/>
+                        </ComboBox>
+                        
+                        <TextBlock Text="Ruta del Emulador" FontSize="11" Foreground="#64748b"/>
+                        <DockPanel>
+                            <Button Name="BtnSelectEmulator" Content="..." DockPanel.Dock="Right" Padding="10,5"/>
+                            <TextBox Name="TxtEmulatorPath"/>
+                        </DockPanel>
+                        
+                        <TextBlock Text="Argumentos de Lanzamiento" FontSize="11" Foreground="#64748b"/>
+                        <TextBox Name="TxtLaunchArgs"/>
+                        
+                        <Grid ColumnDefinitions="*,*" Margin="0,20,0,0">
+                            <Button Name="BtnDelete" Grid.Column="0" Content="Eliminar" Background="#ef4444" Foreground="White" Margin="0,0,5,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                            <Button Name="BtnSave" Grid.Column="1" Content="Guardar" Background="#10b981" Foreground="White" Margin="5,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </DockPanel>
+        </Border>
+    </Panel>
+</UserControl>

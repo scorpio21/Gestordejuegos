@@ -107,11 +107,6 @@ namespace GestorJuegos
             OverlayAchievements.IsVisible = true;
         }
 
-        private void BtnCloseAchievements_Click(object? sender, RoutedEventArgs e)
-        {
-            OverlayAchievements.IsVisible = false;
-        }
-
         private void LoadGameAchievements(Game game)
         {
             if (PanelAchievementsSmall == null) return;
@@ -180,7 +175,7 @@ namespace GestorJuegos
                 StackAchievementIcons.Children.Add(moreBorder);
             }
 
-            ItemsAchievementsList.ItemsSource = game.Achievements;
+            OverlayAchievements.Initialize(game.Achievements);
         }
     }
 }
