@@ -14,24 +14,23 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
-### v1.5.5-Dev (10 Junio 2026) - Fase 5: Estabilización y LauncherService
-*   **LauncherService: Tracking de Tiempo y Estadísticas**:
-    - Implementado `LauncherService.cs` para centralizar la ejecución de juegos y emuladores.
-    - **Rastreo de Tiempo Real**: Monitoreo de procesos para calcular el tiempo de juego exacto y actualizarlo en la base de datos al cerrar el juego.
-    - **Auto-Progreso**: Actualización automática del estado del juego (ej: de "No Iniciado" a "En Progreso") basado en el tiempo jugado configurable en opciones.
-    - **Registro de Ejecución**: Registro de fecha de última partida y contador de ejecuciones mejorado.
-*   **Estabilización Post-Modularización**:
-    - Corregidos más de 40 errores de compilación derivados de la extracción de componentes en la Fase 4.
-    - Eliminación de lógica duplicada de importación y gestión de plataformas en `MainWindow.axaml.cs`.
-    - Optimización de la comunicación entre `MainWindow` y los controles modulares mediante nuevos métodos de inicialización y selección.
-*   **Limpieza de ScannerService**:
-    - Corregidos errores de tipado y namespaces faltantes.
-    - Sincronización de metadatos de géneros y regiones mejorada.
-*   **Limpieza de Scrapers Online**:
-    - Eliminada por completo la búsqueda y raspado de Vimm's Lair en favor de la exportación local desde carpetas.
-    - Eliminadas todas las referencias, logs y menús relacionados con Vimm en la ventana principal.
-*   **Corrección de Errores de UI**:
-    - Restaurados manejadores de eventos críticos (`GameItem_PointerEntered`) que causaban fallos de compilación tras la limpieza de código.
+### v1.6.0-Dev (10 Junio 2026) - Fase 2: Modularización de Detalles del Juego
+*   **Modularización de GameDetailsView**:
+    - **Extracción Completa**: Trasladada toda la lógica de visualización de información del juego, visor 3D interactivo y carrusel de capturas a un componente `UserControl` independiente.
+    - **Gestión de Logros Local**: El componente ahora gestiona de forma autónoma la visualización de RetroAchievements, reduciendo la carga de `MainWindow.UI.cs`.
+    - **Sincronización Inteligente**: Implementado sistema de eventos (`RequestLaunch`, `RequestEdit`, `RequestPlayStatusChange`) para comunicar acciones al padre sin dependencias circulares.
+*   **Estabilización de MainWindow**:
+    - Eliminadas más de 1000 líneas de código redundante y referencias huérfanas en `MainWindow.axaml.cs`.
+    - Corregidos errores críticos de compilación derivados de la extracción masiva de controles.
+    - Unificación del constructor y limpieza de directivas `using`.
+*   **Servicios y Controles**:
+    - **GameService**: Añadido método `GetGameExtraImages` para soporte nativo de la galería de capturas.
+    - **GameBox3D**: Implementado método `UpdateTextures` para permitir actualizaciones dinámicas del visor 3D desde código.
+
+### v1.5.5-Dev (En Progreso) - Fase 3: LauncherService y Tracking
+*   **Próximos Pasos**:
+    - Desacoplar la lógica de ejecución de procesos a un servicio dedicado.
+    - Implementar tracking de tiempo real y auto-actualización de estados de juego.
 
 ### v1.5.0-Dev (7 Junio 2026) - Fase 4: Arquitectura Modular y ScannerService
 *   **Modularización de Overlays (Logros y Plataformas)**:

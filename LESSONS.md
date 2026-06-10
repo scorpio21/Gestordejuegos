@@ -42,6 +42,17 @@ Este archivo registra fallos técnicos, soluciones complejas y "trucos" arquitec
 ---
 *Última actualización: 10 de junio de 2026*
 
-### ⚠️ 3. Limpieza de Código y Eventos XAML
-Al realizar limpiezas masivas de código (como la eliminación de servicios o scrapers), es crítico verificar que no se eliminen métodos de code-behind que todavía están referenciados en el XAML. El error `AVLN3000` en Avalonia indica que un evento (ej. `PointerEntered`) apunta a un método inexistente. Siempre revisar las referencias en el archivo `.axaml` antes de borrar métodos en `.axaml.cs`.
+### ⚠️ 8. Refactorización Masiva y Herramientas de Edición
+*   **Problema**: Al intentar sobrescribir archivos de gran tamaño (>4000 líneas), las herramientas pueden fallar o realizar recortes accidentales si no se maneja con cuidado el contexto de las cadenas.
+*   **Solución**:
+    - **NUNCA** usar `write_file` para reemplazar el contenido completo de archivos gigantes; usar siempre `replace` de forma quirúrgica sobre bloques pequeños.
+    - **Validación Continua**: Ejecutar `dotnet build` tras cada cambio atómico para detectar referencias huérfanas inmediatamente.
+    - **Git como Red de Seguridad**: Realizar commits de "punto de control" antes de cambios estructurales profundos. Si ocurre un fallo masivo, `git checkout` es el mejor aliado.
+
+### 🧩 9. Encapsulación de UI Compleja (GameDetailsView)
+*   **Problema**: Mover controles que tienen lógica de actualización dinámica (ej. Visor 3D) rompe el enlace directo en `MainWindow`.
+*   **Solución**:
+    - Exponer métodos públicos en el `UserControl` (`UpdateDetails`, `SetCover`) para que el padre pueda inyectar datos.
+    - El hijo debe gestionar su propia UI interna (ej. borrar listas, actualizar barras de progreso) para mantener la cohesión.
+    - **Servicios Compartidos**: Inyectar instancias de servicios (`GameService`) en los métodos de actualización del componente para permitirle realizar consultas de datos locales de forma autónoma.
 

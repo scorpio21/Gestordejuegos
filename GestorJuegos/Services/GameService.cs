@@ -157,6 +157,14 @@ namespace GestorJuegos.Services
             return null;
         }
 
+        public List<GameImage> GetGameExtraImages(int gameId)
+        {
+            using var context = new CoversDbContext();
+            return context.Images.Where(i => i.GameId == gameId).ToList();
+        }
+
+        public List<GameImage> GetGameImages(int gameId) => GetGameExtraImages(gameId);
+
         public void SaveGameImage(int gameId, string type, byte[] data)
         {
             using var context = new CoversDbContext();

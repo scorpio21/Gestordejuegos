@@ -29,6 +29,12 @@ namespace GestorJuegos.Controls
             set => SetValue(RotationYProperty, value);
         }
 
+        public void UpdateTextures(Bitmap? front, Bitmap? back, Bitmap? spine)
+        {
+            Cover = front;
+            // Podríamos asignar back y spine a nuevas propiedades si las añadimos al control
+        }
+
         private bool _isDragging = false;
         private Point _lastMousePosition;
         private const double RotationSensitivity = 0.5;
