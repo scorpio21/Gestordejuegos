@@ -14,6 +14,18 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
+### v2.0.0-Dev (12 Junio 2026) - Fase 12: Restauración de Menús Horizontales y Modularización Parcial
+*   **Restauración del Menú Superior**:
+    - Vinculadas y reparadas todas las llamadas del menú horizontal de Herramientas, Ver, Ordenar Por, Grupo de Imagen, Insignias y Ayuda que habían dejado de funcionar.
+*   **Arquitectura Parcial Modular (`MainWindow.Menus.cs`)**:
+    - Extraída toda la lógica despachadora de eventos de menús, lógica de importación, sincronización inteligente, diálogos informativos y copias de seguridad de la base de datos a un archivo parcial, logrando que `MainWindow.axaml.cs` se mantenga exactamente en 400 líneas de código (cumpliendo rigurosamente el rango estricta de 300-400 líneas).
+*   **Ordenación Dinámica por Campos (`LibraryView`)**:
+    - Implementada la ordenación avanzada en el control de galería `LibraryView` por 15 campos técnicos distintos (Año, Región, Calificación, Favorito, Tiempo jugado, etc.) en base a la selección del menú superior.
+*   **Progress Overlay y Cancelación Interactiva**:
+    - Integrado el overlay de progreso con visualización de estados en tiempo real (porcentaje, título, detalles) para escaneos locales, masivos e importaciones, con soporte interactivo de cancelación mediante `CancellationTokenSource`.
+*   **Seguridad de Eventos en Diálogos**:
+    - Corregida la posible fuga y acumulación de callbacks al abrir múltiples veces diálogos en `OverlayDialog` gracias al uso de una acción global autocancelable `_dialogAcceptedAction`.
+
 ### v1.9.0-Dev (11 Junio 2026) - Fase 11: Corrección de RetroAchievements y Ajustes de Diseño de Detalles
 *   **Corrección en el Escáner de Metadatos**:
     - Se ajustó la ruta y nombre del archivo de base de datos de LaunchBox en `ExternalMetadataService.cs` para buscar `LaunchBox.Metadata.db` en la carpeta `RevisaDB`, corrigiendo las consultas locales fallidas.

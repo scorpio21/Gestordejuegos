@@ -31,6 +31,14 @@ namespace GestorJuegos.Views.Panels
         private bool _isSortAscending = true;
         private string _currentSearch = "";
         
+        public string SortField { get; set; } = "Name";
+        public bool IsGridView => LstGamesGrid.IsVisible;
+        public bool IsSortAscending
+        {
+            get => _isSortAscending;
+            set => _isSortAscending = value;
+        }
+        
         private bool _isSyncingSelection = false;
 
         public event EventHandler<Game>? GameSelected;
@@ -117,7 +125,27 @@ namespace GestorJuegos.Views.Panels
             }
 
             // 4. Ordenación
-            filtered = _isSortAscending ? filtered.OrderBy(g => g.Name) : filtered.OrderByDescending(g => g.Name);
+            Func<Game, object> keySelector = SortField switch
+            {
+                "Year" => g => g.Year,
+                "DateAdded" => g => g.DateAdded,
+                "Developer" => g => g.Developer ?? "",
+                "IsFavorite" => g => g.IsFavorite ? 0 : 1,
+                "Genre" => g => g.Genre ?? "",
+                "LastPlayed" => g => g.LastPlayed ?? DateTime.MinValue,
+                "ExternalDbId" => g => g.ExternalDbId ?? "",
+                "MaxPlayers" => g => g.MaxPlayers,
+                "PlayCount" => g => g.PlayCount,
+                "PlayTime" => g => g.PlayTime,
+                "Rating" => g => g.Rating,
+                "Region" => g => g.Region ?? "",
+                "ReleaseDate" => g => g.ReleaseDate ?? "",
+                "PlayStatus" => g => g.PlayStatus ?? "",
+                "Version" => g => g.Version ?? "",
+                _ => g => g.Name
+            };
+
+            filtered = _isSortAscending ? filtered.OrderBy(keySelector) : filtered.OrderByDescending(keySelector);
 
             var filteredList = filtered.ToList();
             int totalItems = filteredList.Count;

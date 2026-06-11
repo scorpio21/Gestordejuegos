@@ -21,7 +21,6 @@ using GestorJuegos.Utils;
 using GestorJuegos.Data;
 
 namespace GestorJuegos.Views.Windows;
-
 public partial class MainWindow : Window
 {
     private readonly GameService _gameService;
@@ -36,6 +35,7 @@ public partial class MainWindow : Window
     private List<Game> _currentPlatformGames = new List<Game>();
     
     private AppSettings _settings = new AppSettings();
+    private Action? _dialogAcceptedAction;
 
     // Variables de estado de UI (RESTAURADAS)
     private string _currentSortField = "Name";
@@ -137,8 +137,6 @@ public partial class MainWindow : Window
                 GameDetails.UpdateDetails(_selectedGame, _gameService);
             }
         };
-
-
         OverlayEditGame.RequestMessage += (msg) => ShowMessage(msg);
         OverlayAchievements.RequestClose += (s, e) => OverlayAchievements.IsVisible = false;
         OverlayManagePlatforms.RequestClose += (s, e) => OverlayManagePlatforms.IsVisible = false;
@@ -152,6 +150,15 @@ public partial class MainWindow : Window
             OverlayPlatformsWall.IsVisible = false;
         };
 
+        OverlayProgress.CancelRequested += (s, e) => _cts?.Cancel();
+        OverlayDialog.Accepted += (s, e) => {
+            _dialogAcceptedAction?.Invoke();
+            _dialogAcceptedAction = null;
+        };
+        OverlayDialog.Cancelled += (s, e) => {
+            _dialogAcceptedAction = null;
+        };
+
         OverlayKeyboard.RequestClose += (s, e) => OverlayKeyboard.IsVisible = false;
         OverlayKeyboard.TextSubmitted += (s, text) => {
             TopBar.SetSearchText(text);
@@ -160,9 +167,9 @@ public partial class MainWindow : Window
         };
 
         OverlayExportOptions.RequestClose += (s, e) => OverlayExportOptions.IsVisible = false;
-        OverlayExportOptions.RequestExport += (s, args) => {
+        OverlayExportOptions.RequestExport += async (s, args) => {
             OverlayExportOptions.IsVisible = false;
-            ShowMessage($"Exportación iniciada: Juegos={args.exportGames}, Carátulas={args.exportCovers}");
+            await ExportDatabaseAsync(args.exportGames, args.exportCovers);
         };
 
         OverlayDeleteConfirm.Confirmed += (s, deleteMedia) => { if (_selectedGame != null) { _gameService.DeleteGame(_selectedGame.Id); LoadGames(); GameDetails.IsVisible = false; } };
@@ -288,7 +295,7 @@ public partial class MainWindow : Window
 
     private void DeletePlatformWithConfirm(Platform platform)
     {
-        OverlayDialog.Accepted += (s, e) => {
+        _dialogAcceptedAction = () => {
             _gameService.DeletePlatform(platform.Id);
             Sidebar.LoadPlatforms();
             LoadDashboard();
@@ -333,58 +340,6 @@ public partial class MainWindow : Window
     {
         if (_selectedGame == null) return;
         OverlayDeleteConfirm.Show($"¿Borrar {_selectedGame.Name}?");
-    }
-
-    private void OnTopBarViewToggle(object? sender, string name)
-    {
-        bool grid = name == "BtnViewGrid";
-        bool list = name == "BtnViewList";
-        bool wheelV = name == "BtnViewWheelVertical";
-        bool wheelH = name == "BtnViewWheelHorizontal";
-
-        TopBar.SetViewMode(grid, list, wheelV, wheelH);
-        Library.SetViewMode(grid, list, wheelV, wheelH);
-    }
-
-    private void OnTopBarSortAction(object? sender, string name) { /* Lógica de ordenación delegada a Library */ }
-    private void OnTopBarArtTypeAction(object? sender, string name) { _settings.PreferredArtType = name.Replace("ArtType", ""); Library.ApplyFilters(); }
-    private void OnTopBarBadgeAction(object? sender, string name) { /* Toggle badges */ Library.ApplyFilters(); }
-    private void OnTopBarHelpAction(object? sender, string name) { ShowMessage($"Ayuda sobre {name}"); }
-
-    private async void OnTopBarMenuAction(object? sender, string action)
-    {
-        switch (action)
-        {
-            case "MenuImportFolders":
-                await ImportFromFolder();
-                break;
-            case "MenuCleanupOrphans":
-                await CleanupOrphans();
-                break;
-            case "MenuSettings":
-                var options = new OpcionesWindow(_settings);
-                if (await options.ShowDialog<bool>(this))
-                {
-                    SaveSettings();
-                    ApplyTheme();
-                    Sidebar.Initialize(_gameService, _settings); // Refrescar sidebar si cambiaron rutas
-                    Library.Initialize(_gameService, _settings);
-                    Library.ApplyFilters();
-                }
-                break;
-            case "MenuManagePlatforms":
-                OverlayManagePlatforms.Initialize(_gameService);
-                OverlayManagePlatforms.IsVisible = true;
-                break;
-            case "MenuShowStats":
-                ShowFullStats();
-                break;
-        }
-    }
-
-    private void UpdateMenuCheckmarks()
-    {
-        TopBar.UpdateCheckmarks(_currentSortField, _isSortAscending, _settings, _showFavoriteBadge, _showRegionBadge, _showStatusBadge, true, false);
     }
 
     private void ApplyTheme()
