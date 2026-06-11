@@ -17,8 +17,8 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 ### v2.0.0-Dev (12 Junio 2026) - Fase 12: Restauración de Menús Horizontales y Modularización Parcial
 *   **Restauración del Menú Superior**:
     - Vinculadas y reparadas todas las llamadas del menú horizontal de Herramientas, Ver, Ordenar Por, Grupo de Imagen, Insignias y Ayuda que habían dejado de funcionar.
-*   **Arquitectura Parcial Modular (`MainWindow.Menus.cs`)**:
-    - Extraída toda la lógica despachadora de eventos de menús, lógica de importación, sincronización inteligente, diálogos informativos y copias de seguridad de la base de datos a un archivo parcial, logrando que `MainWindow.axaml.cs` se mantenga exactamente en 400 líneas de código (cumpliendo rigurosamente el rango estricta de 300-400 líneas).
+*   **Arquitectura Parcial Modular (`MainWindow.Menus.cs` y `MainWindow.Help.cs`)**:
+    - Extraída toda la lógica despachadora de eventos de menús, lógica de importación, sincronización inteligente y copias de seguridad a `MainWindow.Menus.cs`, y todos los diálogos amigables de ayuda a `MainWindow.Help.cs`. De esta forma logramos que el archivo principal `MainWindow.axaml.cs` se mantenga exactamente en 400 líneas de código (cumpliendo rigurosamente el rango de 300-400 líneas).
 *   **Ordenación Dinámica por Campos (`LibraryView`)**:
     - Implementada la ordenación avanzada en el control de galería `LibraryView` por 15 campos técnicos distintos (Año, Región, Calificación, Favorito, Tiempo jugado, etc.) en base a la selección del menú superior.
 *   **Progress Overlay y Cancelación Interactiva**:
