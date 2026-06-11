@@ -36,7 +36,7 @@ public partial class MainWindow : Window
     
     private AppSettings _settings = new AppSettings();
     private Action? _dialogAcceptedAction;
-
+    private CancellationTokenSource? _cts;
     // Variables de estado de UI (RESTAURADAS)
     private string _currentSortField = "Name";
     private bool _isSortAscending = true;

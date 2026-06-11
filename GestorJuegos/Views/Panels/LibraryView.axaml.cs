@@ -134,7 +134,7 @@ namespace GestorJuegos.Views.Panels
                 "Genre" => g => g.Genre ?? "",
                 "LastPlayed" => g => g.LastPlayed ?? DateTime.MinValue,
                 "ExternalDbId" => g => g.ExternalDbId ?? "",
-                "MaxPlayers" => g => g.MaxPlayers,
+                "MaxPlayers" => g => g.MaxPlayers ?? 0,
                 "PlayCount" => g => g.PlayCount,
                 "PlayTime" => g => g.PlayTime,
                 "Rating" => g => g.Rating,

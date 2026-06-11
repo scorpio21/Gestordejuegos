@@ -14,11 +14,17 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
-### v2.0.0-Dev (12 Junio 2026) - Fase 12: Restauración de Menús Horizontales y Modularización Parcial
+### v2.0.0-Dev (12 Junio 2026) - Fase 12: Restauración de Menús Horizontales y Modularización Completa
 *   **Restauración del Menú Superior**:
     - Vinculadas y reparadas todas las llamadas del menú horizontal de Herramientas, Ver, Ordenar Por, Grupo de Imagen, Insignias y Ayuda que habían dejado de funcionar.
-*   **Arquitectura Parcial Modular (`MainWindow.Menus.cs` y `MainWindow.Help.cs`)**:
-    - Extraída toda la lógica despachadora de eventos de menús, lógica de importación, sincronización inteligente y copias de seguridad a `MainWindow.Menus.cs`, y todos los diálogos amigables de ayuda a `MainWindow.Help.cs`. De esta forma logramos que el archivo principal `MainWindow.axaml.cs` se mantenga exactamente en 400 líneas de código (cumpliendo rigurosamente el rango de 300-400 líneas).
+*   **Arquitectura Modular Completa (Archivos Parciales < 300 líneas)**:
+    - Toda la lógica compleja de `MainWindow` fue fragmentada en archivos parciales temáticos independientes de menos de 300 líneas para cumplir con las reglas estrictas de diseño, manteniendo el archivo principal `MainWindow.axaml.cs` en exactamente 400 líneas:
+      - [MainWindow.Imports.cs](file:///k:/GestorJuegos/GestorJuegos/Views/Windows/MainWindow.Imports.cs): Gestión de importaciones recursivas, LaunchBox y archivos DAT No-Intro.
+      - [MainWindow.Sync.cs](file:///k:/GestorJuegos/GestorJuegos/Views/Windows/MainWindow.Sync.cs): Sincronización inteligente de ROMs y conexión con la base de datos maestra.
+      - [MainWindow.Covers.cs](file:///k:/GestorJuegos/GestorJuegos/Views/Windows/MainWindow.Covers.cs): Funcionalidad de escaneo local y masivo de carátulas en segundo plano.
+      - [MainWindow.Database.cs](file:///k:/GestorJuegos/GestorJuegos/Views/Windows/MainWindow.Database.cs): Respaldos, restauración de base de datos, limpieza de huérfanos y filtros.
+      - [MainWindow.Help.cs](file:///k:/GestorJuegos/GestorJuegos/Views/Windows/MainWindow.Help.cs): Diálogos y guías detalladas de ayuda en español.
+      - [MainWindow.Menus.cs](file:///k:/GestorJuegos/GestorJuegos/Views/Windows/MainWindow.Menus.cs): Despachador de clics del menú superior y control de checkmarks.
 *   **Ordenación Dinámica por Campos (`LibraryView`)**:
     - Implementada la ordenación avanzada en el control de galería `LibraryView` por 15 campos técnicos distintos (Año, Región, Calificación, Favorito, Tiempo jugado, etc.) en base a la selección del menú superior.
 *   **Progress Overlay y Cancelación Interactiva**:
@@ -315,7 +321,7 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 🛠️ Requisitos e Instalación
 
-1. Tener instalado .NET 8 SDK.
+1. Tener instalado .NET 9 SDK.
 2. Clonar el repositorio.
 3. Ejecutar `dotnet run` dentro de la carpeta del proyecto.
 
