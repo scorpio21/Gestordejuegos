@@ -690,3 +690,5 @@ massive_scan_log.txt
 # Carpetas temporales y de revisión
 /RevisaDB/
 /copia/
+# Gestor de Juegos Cache
+**/Cache/

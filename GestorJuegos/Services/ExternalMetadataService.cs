@@ -17,6 +17,10 @@ public class ExternalMetadataService
         {
             _dbPath = customDbPath;
         }
+        else if (File.Exists(@"K:\GestorJuegos\RevisaDB\LaunchBox.Metadata.db"))
+        {
+            _dbPath = @"K:\GestorJuegos\RevisaDB\LaunchBox.Metadata.db";
+        }
         else if (File.Exists(@"K:\GestorJuegos\RevisaDB\Metadata.db"))
         {
             _dbPath = @"K:\GestorJuegos\RevisaDB\Metadata.db";

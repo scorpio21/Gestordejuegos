@@ -11,6 +11,7 @@ namespace GestorJuegos.Services
     public class GameService
     {
         private static bool _schemaUpdated = false;
+        private readonly ImageCacheService _imageCache = new();
 
         public GameService()
         {
@@ -18,6 +19,7 @@ namespace GestorJuegos.Services
             {
                 using (var context = new AppDbContext())
                 {
+                    OptimizeDatabase(context);
                     context.Database.EnsureCreated();
                     // Migraciones existentes...
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Games ADD COLUMN SelectedArtType TEXT NOT NULL DEFAULT ''"); } catch { }
@@ -78,6 +80,7 @@ namespace GestorJuegos.Services
 
                 using (var coversContext = new CoversDbContext())
                 {
+                    OptimizeDatabase(coversContext);
                     coversContext.Database.EnsureCreated();
                     try { coversContext.Database.ExecuteSqlRaw("ALTER TABLE Covers ADD COLUMN ImageType TEXT NOT NULL DEFAULT 'Box - Front'"); } catch { }
                     try { coversContext.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS Images (Id INTEGER PRIMARY KEY AUTOINCREMENT, GameId INTEGER NOT NULL, ImageType TEXT NOT NULL, ImageData BLOB);"); } catch { }
@@ -89,6 +92,18 @@ namespace GestorJuegos.Services
                 
                 _schemaUpdated = true;
             }
+        }
+
+        private void OptimizeDatabase(DbContext context)
+        {
+            try
+            {
+                context.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
+                context.Database.ExecuteSqlRaw("PRAGMA synchronous=NORMAL;");
+                context.Database.ExecuteSqlRaw("PRAGMA cache_size=-10000;"); // 10MB de caché
+                context.Database.ExecuteSqlRaw("PRAGMA temp_store=MEMORY;");
+            }
+            catch { }
         }
 
         private readonly ExternalMetadataService _metadataService = new();
@@ -137,20 +152,29 @@ namespace GestorJuegos.Services
 
         public byte[]? GetGameExtraImage(int gameId, string type)
         {
+            // 1. Intentar desde caché
+            var cached = _imageCache.GetFromCache(gameId, type);
+            if (cached != null) return cached;
+
             using var context = new CoversDbContext();
             
-            // 1. Buscar en la tabla de imágenes adicionales
+            // 2. Buscar en la tabla de imágenes adicionales
             var extra = context.Images
                 .Where(i => i.GameId == gameId && i.ImageType == type)
                 .Select(i => i.ImageData)
                 .FirstOrDefault();
 
-            if (extra != null) return extra;
-
-            // 2. Buscar en la tabla de carátulas principales, verificando el tipo
-            var cover = context.Covers.Find(gameId);
-            if (cover != null && cover.ImageType == type)
+            if (extra != null)
             {
+                _imageCache.SaveToCache(gameId, type, extra);
+                return extra;
+            }
+
+            // 3. Buscar en la tabla de carátulas principales, verificando el tipo
+            var cover = context.Covers.Find(gameId);
+            if (cover != null && cover.ImageType == type && cover.ImageData != null)
+            {
+                _imageCache.SaveToCache(gameId, type, cover.ImageData);
                 return cover.ImageData;
             }
 
@@ -179,6 +203,9 @@ namespace GestorJuegos.Services
                 context.Images.Add(new GameImage { GameId = gameId, ImageType = type, ImageData = data });
             }
             context.SaveChanges();
+            
+            // Invalidar caché
+            _imageCache.InvalidateCache(gameId, type);
         }
 
         public void SaveGameImagesBatch(List<GameImage> images)
@@ -189,6 +216,8 @@ namespace GestorJuegos.Services
                 var existing = context.Images.FirstOrDefault(i => i.GameId == img.GameId && i.ImageType == img.ImageType);
                 if (existing != null) existing.ImageData = img.ImageData;
                 else context.Images.Add(img);
+                
+                _imageCache.InvalidateCache(img.GameId, img.ImageType);
             }
             context.SaveChanges();
         }
@@ -276,6 +305,12 @@ namespace GestorJuegos.Services
 
         public byte[]? GetGameThumbnail(int gameId, string? artType = null)
         {
+            string safeType = artType ?? "Box_Front";
+            
+            // 1. Intentar desde caché
+            var cached = _imageCache.GetFromCache(gameId, safeType);
+            if (cached != null) return cached;
+
             using var coversContext = new CoversDbContext();
 
             // Si se especifica un tipo, intentar buscarlo estrictamente
@@ -287,13 +322,19 @@ namespace GestorJuegos.Services
                     .Select(i => i.ImageData)
                     .FirstOrDefault();
 
-                if (extraThumb != null) return extraThumb;
+                if (extraThumb != null)
+                {
+                    _imageCache.SaveToCache(gameId, safeType, extraThumb);
+                    return extraThumb;
+                }
 
                 // 2. Buscar en carátulas principales solo si el tipo coincide
                 var cover = coversContext.Covers.Find(gameId);
                 if (cover != null && cover.ImageType == artType)
                 {
-                    return cover.ThumbnailData ?? cover.ImageData;
+                    var data = cover.ThumbnailData ?? cover.ImageData;
+                    if (data != null) _imageCache.SaveToCache(gameId, safeType, data);
+                    return data;
                 }
 
                 // Si se pidió un tipo específico y no se encontró, NO hacer fallback
@@ -301,7 +342,12 @@ namespace GestorJuegos.Services
             }
 
             // Si NO se especifica tipo (o es nulo), devolver el thumbnail de la carátula principal (comportamiento por defecto)
-            return coversContext.Covers.Where(c => c.Id == gameId).Select(c => c.ThumbnailData).FirstOrDefault();
+            var thumb = coversContext.Covers.Where(c => c.Id == gameId).Select(c => c.ThumbnailData).FirstOrDefault();
+            if (thumb != null)
+            {
+                _imageCache.SaveToCache(gameId, safeType, thumb);
+            }
+            return thumb;
         }
 
         public byte[]? GetGameFullCover(int gameId)
@@ -361,6 +407,9 @@ namespace GestorJuegos.Services
                 var covers = coversContext.Covers.Where(c => gameIds.Contains(c.Id)).ToList();
                 coversContext.Covers.RemoveRange(covers);
                 coversContext.SaveChanges();
+
+                // Invalidar caché para todos los juegos de la plataforma
+                foreach (var id in gameIds) _imageCache.InvalidateCache(id);
             }
         }
 
@@ -518,6 +567,8 @@ namespace GestorJuegos.Services
                                 existingCover.ThumbnailData = ImageHelper.GenerateThumbnail(cu.Data!);
                                 coversContext.Covers.Update(existingCover);
                             }
+                            
+                            _imageCache.InvalidateCache(cu.GameId, cu.Type);
                         }
 
                         foreach (var extra in extraImagesToUpdate)
@@ -538,6 +589,7 @@ namespace GestorJuegos.Services
                                     img.GameId = extra.GameId;
                                     coversContext.Images.Add(img);
                                 }
+                                _imageCache.InvalidateCache(extra.GameId, img.ImageType);
                             }
                         }
                         coversContext.SaveChanges();
@@ -562,6 +614,8 @@ namespace GestorJuegos.Services
                     coversContext.Covers.Remove(cover);
                     coversContext.SaveChanges();
                 }
+                
+                _imageCache.InvalidateCache(gameId);
             }
         }
 
@@ -576,6 +630,8 @@ namespace GestorJuegos.Services
             var covers = coversContext.Covers.Where(c => gameIds.Contains(c.Id)).ToList();
             coversContext.Covers.RemoveRange(covers);
             coversContext.SaveChanges();
+
+            foreach (var id in gameIds) _imageCache.InvalidateCache(id);
         }
 
         public List<Game> GetOrphanedGames()

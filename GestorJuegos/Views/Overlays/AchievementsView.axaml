@@ -26,20 +26,21 @@
                                     <Grid ColumnDefinitions="Auto, *, Auto">
                                         <!-- Icono -->
                                         <Border Grid.Column="0" Width="54" Height="54" CornerRadius="10" ClipToBounds="True" Background="#1a1a1d">
-                                            <Image Source="{Binding IconUrl, Converter={StaticResource ByteToBitmap}}" Opacity="1" Stretch="UniformToFill"/>
+                                            <Image Source="{Binding IconUrl, Converter={StaticResource UrlToBitmap}}" Opacity="1" Stretch="UniformToFill"/>
                                         </Border>
-                                        
+
                                         <!-- Textos -->
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0">
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="15,0">   
                                             <TextBlock Text="{Binding Title}" Foreground="White" FontWeight="Bold" FontSize="14"/>
                                             <TextBlock Text="{Binding Description}" Foreground="#94a3b8" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                         </StackPanel>
-                                        
+
                                         <!-- Estado -->
-                                        <Panel Grid.Column="2" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <Panel Grid.Column="2" VerticalAlignment="Center" Margin="10,0,0,0">    
                                             <TextBlock Text="✓" Foreground="#10b981" FontSize="22" IsVisible="{Binding IsUnlocked}"/>
                                             <TextBlock Text="🔒" Foreground="#475569" FontSize="18" IsVisible="{Binding !IsUnlocked}"/>
                                         </Panel>
+
                                     </Grid>
                                 </Border>
                             </DataTemplate>

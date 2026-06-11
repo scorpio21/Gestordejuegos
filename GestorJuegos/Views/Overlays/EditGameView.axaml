@@ -63,6 +63,16 @@
 
                             <Grid ColumnDefinitions="*, *">
                                 <StackPanel Spacing="5" Margin="0,0,10,0">
+                                    <TextBlock Text="ID de RetroAchievements / ID Externo" FontSize="11" Foreground="#64748b"/>
+                                    <TextBox Name="TxtExternalDbId" PlaceholderText="Ej: 1496 (ID de RetroAchievements)"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,0,0">
+                                    <!-- Espacio reservado para simetría -->
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*, *">
+                                <StackPanel Spacing="5" Margin="0,0,10,0">
                                     <TextBlock Text="Desarrollador" FontSize="11" Foreground="#64748b"/>
                                     <TextBox Name="TxtDeveloper" PlaceholderText="Ej: Nintendo EAD"/>
                                 </StackPanel>

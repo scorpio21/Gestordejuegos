@@ -14,6 +14,19 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
+### v1.8.0-Dev (11 Junio 2026) - Fase 10: Optimización de Rendimiento y Caché
+*   **Sistema de Caché de Imágenes en Disco**:
+    - Implementado `ImageCacheService` que almacena versiones optimizadas de las carátulas en la carpeta `/Cache/Covers`.
+    - Reducción drástica de accesos a disco y DB: Las imágenes se cargan desde archivos JPG locales tras la primera visualización, acelerando la navegación por la galería.
+    - Inviladación automática de caché al editar o eliminar juegos.
+*   **Optimización Maestra de SQLite**:
+    - Activado el modo **WAL (Write-Ahead Logging)** para permitir lecturas y escrituras simultáneas sin bloqueos.
+    - Configurado `PRAGMA synchronous = NORMAL` y aumento del `cache_size` a 10MB para una respuesta instantánea en consultas pesadas.
+    - Implementada política de "Conexión Optimizada" en todos los servicios de datos.
+*   **Mantenimiento y Estabilidad**:
+    - Corregidas advertencias de nulabilidad en el servicio de imágenes.
+    - Actualizado `.gitignore` para excluir los archivos de caché local.
+
 ### v1.7.0-Dev (11 Junio 2026) - Hito Modular 5.0: Arquitectura por Componentes
 *   **Fase 5: Modularización Total de la Galería (LibraryView)**:
     - **Extracción Histórica**: La galería central (cuadrícula, lista, ruedas y paginación) ahora reside en el componente `LibraryView`.

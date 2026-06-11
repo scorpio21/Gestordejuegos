@@ -65,6 +65,7 @@ public partial class EditGameView : UserControl
         this.FindControl<TextBox>("TxtDescription")!.Text = game.Description;
         this.FindControl<TextBox>("TxtLanguages")!.Text = game.Languages;
         this.FindControl<TextBox>("TxtVersion")!.Text = game.Version;
+        this.FindControl<TextBox>("TxtExternalDbId")!.Text = game.ExternalDbId;
         this.FindControl<CheckBox>("ChkIsFavorite")!.IsChecked = game.IsFavorite;
 
         var cmbStatus = this.FindControl<ComboBox>("CmbPlayStatus")!;
@@ -138,6 +139,7 @@ public partial class EditGameView : UserControl
         _selectedGame.Description = this.FindControl<TextBox>("TxtDescription")!.Text ?? string.Empty;
         _selectedGame.Languages = this.FindControl<TextBox>("TxtLanguages")!.Text ?? string.Empty;
         _selectedGame.Version = this.FindControl<TextBox>("TxtVersion")!.Text ?? string.Empty;
+        _selectedGame.ExternalDbId = this.FindControl<TextBox>("TxtExternalDbId")!.Text;
         _selectedGame.PlayStatus = (this.FindControl<ComboBox>("CmbPlayStatus")!.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Pendiente";
         _selectedGame.Rating = (int)this.FindControl<Slider>("SldRating")!.Value;
         

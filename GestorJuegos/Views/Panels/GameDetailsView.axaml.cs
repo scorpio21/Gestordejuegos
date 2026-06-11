@@ -83,6 +83,10 @@ public partial class GameDetailsView : UserControl
         TxtInfoFile.Text = System.IO.Path.GetFileName(game.RomPath);
         TxtInfoDescription.Text = game.Description ?? "Sin descripción disponible.";
 
+        // Playtime commitment
+        TxtPlaytimeMain.Text = game.PlaytimeMain ?? "--";
+        TxtPlaytimeCompletionist.Text = game.PlaytimeCompletionist ?? "--";
+
         UpdateFavoriteIcon(game.IsFavorite);
         LoadGameAchievements(game);
         
@@ -90,20 +94,75 @@ public partial class GameDetailsView : UserControl
         LstRelatedGames.ItemsSource = gameService.GetGamesByPlatform(game.PlatformId).Where(g => g.Id != game.Id).Take(10).ToList();
     }
 
-    private void LoadGameAchievements(Game game)
+    private readonly RetroAchievementsService _raService = new();
+
+    private async void LoadGameAchievements(Game game)
     {
         StackAchievementIcons.Children.Clear();
-        if (game.Achievements == null) return;
 
-        int unlocked = game.Achievements.Count(a => a.IsUnlocked);
-        int total = game.Achievements.Count;
+        // Si ya tiene logros cargados en memoria, usarlos
+        if (game.Achievements != null && game.Achievements.Any())
+        {
+            DisplayAchievements(game.Achievements);
+            return;
+        }
+
+        // Si no tiene logros, intentar cargarlos de la API si hay ID de RA
+        if (int.TryParse(game.ExternalDbId, out int raId))
+        {
+            string configPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+            if (System.IO.File.Exists(configPath))
+            {
+                var json = System.IO.File.ReadAllText(configPath);
+                var settings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
+                if (settings != null && settings.EnableRetroAchievements)
+                {
+                    _raService.Initialize(settings.RetroUsername, settings.RetroApiKey);
+                    var achievements = await _raService.GetGameAchievements(raId);
+                    if (achievements.Any())
+                    {
+                        game.Achievements = achievements;
+                        DisplayAchievements(achievements);
+                        return;
+                    }
+                }
+            }
+        }
+
+        TxtAchievementsTitle.Text = "RETRO ACHIEVEMENTS (SIN VINCULAR)";
+        ProgAchievements.Value = 0;
+    }
+
+    private void DisplayAchievements(List<Achievement> achievements)
+    {
+        int unlocked = achievements.Count(a => a.IsUnlocked);
+        int total = achievements.Count;
         TxtAchievementsTitle.Text = $"RETRO ACHIEVEMENTS ({unlocked}/{total})";
         ProgAchievements.Value = total > 0 ? (unlocked * 100) / total : 0;
 
-        foreach (var achievement in game.Achievements.Take(4))
+        foreach (var achievement in achievements.Take(4))
         {
             var border = new Border { Width = 36, Height = 36, CornerRadius = new CornerRadius(6), ClipToBounds = true, Background = Avalonia.Media.Brush.Parse("#1e1e22") };
-            border.Child = new Image { Stretch = Avalonia.Media.Stretch.UniformToFill, Opacity = achievement.IsUnlocked ? 1.0 : 0.3 };
+            
+            // Usamos un control de imagen que cargará la URL
+            var img = new Image { Stretch = Avalonia.Media.Stretch.UniformToFill, Opacity = achievement.IsUnlocked ? 1.0 : 0.3 };
+            
+            // Dado que no podemos usar el converter aquí fácilmente de forma programática 
+            // de la misma manera que en XAML, simplemente intentamos cargar la imagen si hay una URL.
+            if (!string.IsNullOrEmpty(achievement.IconUrl))
+            {
+                Task.Run(async () => {
+                    try {
+                        using var client = new System.Net.Http.HttpClient();
+                        var data = await client.GetByteArrayAsync(achievement.IconUrl);
+                        Avalonia.Threading.Dispatcher.UIThread.Post(() => {
+                            try { img.Source = new Avalonia.Media.Imaging.Bitmap(new System.IO.MemoryStream(data)); } catch { }
+                        });
+                    } catch { }
+                });
+            }
+
+            border.Child = img;
             StackAchievementIcons.Children.Add(border);
         }
     }
@@ -144,7 +203,6 @@ public partial class GameDetailsView : UserControl
 
     public void SetCover(Avalonia.Media.Imaging.Bitmap? bitmap)
     {
-        ImgCover.Source = bitmap;
         ImgDetailBackground.Source = bitmap;
     }
     

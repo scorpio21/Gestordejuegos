@@ -4,4 +4,5 @@
 
     <utils:ByteArrayToBitmapConverter x:Key="ByteToBitmap"/>
     <utils:RegionToFlagConverter x:Key="RegionToFlag"/>
+    <utils:UrlToBitmapConverter x:Key="UrlToBitmap"/>
 </ResourceDictionary>
