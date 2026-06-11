@@ -44,7 +44,19 @@ namespace GestorJuegos.Views.Windows
         private void OnTopBarArtTypeAction(object? sender, string name)
         {
             SoundHelper.PlaySelect();
-            string artType = name.Replace("ArtType", "").Replace("SubArtType", "");
+            string cleanName = name.Replace("ArtType", "").Replace("SubArtType", "");
+            string artType = cleanName switch
+            {
+                "Background" => "Background",
+                "Box" => "Box",
+                "Box3D" => "Box 3D",
+                "CartFront" => "Cart - Front",
+                "Cart3D" => "Cart - 3D",
+                "ClearLogo" => "Clear Logo",
+                "Marquee" => "Marquee",
+                "Snap" => "Snap",
+                _ => "Box"
+            };
             _settings.PreferredArtType = artType;
             Library.ApplyFilters();
             UpdateMenuCheckmarks();
