@@ -14,6 +14,16 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
+### v1.9.0-Dev (11 Junio 2026) - Fase 11: Corrección de RetroAchievements y Ajustes de Diseño de Detalles
+*   **Corrección en el Escáner de Metadatos**:
+    - Se ajustó la ruta y nombre del archivo de base de datos de LaunchBox en `ExternalMetadataService.cs` para buscar `LaunchBox.Metadata.db` en la carpeta `RevisaDB`, corrigiendo las consultas locales fallidas.
+*   **Edición y Vinculación Manual de RetroAchievements**:
+    - Añadido el campo "ID de RetroAchievements / ID Externo" en `EditGameView.axaml` para permitir asignar manualmente el ID correspondiente de RetroAchievements a los juegos que no se vinculan automáticamente por hash (como Aladdin de Sega Master System, ID `1496`).
+*   **Rediseño de Playtime Commitment**:
+    - Rediseñado el panel de tiempo de juego a un formato premium de 2 columnas: "Beat the Game" con emoji de bandera (`🏳`) y "Mastered" con emoji de corona (`👑`).
+*   **Depuración Visual del Panel Lateral de Detalles**:
+    - Se removió por completo la sección "Arte" (ComboBox de selección de arte y el visualizador secundario `ImgCover`) del panel lateral de detalles, tal como se solicitó, para dar una apariencia limpia y organizada que previene errores y solapamientos en la UI.
+
 ### v1.8.0-Dev (11 Junio 2026) - Fase 10: Optimización de Rendimiento y Caché
 *   **Sistema de Caché de Imágenes en Disco**:
     - Implementado `ImageCacheService` que almacena versiones optimizadas de las carátulas en la carpeta `/Cache/Covers`.
