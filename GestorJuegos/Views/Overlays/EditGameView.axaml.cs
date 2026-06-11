@@ -12,6 +12,7 @@ using Avalonia.Platform.Storage;
 using GestorJuegos.Models;
 using GestorJuegos.Services;
 using GestorJuegos.Utils;
+using GestorJuegos.Data;
 
 namespace GestorJuegos.Views.Overlays;
 
@@ -23,6 +24,7 @@ public partial class EditGameView : UserControl
     private AppSettings? _settings;
     private byte[]? _currentCover;
     private ObservableCollection<string> _currentRoms = new();
+    private bool _coverModified = false;
 
     public event EventHandler? GameSaved;
     public event EventHandler? RequestClose;
@@ -54,6 +56,7 @@ public partial class EditGameView : UserControl
         _selectedPlatform = platform;
         _gameService = gameService;
         _settings = settings;
+        _coverModified = false;
 
         this.FindControl<TextBlock>("TxtEditGameTitle")!.Text = game.Id == 0 ? "Añadir Nuevo Juego" : "Editar Juego";
 
@@ -162,7 +165,35 @@ public partial class EditGameView : UserControl
         string editArtType = (this.FindControl<ComboBox>("CmbEditArtType")!.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Box 3D";
         _selectedGame.SelectedArtType = editArtType;
         _selectedGame.CoverType = GetExternalFolderName(editArtType);
-        _selectedGame.Cover = _currentCover;
+        
+        if (_coverModified)
+        {
+            if (_currentCover == null || _currentCover.Length == 0)
+            {
+                if (_selectedGame.Id != 0)
+                {
+                    using (var coversContext = new CoversDbContext())
+                    {
+                        var cover = coversContext.Covers.Find(_selectedGame.Id);
+                        if (cover != null)
+                        {
+                            coversContext.Covers.Remove(cover);
+                            coversContext.SaveChanges();
+                        }
+                    }
+                    _gameService.InvalidateGameCache(_selectedGame.Id);
+                }
+                _selectedGame.Cover = null;
+            }
+            else
+            {
+                _selectedGame.Cover = _currentCover;
+            }
+        }
+        else
+        {
+            _selectedGame.Cover = null;
+        }
 
         if (_selectedGame.Id == 0) _gameService.AddGame(_selectedGame);
         else _gameService.UpdateGame(_selectedGame);
@@ -200,6 +231,7 @@ public partial class EditGameView : UserControl
             using var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream);
             _currentCover = memoryStream.ToArray();
+            _coverModified = true;
             UpdateCoverImage();
         }
     }
@@ -207,6 +239,7 @@ public partial class EditGameView : UserControl
     private void BtnClearCover_Click(object? sender, RoutedEventArgs e)
     {
         _currentCover = null;
+        _coverModified = true;
         UpdateCoverImage();
     }
 
@@ -314,6 +347,43 @@ public partial class EditGameView : UserControl
 
     private void BtnSyncMasterDbLocal_Click(object? sender, RoutedEventArgs e)
     {
-        RequestMessage?.Invoke("Sincronización con Base de Datos Local no implementada en este módulo aún.");
+        if (_selectedGame == null || _selectedPlatform == null || _gameService == null) return;
+        
+        SoundHelper.PlaySelect();
+        
+        try
+        {
+            var tempGame = new Game { Name = this.FindControl<TextBox>("TxtName")!.Text ?? _selectedGame.Name };
+            _gameService.EnrichGameWithMetadata(tempGame, _selectedPlatform.Name);
+            
+            if (!string.IsNullOrEmpty(tempGame.ExternalDbId))
+            {
+                this.FindControl<TextBox>("TxtGenre")!.Text = !string.IsNullOrEmpty(tempGame.Genre) ? tempGame.Genre : this.FindControl<TextBox>("TxtGenre")!.Text;
+                this.FindControl<TextBox>("TxtDeveloper")!.Text = !string.IsNullOrEmpty(tempGame.Developer) ? tempGame.Developer : this.FindControl<TextBox>("TxtDeveloper")!.Text;
+                this.FindControl<TextBox>("TxtPublisher")!.Text = !string.IsNullOrEmpty(tempGame.Publisher) ? tempGame.Publisher : this.FindControl<TextBox>("TxtPublisher")!.Text;
+                this.FindControl<TextBox>("TxtDescription")!.Text = !string.IsNullOrEmpty(tempGame.Description) ? tempGame.Description : this.FindControl<TextBox>("TxtDescription")!.Text;
+                this.FindControl<TextBox>("TxtExternalDbId")!.Text = tempGame.ExternalDbId;
+                
+                if (tempGame.Year > 0)
+                {
+                    this.FindControl<NumericUpDown>("NumYear")!.Value = tempGame.Year;
+                }
+                
+                if (tempGame.Rating > 0)
+                {
+                    this.FindControl<Slider>("SldRating")!.Value = tempGame.Rating;
+                }
+                
+                RequestMessage?.Invoke("Metadatos sincronizados desde la Base de Datos Local correctamente.");
+            }
+            else
+            {
+                RequestMessage?.Invoke("No se encontró información para este título en la Base de Datos Local.");
+            }
+        }
+        catch (Exception ex)
+        {
+            RequestMessage?.Invoke($"Error al sincronizar con BD Local: {ex.Message}");
+        }
     }
 }

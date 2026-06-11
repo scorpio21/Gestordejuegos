@@ -13,6 +13,11 @@ namespace GestorJuegos.Services
         private static bool _schemaUpdated = false;
         private readonly ImageCacheService _imageCache = new();
 
+        public void InvalidateGameCache(int gameId)
+        {
+            _imageCache.InvalidateCache(gameId);
+        }
+
         public GameService()
         {
             if (!_schemaUpdated)
