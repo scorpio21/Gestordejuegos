@@ -14,6 +14,19 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 
 ## 📅 Historial de Versiones
 
+### v1.7.0-Dev (11 Junio 2026) - Hito Modular 5.0: Arquitectura por Componentes
+*   **Fase 5: Modularización Total de la Galería (LibraryView)**:
+    - **Extracción Histórica**: La galería central (cuadrícula, lista, ruedas y paginación) ahora reside en el componente `LibraryView`.
+    - **Reducción Masiva de Código**: `MainWindow.axaml.cs` saneado drásticamente, pasando de **~4000 líneas a solo ~390 líneas** (reducción del 90%).
+    - **Política de Advertencia Cero**: Lograda la compilación con **0 errores y 0 advertencias**, eliminando nulabilidades y variables huérfanas en todo el proyecto.
+    - **Eliminación de MainWindow.UI.cs**: Toda la lógica de animaciones visuales parabólicas y curvatura de ruedas ha sido absorbida por el componente modular.
+*   **Fase 4: Barra Lateral Modular (SidebarView)**:
+    - Trasladada la navegación jerárquica y filtros dinámicos a un componente independiente con gestión asíncrona de datos.
+*   **Fase 3: Servicio de Lanzamiento (LauncherService)**:
+    - Centralizada la ejecución de emuladores, URLs y carpetas, eliminando llamadas directas a `Process.Start` desde la ventana principal.
+
+### v1.6.5-Dev (11 Junio 2026) - Fase 3 y 4: LauncherService y Sidebar Modular
+
 ### v1.6.0-Dev (10 Junio 2026) - Fase 2: Modularización de Detalles del Juego
 *   **Modularización de GameDetailsView**:
     - **Extracción Completa**: Trasladada toda la lógica de visualización de información del juego, visor 3D interactivo y carrusel de capturas a un componente `UserControl` independiente.

@@ -679,9 +679,6 @@ $RECYCLE.BIN/
 *.db
 appsettings.json
 
-# Locales
-/paratuinfo/
-
 # Logs de importación de la app
 import_covers_log.txt
 import_error_log.txt
@@ -692,3 +689,4 @@ massive_scan_log.txt
 
 # Carpetas temporales y de revisión
 /RevisaDB/
+/copia/

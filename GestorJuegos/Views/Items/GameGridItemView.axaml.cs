@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using GestorJuegos.Utils;
 
-namespace GestorJuegos;
+namespace GestorJuegos.Views.Items;
 
 public partial class GameGridItemView : UserControl
 {

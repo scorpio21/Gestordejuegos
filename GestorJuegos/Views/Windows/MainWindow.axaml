@@ -1,0 +1,81 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:GestorJuegos.Models"
+        xmlns:services="clr-namespace:GestorJuegos.Services"
+        xmlns:utils="clr-namespace:GestorJuegos.Utils"
+        xmlns:controls="clr-namespace:GestorJuegos.Controls"
+        xmlns:local="clr-namespace:GestorJuegos"
+        xmlns:panels="clr-namespace:GestorJuegos.Views.Panels"
+        xmlns:overlays="clr-namespace:GestorJuegos.Views.Overlays"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+        x:Class="GestorJuegos.Views.Windows.MainWindow"
+        Title="Gestor de Juegos"
+        Background="{DynamicResource DeepDarkBrush}"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        Icon="/img/iconoventana.png">
+
+
+    <Grid>
+        <!-- FONDO DINÁMICO MODULARIZADO -->
+        <panels:BackgroundView Name="BackgroundControl" Grid.RowSpan="5" Grid.ColumnSpan="5"/>
+        
+        <DockPanel>
+            <!-- BARRA SUPERIOR MODULARIZADA -->
+            <panels:TopBarView Name="TopBar" DockPanel.Dock="Top"/>
+
+            <!-- CONTENIDO PRINCIPAL (3 PANELES) -->
+            <Grid ColumnDefinitions="280, *, 350">
+                <!-- IZQUIERDA: Sidebar de Filtros Inteligente -->
+                <panels:SidebarView Name="Sidebar" Grid.Column="0"/>
+
+                <!-- CENTRO: Galería de Juegos Modularizada -->
+                <panels:LibraryView Name="Library" Grid.Column="1"/>
+
+                <!-- DERECHA: Info (Premium Biblioteca Externa Style) -->
+                <Border Grid.Column="2" Background="{DynamicResource DeepDarkBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,0,0">
+                    <ScrollViewer>
+                        <Panel>
+                            <!-- COMPONENTE MODULAR DE DETALLES DEL JUEGO -->
+                            <panels:GameDetailsView Name="GameDetails" IsVisible="False"/>
+
+                            <!-- COMPONENTE MODULAR DE DASHBOARD / DETALLES DE PLATAFORMA -->
+                            <panels:DashboardView Name="Dashboard" IsVisible="True"/>
+                        </Panel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </DockPanel>
+
+        <!-- OVERLAYS (Necesarios para el .cs) -->
+        <overlays:EditGameView Name="OverlayEditGame" IsVisible="False" ZIndex="150" />
+        <overlays:FullStatsView Name="OverlayFullStats" IsVisible="False" ZIndex="160" />
+
+        <!-- Diálogos Simples y Confirmaciones -->
+        <overlays:SimpleDialogView Name="OverlayDialog" IsVisible="False" ZIndex="300"/>
+        <overlays:DeleteConfirmView Name="OverlayDeleteConfirm" IsVisible="False" ZIndex="400"/>
+        <overlays:ProgressOverlayView Name="OverlayProgress" IsVisible="False" ZIndex="200"/>
+        
+        <!-- Gestión de Plataformas -->
+        <overlays:ManagePlatformsView Name="OverlayManagePlatforms" IsVisible="False" ZIndex="100"/>
+
+        <!-- Opciones de Exportación -->
+        <overlays:ExportOptionsView Name="OverlayExportOptions" IsVisible="False" ZIndex="100"/>
+
+        <overlays:KeyboardView Name="OverlayKeyboard" IsVisible="False" ZIndex="500"/>
+
+        <overlays:PlatformsWallView Name="OverlayPlatformsWall" IsVisible="False" ZIndex="100"/>
+        
+        <!-- VISOR DE IMÁGENES MODULARIZADO -->
+        <overlays:ImageViewerView Name="OverlayImageViewer" IsVisible="False" ZIndex="600"/>
+
+        <!-- Overlay de Logros Expandido -->
+        <overlays:AchievementsView Name="OverlayAchievements" IsVisible="False" ZIndex="700"/>
+
+        <!-- NOTIFICACIONES TOAST -->
+        <overlays:ToastView Name="OverlayToast" IsVisible="True" ZIndex="1000" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+
+    </Grid>
+</Window>

@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:utils="clr-namespace:GestorJuegos.Utils"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="650"
-             x:Class="GestorJuegos.FullStatsView">
+             x:Class="GestorJuegos.Views.Overlays.FullStatsView">
     
     <UserControl.Resources>
         <utils:RegionToFlagConverter x:Key="RegionToFlag"/>

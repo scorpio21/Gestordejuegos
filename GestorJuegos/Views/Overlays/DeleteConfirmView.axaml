@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="300"
+             x:Class="GestorJuegos.Views.Overlays.DeleteConfirmView">
+
+    <Panel Background="#AA000000">
+        <Border Background="#252830" BorderBrush="#3f424a" BorderThickness="1" Width="480" CornerRadius="4" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 10 30 0 #AA000000">
+            <DockPanel>
+                <!-- Barra de Título del Diálogo -->
+                <Border Background="#1f2128" Height="30" Padding="10,0" DockPanel.Dock="Top">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Grid.Column="0" Text="Gestor de Juegos" Foreground="#9ba1af" FontSize="11" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <Button Grid.Column="1" Name="BtnClose" Background="Transparent" BorderThickness="0" Padding="5,0">
+                            <TextBlock Text="✕" Foreground="#9ba1af" FontSize="10"/>
+                        </Button>
+                    </Grid>
+                </Border>
+                
+                <!-- Botones de Acción Abajo (Barra de Botones) -->
+                <Border Background="#1f2128" Height="50" Padding="15,0" BorderBrush="#3f424a" BorderThickness="0,1,0,0" DockPanel.Dock="Bottom">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" VerticalAlignment="Center">
+                        <Button Name="BtnYes" Content="Yes" Width="75" Height="25" Background="#2e3138" BorderBrush="#4f525a" BorderThickness="1" Foreground="White" FontSize="11" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                        <Button Name="BtnNo" Content="No" Width="75" Height="25" Background="#2e3138" BorderBrush="#007acc" BorderThickness="1.5" Foreground="White" FontSize="11" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Cuerpo del Diálogo -->
+                <Border Padding="25">
+                    <Grid ColumnDefinitions="Auto, *">
+                        <!-- Icono de Pregunta -->
+                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18" Background="#007acc" Margin="0,0,20,0" VerticalAlignment="Top">
+                            <TextBlock Text="?" Foreground="White" FontWeight="Bold" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
+                        </Border>
+                        
+                        <!-- Contenido -->
+                        <StackPanel Grid.Column="1" Spacing="15" VerticalAlignment="Center">
+                            <TextBlock Name="TxtMessage" Text="¿Estás seguro que deseas borrar permanentemente este elemento?" Foreground="White" FontSize="12" TextWrapping="Wrap" LineHeight="18"/>
+                            <CheckBox Name="ChkDeleteMedia" Content="Delete associated media" Foreground="#9ba1af" FontSize="11" IsChecked="False"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </DockPanel>
+        </Border>
+    </Panel>
+</UserControl>

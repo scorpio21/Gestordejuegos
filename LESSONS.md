@@ -39,8 +39,41 @@ Este archivo registra fallos técnicos, soluciones complejas y "trucos" arquitec
 *   **Problema**: Cambiar de Dark a Light suele requerir reinicio si los colores están "hardcoded".
 *   **Solución**: Usar `DynamicResource` en el XAML y definir un diccionario centralizado (`Colors.axaml`). Para el toggle, sobrescribir dinámicamente las claves del diccionario (`this.Resources["PanelBrush"] = ...`) en tiempo de ejecución. Esto permite cambios instantáneos sin recargar la ventana.
 
+### 🚀 10. Centralización de Ejecución (LauncherService)
+*   **Problema**: Múltiples llamadas a `Process.Start` dispersas por el código provocaban inconsistencias en el manejo de errores y hacían que la lógica de "Lanzamiento" fuera difícil de rastrear.
+*   **Solución**: 
+    - Implementar un `LauncherService` que centralice todas las operaciones de sistema (`OpenUrl`, `OpenFolder`, `LaunchGame`).
+    - **Ventajas**: Permite implementar tracking de tiempo de juego de forma agnóstica a la UI, facilita el manejo de argumentos de emulador y simplifica drásticamente el code-behind de `MainWindow.axaml.cs`.
+
+### 🔔 14. Sistema de Notificaciones Asíncronas (Toast)
+*   **Problema**: El uso constante de `ShowMessage` bloqueaba la interacción del usuario y ensuciaba la lógica de los servicios.
+*   **Solución**: Implementar un `NotificationService` con eventos y un `ToastView` persistente en la esquina inferior. 
+*   **Lección**: Permite enviar feedback visual desde cualquier parte del código (incluso hilos en segundo plano) sin interrumpir el flujo de trabajo del usuario.
+
+### 👻 15. Eliminación de Overlays "Fantasma"
+*   **Problema**: Algunos elementos como `OverlayKeyboard` existían en el XAML de `MainWindow` pero no tenían lógica asociada, ocupando espacio y violando la modularidad.
+*   **Solución**: Extraer a componentes `UserControl` reales incluso si solo son placeholders inicialmente. Esto obliga a definir su contrato (eventos, métodos de inicialización) y los hace reutilizables.
+
+### 🗂️ 11. Proxies de UI y Modularización de Sidebar
+*   **Problema**: Al extraer la barra lateral a `SidebarView`, el sistema de temas de `MainWindow` perdió el acceso directo al control del logo (`ImgAppLogo`), rompiendo la personalización visual.
+*   **Solución**: 
+    - Implementar **Métodos Proxy**: Exponer `SetAppLogo(Bitmap?)` en el componente modular para que el padre pueda inyectar recursos sin conocer la estructura interna del hijo.
+
+### 🏛️ 12. Reconstrucción Total vs. Parcheo de Archivos Masivos
+*   **Problema**: Al intentar modularizar archivos gigantes (>3000 líneas), la herramienta de edición `replace` se vuelve inestable y los errores de llaves duplicadas o basura al final del archivo bloquean el progreso.
+*   **Solución**:
+    - Cuando un archivo supera las 1000 líneas y se está realizando una refactorización estructural profunda, la **Reconstrucción Total** con `write_file` es más segura que el parcheo incremental. 
+    - Se debe generar un contenido nuevo y limpio basado en la nueva arquitectura modular, eliminando de golpe todo el código obsoleto.
+
+### 🛡️ 13. Política de Advertencia Cero (Hito Fase 5)
+*   **Problema**: El código funcional pero con advertencias de nulabilidad o variables no usadas degrada la calidad a largo plazo y oculta errores reales.
+*   **Solución**: 
+    - Aplicar el operador `!` (null-forgiving) solo tras comprobaciones explícitas de nulidad.
+    - Saneamiento inmediato de campos privados no utilizados tras la modularización.
+    - **Resultado**: Lograda la compilación con 0 errores y 0 advertencias tras la modularización de la galería central.
+
 ---
-*Última actualización: 10 de junio de 2026*
+*Última actualización: 11 de junio de 2026*
 
 ### ⚠️ 8. Refactorización Masiva y Herramientas de Edición
 *   **Problema**: Al intentar sobrescribir archivos de gran tamaño (>4000 líneas), las herramientas pueden fallar o realizar recortes accidentales si no se maneja con cuidado el contexto de las cadenas.

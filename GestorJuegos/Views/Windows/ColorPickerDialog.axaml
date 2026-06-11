@@ -1,0 +1,77 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="550"
+        x:Class="GestorJuegos.Views.Windows.ColorPickerDialog"
+        Title="Seleccionar Color" Width="450" Height="550"
+        WindowStartupLocation="CenterOwner"
+        Background="#1c1d22"
+        ExtendClientAreaToDecorationsHint="True">
+
+    <Window.Styles>
+        <Style Selector="Button.PresetBtn">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#40ffffff"/>
+        </Style>
+    </Window.Styles>
+
+    <Border BorderBrush="#5f626a" BorderThickness="1">
+        <DockPanel Margin="20">
+            <!-- Título -->
+            <TextBlock DockPanel.Dock="Top" Text="SELECCIONAR COLOR" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
+
+            <!-- Botones Aceptar/Cancelar -->
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
+                <Button Name="BtnCancel" Content="CANCELAR" Width="100" HorizontalContentAlignment="Center" Background="#3f424a" Click="BtnCancel_Click"/>
+                <Button Name="BtnAccept" Content="ACEPTAR" Width="100" HorizontalContentAlignment="Center" Background="#3a5180" Click="BtnAccept_Click"/>
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*, 20, Auto">
+                <!-- Columna Izquierda: Sliders y Hex -->
+                <StackPanel Grid.Column="0" Spacing="15">
+                    <TextBlock Text="CÓDIGO HEXADECIMAL" FontSize="11" Foreground="#94a3b8"/>
+                    <TextBox Name="TxtHexCode" Text="#FFFFFF" TextChanged="TxtHexCode_TextChanged"/>
+
+                    <Separator Height="1" Background="#2c2e35" Margin="0,5"/>
+
+                    <TextBlock Text="ROJO" FontSize="11" Foreground="#94a3b8"/>
+                    <DockPanel>
+                        <TextBlock Name="TxtRed" Text="255" Width="30" DockPanel.Dock="Right" TextAlignment="Right"/>
+                        <Slider Name="SldRed" Minimum="0" Maximum="255" Value="255" ValueChanged="Slider_ValueChanged"/>
+                    </DockPanel>
+
+                    <TextBlock Text="VERDE" FontSize="11" Foreground="#94a3b8"/>
+                    <DockPanel>
+                        <TextBlock Name="TxtGreen" Text="255" Width="30" DockPanel.Dock="Right" TextAlignment="Right"/>
+                        <Slider Name="SldGreen" Minimum="0" Maximum="255" Value="255" ValueChanged="Slider_ValueChanged"/>
+                    </DockPanel>
+
+                    <TextBlock Text="AZUL" FontSize="11" Foreground="#94a3b8"/>
+                    <DockPanel>
+                        <TextBlock Name="TxtBlue" Text="255" Width="30" DockPanel.Dock="Right" TextAlignment="Right"/>
+                        <Slider Name="SldBlue" Minimum="0" Maximum="255" Value="255" ValueChanged="Slider_ValueChanged"/>
+                    </DockPanel>
+
+                    <Separator Height="1" Background="#2c2e35" Margin="0,5"/>
+                    
+                    <TextBlock Text="PRESETS" FontSize="11" Foreground="#94a3b8"/>
+                    <WrapPanel Name="GridPresets"/>
+                </StackPanel>
+
+                <!-- Columna Derecha: Previsualización -->
+                <StackPanel Grid.Column="2" Width="120" Spacing="10">
+                    <TextBlock Text="NUEVO" FontSize="11" Foreground="#94a3b8" HorizontalAlignment="Center"/>
+                    <Border Name="BrdNewColor" Height="100" Background="White" CornerRadius="4" BorderBrush="#5f626a" BorderThickness="1"/>
+                    
+                    <TextBlock Text="ACTUAL" FontSize="11" Foreground="#94a3b8" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                    <Border Name="BrdCurrentColor" Height="60" Background="White" CornerRadius="4" BorderBrush="#5f626a" BorderThickness="1"/>
+                </StackPanel>
+            </Grid>
+        </DockPanel>
+    </Border>
+</Window>

@@ -1,0 +1,132 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:GestorJuegos.Models"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="GestorJuegos.Views.Panels.LibraryView">
+
+    <Border Padding="15">
+        <DockPanel>
+            <!-- Cabecera de la Galería -->
+            <Panel DockPanel.Dock="Top">
+                <TextBlock Name="TxtSelectedPlatform" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+                
+                <Button Name="BtnToggleFilters" Content="▼ Filtros" HorizontalAlignment="Right" VerticalAlignment="Center" Background="Transparent" BorderThickness="0"/>
+            </Panel>
+
+            <!-- Filtros Rápidos -->
+            <Border Name="PnlFilters" DockPanel.Dock="Top" IsVisible="False" Background="{DynamicResource PanelBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Región:" Margin="0,0,10,0" VerticalAlignment="Center"/><ComboBox Name="CmbFilterRegion" SelectedIndex="0" Margin="0,0,20,0"><ComboBoxItem Content="Todas"/><ComboBoxItem Content="🇺🇸 US"/><ComboBoxItem Content="🇪🇺 EU"/><ComboBoxItem Content="🇪🇸 ES"/><ComboBoxItem Content="🇯🇵 JP"/></ComboBox>
+                    <TextBlock Text="Año:" Margin="0,0,10,0" VerticalAlignment="Center"/><NumericUpDown Name="NumFilterYear" Minimum="0" Maximum="2100" Width="100" Margin="0,0,20,0"/>
+                    <TextBlock Text="Orden:" Margin="0,0,10,0" VerticalAlignment="Center"/><ComboBox Name="CmbSortOrder" SelectedIndex="0"><ComboBoxItem Content="Nombre (A-Z)"/><ComboBoxItem Content="Año (Asc)"/><ComboBoxItem Content="Recién añadidos"/></ComboBox>
+                    <Button Name="BtnApplyFilters" Content="Aplicar" Margin="20,0,5,0" Background="{DynamicResource AccentBrush}" Foreground="White"/>
+                    <Button Name="BtnClearFilters" Content="Limpiar" Background="{DynamicResource BorderBrush}" Foreground="White"/>
+                </WrapPanel>
+            </Border>
+
+            <!-- Paginación -->
+            <StackPanel Name="PnlPagination" DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20" Margin="0,15,0,0" IsVisible="False">
+                <Button Name="BtnPrevPage" Content="⬅ Anterior"/><TextBlock Name="TxtPageInfo" Text="Página 1" VerticalAlignment="Center"/><Button Name="BtnNextPage" Content="Siguiente ➡"/>
+            </StackPanel>
+
+            <Panel>
+                <!-- Dashboard de Bienvenida -->
+                <ScrollViewer Name="PnlDashboard" IsVisible="True">
+                    <StackPanel Spacing="30" VerticalAlignment="Center" Margin="0,100,0,0">
+                        <TextBlock Text="🎮" FontSize="80" HorizontalAlignment="Center" Opacity="0.2"/>
+                        <TextBlock Text="¡BIENVENIDO!" FontSize="36" FontWeight="ExtraBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.7"/>
+                        <TextBlock Text="Tu colección de juegos está lista. Selecciona un sistema en el panel izquierdo para empezar a jugar o utiliza los botones superiores para gestionar tu biblioteca." 
+                                   FontSize="18" Foreground="#94a3b8" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="600"/>
+                        
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                            <Button Name="BtnShowPlatformsWall" Content="VER MURO DE PLATAFORMAS" Background="{DynamicResource BorderBrush}" Foreground="White" Padding="25,12" CornerRadius="8"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Vista: Lista -->
+                <ListBox Name="LstGames" IsVisible="False" Background="Transparent" BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:Game">
+                            <Border Background="{DynamicResource PanelBrush}" Margin="0,0,0,5" Padding="10" CornerRadius="8">
+                                <Grid ColumnDefinitions="Auto, *, Auto">
+                                    <Image Grid.Column="0" Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="40" Height="60" Margin="0,0,10,0"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="White" VerticalAlignment="Center" FontWeight="Bold"/>
+                                    <Image Grid.Column="2" Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="24" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- Vista: Cuadrícula (Grid) -->
+                <ListBox Name="LstGamesGrid" IsVisible="False" Background="Transparent" BorderThickness="0" ItemTemplate="{StaticResource GameGridTemplate}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel ItemWidth="180"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+
+                <!-- Vista: Rueda Vertical -->
+                <ListBox Name="LstGamesWheelVertical" IsVisible="False" Background="Transparent" BorderThickness="0" Padding="0,200">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:Game">
+                            <Panel Height="100" Margin="0,5">
+                                <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="Uniform" HorizontalAlignment="Right" Margin="0,0,40,0"/>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,160,0" FontSize="18" FontWeight="Bold" Foreground="White" Opacity="0.5"/>
+                            </Panel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- Vista: Rueda Horizontal (CoverFlow) -->
+                <ListBox Name="LstGamesWheelHorizontal" IsVisible="False" Background="Transparent" BorderThickness="0" Padding="200,0">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:Game">
+                            <Panel Width="200" Height="300" Margin="10,0">
+                                <Border CornerRadius="10" ClipToBounds="True" BoxShadow="0 10 20 0 #80000000">
+                                    <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill"/>
+                                </Border>
+                            </Panel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                
+                <!-- Resultados de Búsqueda Global -->
+                <DockPanel Name="PnlGlobalSearch" IsVisible="False">
+                    <Button Name="BtnBackFromSearch" DockPanel.Dock="Top" Content="⬅ Volver" Margin="0,0,0,10"/>
+                    <TextBlock Name="TxtSearchStatus" DockPanel.Dock="Top" Foreground="#94a3b8" Margin="0,0,0,10"/>
+                    <ListBox Name="LstGlobalSearchResults" Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:Game">
+                                <Border Background="{DynamicResource PanelBrush}" Margin="0,0,0,5" Padding="10" CornerRadius="8">
+                                    <Grid ColumnDefinitions="Auto, *, Auto">
+                                        <Image Grid.Column="0" Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Width="40" Height="60" Margin="0,0,10,0"/>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Platform.Name}" Foreground="#64748b" FontSize="12"/>
+                                        </StackPanel>
+                                        <Image Grid.Column="2" Source="{Binding Region, Converter={StaticResource RegionToFlag}}" Width="24" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Panel>
+        </DockPanel>
+    </Border>
+</UserControl>

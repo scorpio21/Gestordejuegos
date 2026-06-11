@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
+             x:Class="GestorJuegos.Views.Overlays.KeyboardView">
+
+    <Border Background="#AA000000">
+        <Border Background="{DynamicResource DeepDarkBrush}" Width="800" Padding="25" CornerRadius="20" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="2">
+            <StackPanel Spacing="15">
+                <!-- Título y Campo de Entrada -->
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Text="TECLADO VIRTUAL" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                    <Button Name="BtnClose" Grid.Column="1" Content="✕" Background="Transparent" Foreground="#ef4444" FontSize="20"/>
+                </Grid>
+
+                <TextBox Name="TxtInput" FontSize="24" Padding="15" CornerRadius="10" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+
+                <!-- Rejilla del Teclado -->
+                <UniformGrid Name="GridKeys" Columns="10" Rows="4">
+                    <!-- Las teclas se generarán en el .cs para mayor flexibilidad -->
+                </UniformGrid>
+
+                <!-- Acciones Inferiores -->
+                <Grid ColumnDefinitions="*, *, *">
+                    <Button Name="BtnClear" Grid.Column="0" Content="LIMPIAR" Background="#ef4444" Foreground="White" Margin="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="15"/>
+                    <Button Name="BtnSpace" Grid.Column="1" Content="ESPACIO" Background="{DynamicResource PanelBrush}" Foreground="White" Margin="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="15"/>
+                    <Button Name="BtnDone" Grid.Column="2" Content="LISTO" Background="#10b981" Foreground="White" Margin="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="15"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Border>
+</UserControl>

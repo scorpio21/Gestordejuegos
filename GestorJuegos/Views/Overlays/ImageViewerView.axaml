@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+             x:Class="GestorJuegos.Views.Overlays.ImageViewerView">
+
+    <Panel Background="#EE000000">
+        <Panel Name="PnlImageContainer">
+            <Image Name="ImgFull" Stretch="Uniform" MaxWidth="1200" MaxHeight="900" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Image.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
+                    </Transitions>
+                </Image.Transitions>
+            </Image>
+            
+            <!-- Botón Cerrar -->
+            <Button Name="BtnClose" Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="25" Width="50" Height="50" Background="#33000000" Foreground="White" CornerRadius="25" FontSize="24">
+                <Button.Styles>
+                    <Style Selector="Button:pointerover">
+                        <Setter Property="Background" Value="#ef4444"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
+        </Panel>
+    </Panel>
+</UserControl>

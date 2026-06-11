@@ -8,9 +8,9 @@ using GestorJuegos.Models;
 using GestorJuegos.Services;
 using GestorJuegos.Utils;
 
-namespace GestorJuegos
-{
-    public partial class ManagePlatformsView : UserControl
+namespace GestorJuegos.Views.Overlays;
+
+public partial class ManagePlatformsView : UserControl
     {
         private GameService? _gameService;
         public event EventHandler? PlatformsChanged;
@@ -140,4 +140,3 @@ namespace GestorJuegos
             }
         }
     }
-}

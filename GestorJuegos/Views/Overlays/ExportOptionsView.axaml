@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+             x:Class="GestorJuegos.Views.Overlays.ExportOptionsView">
+
+    <Panel Background="#AA000000">
+        <Border Background="{DynamicResource PanelBrush}" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 10 30 0 #AA000000">
+            <StackPanel Spacing="15">
+                <TextBlock Text="Opciones de Exportación" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" Foreground="White"/>
+                
+                <CheckBox Name="ChkExportGames" Content="Juegos (Base de Datos Principal)" Foreground="White"/>
+                <CheckBox Name="ChkExportCovers" Content="Carátulas (Base de Datos Multimedia)" Foreground="White"/>
+                
+                <TextBlock Text="Se generará un archivo .zip con el respaldo seleccionado." FontSize="11" Foreground="#94a3b8" TextWrapping="Wrap" TextAlignment="Center"/>
+
+                <Grid ColumnDefinitions="*,*" Margin="0,10,0,0">
+                    <Button Name="BtnCancel" Content="CANCELAR" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,5,0" HorizontalContentAlignment="Center"/>
+                    <Button Name="BtnConfirm" Content="EXPORTAR" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,0,0,0" Background="#3b82f6" Foreground="White" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Panel>
+</UserControl>

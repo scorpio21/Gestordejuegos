@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using GestorJuegos.Utils;
 
-namespace GestorJuegos;
+namespace GestorJuegos.Views.Overlays;
 
 public partial class FullStatsView : UserControl
 {

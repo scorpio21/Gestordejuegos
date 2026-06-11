@@ -168,6 +168,7 @@ namespace GestorJuegos.Models
 
         // --- Buscar ---
         public bool EnableExternalMetadataSearch { get; set; } = true;
+        public bool EnableVirtualKeyboard { get; set; } = true;
         public bool LoadExternalRatings { get; set; } = true;
         public bool UseCommunityRatings { get; set; } = true;
         public int MinCommunityRatings { get; set; } = 5;

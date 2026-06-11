@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:GestorJuegos.Models"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+             x:Class="GestorJuegos.Views.Overlays.PlatformsWallView">
+
+    <Border Background="#AA000000">
+        <Border Background="{DynamicResource DeepDarkBrush}" Margin="50" CornerRadius="20" Padding="30">
+            <DockPanel>
+                <Button Name="BtnClose" DockPanel.Dock="Top" Content="✕" Background="Transparent" Foreground="#ef4444" FontSize="20" HorizontalAlignment="Right" Margin="0,0,0,20"/>
+                <ListBox Name="LstPlatforms" Background="Transparent" BorderThickness="0">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:Platform">
+                            <Button Background="Transparent" Padding="0" Click="OnPlatformClick">
+                                <Border Background="{DynamicResource PanelBrush}" Margin="10" Padding="20" CornerRadius="15" Width="220" Height="160">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <Panel Height="80">
+                                            <Image Source="{Binding Logo, Converter={StaticResource ByteToBitmap}}" Stretch="Uniform"/>
+                                            <TextBlock Text="🎮" FontSize="50" HorizontalAlignment="Center" Opacity="0.1" VerticalAlignment="Center"/>
+                                        </Panel>
+                                        <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,15,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </Button>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+    </Border>
+</UserControl>

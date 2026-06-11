@@ -197,7 +197,7 @@ namespace GestorJuegos.Services
                             string fileName = Path.GetFileName(filePath);
                             if (fileName.Equals("lista.txt", StringComparison.OrdinalIgnoreCase)) continue;
 
-                            if (ImportService.IsDross(fileName, drossPatterns)) continue;
+                            if (ImportService.IsDross(fileName, drossPatterns.ToArray())) continue;
 
                             if (i % 20 == 0)
                             {

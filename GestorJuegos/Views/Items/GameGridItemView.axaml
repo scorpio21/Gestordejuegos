@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:GestorJuegos.Models"
+             xmlns:utils="clr-namespace:GestorJuegos.Utils"
+             x:Class="GestorJuegos.Views.Items.GameGridItemView"
+             x:DataType="models:Game">
+    
+    <UserControl.Resources>
+        <utils:ByteArrayToBitmapConverter x:Key="ByteToBitmap"/>
+    </UserControl.Resources>
+
+    <Panel Name="PnlRoot" Background="Transparent" Margin="5">
+        <Border Name="BrdMain" CornerRadius="10" ClipToBounds="True" Background="#1a1a1e" BorderBrush="#333333" BorderThickness="1">
+            <Panel>
+                <Image Source="{Binding Cover, Converter={StaticResource ByteToBitmap}}" Stretch="UniformToFill"/>
+                <Border Background="#AA000000" VerticalAlignment="Bottom" Height="40" IsVisible="False" Name="BrdTitle">
+                    <TextBlock Text="{Binding Name}" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="5"/>
+                </Border>
+            </Panel>
+        </Border>
+    </Panel>
+</UserControl>

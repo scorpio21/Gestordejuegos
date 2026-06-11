@@ -13,7 +13,7 @@ using GestorJuegos.Models;
 using GestorJuegos.Services;
 using GestorJuegos.Utils;
 
-namespace GestorJuegos;
+namespace GestorJuegos.Views.Overlays;
 
 public partial class EditGameView : UserControl
 {

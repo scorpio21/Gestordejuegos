@@ -30,7 +30,10 @@ namespace GestorJuegos.Services
             _settings = settings;
         }
 
-        public async Task<LauncherResult> LaunchGameAsync(Game game, Platform platform)
+        /// <summary>
+        /// Lanza un juego usando su plataforma o una ruta específica.
+        /// </summary>
+        public async Task<LauncherResult> LaunchGameAsync(Game game, Platform? platform = null, string? specificRomPath = null)
         {
             var result = new LauncherResult();
             var logLines = new System.Collections.Generic.List<string>();
@@ -44,16 +47,24 @@ namespace GestorJuegos.Services
                     return result;
                 }
 
-                logLines.Add($"Juego: {game.Name} (ID: {game.Id})");
-                logLines.Add($"RomPath: '{game.RomPath}'");
+                platform ??= game.Platform;
+                if (platform == null)
+                {
+                    result.Message = "La plataforma del juego no está cargada.";
+                    return result;
+                }
 
-                if (string.IsNullOrEmpty(game.RomPath))
+                string romPath = specificRomPath ?? game.RomPath;
+                logLines.Add($"Juego: {game.Name} (ID: {game.Id})");
+                logLines.Add($"RomPath: '{romPath}'");
+
+                if (string.IsNullOrEmpty(romPath))
                 {
                     result.Message = "La ruta del juego está vacía.";
                     return result;
                 }
 
-                if (!File.Exists(game.RomPath))
+                if (!File.Exists(romPath))
                 {
                     result.Message = "El archivo del juego no existe en la ruta especificada.";
                     return result;
@@ -76,7 +87,7 @@ namespace GestorJuegos.Services
                 if (string.IsNullOrEmpty(finalEmulatorPath))
                 {
                     logLines.Add("Aviso: EmulatorPath vacío. Usando UseShellExecute = true con RomPath.");
-                    psi.FileName = game.RomPath;
+                    psi.FileName = romPath;
                     psi.UseShellExecute = true;
                 }
                 else
@@ -91,7 +102,7 @@ namespace GestorJuegos.Services
                     psi.WorkingDirectory = Path.GetDirectoryName(finalEmulatorPath) ?? string.Empty;
                     
                     string args = string.IsNullOrEmpty(finalLaunchArgs) ? "\"{0}\"" : finalLaunchArgs;
-                    psi.Arguments = args.Replace("{0}", game.RomPath);
+                    psi.Arguments = args.Replace("{0}", romPath);
                     psi.UseShellExecute = false;
                 }
 
@@ -129,6 +140,42 @@ namespace GestorJuegos.Services
                 logLines.Add(ex.StackTrace ?? "");
                 result.Logs = string.Join(Environment.NewLine, logLines);
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Abre una URL en el navegador por defecto.
+        /// </summary>
+        public void OpenUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error al abrir URL: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Abre una carpeta en el explorador de archivos.
+        /// </summary>
+        public void OpenFolder(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return;
+            try
+            {
+                string? dir = Directory.Exists(path) ? path : Path.GetDirectoryName(path);
+                if (dir != null && Directory.Exists(dir))
+                {
+                    Process.Start(new ProcessStartInfo(dir) { UseShellExecute = true });
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error al abrir carpeta: {ex.Message}");
             }
         }
 

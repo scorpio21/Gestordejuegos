@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using GestorJuegos.Models;
 
-namespace GestorJuegos
-{
-    public partial class AchievementsView : UserControl
+namespace GestorJuegos.Views.Overlays;
+
+public partial class AchievementsView : UserControl
     {
         public event EventHandler? RequestClose;
 
@@ -21,4 +21,3 @@ namespace GestorJuegos
             ItemsAchievementsList.ItemsSource = achievements;
         }
     }
-}

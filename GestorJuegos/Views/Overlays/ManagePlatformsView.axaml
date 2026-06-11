@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="clr-namespace:GestorJuegos.Models"
              mc:Ignorable="d" d:DesignWidth="650" d:DesignHeight="550"
-             x:Class="GestorJuegos.ManagePlatformsView">
+             x:Class="GestorJuegos.Views.Overlays.ManagePlatformsView">
 
     <Panel Background="#AA000000">
         <Border Background="{DynamicResource PanelBrush}" Width="650" Height="550" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center">

@@ -221,7 +221,7 @@ namespace GestorJuegos.Views.Panels
             set => BtnToggleGamepad.Content = value;
         }
 
-        public IBrush GamepadButtonForeground
+        public IBrush? GamepadButtonForeground
         {
             get => BtnToggleGamepad.Foreground;
             set => BtnToggleGamepad.Foreground = value;

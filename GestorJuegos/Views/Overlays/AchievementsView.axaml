@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="clr-namespace:GestorJuegos.Models"
              mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="800"
-             x:Class="GestorJuegos.AchievementsView">
+             x:Class="GestorJuegos.Views.Overlays.AchievementsView">
 
     <Panel Background="#88000000">
         <Border Background="#1A1A1E" Width="480" HorizontalAlignment="Right" VerticalAlignment="Stretch" 

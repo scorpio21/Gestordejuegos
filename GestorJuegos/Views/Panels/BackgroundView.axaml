@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+             x:Class="GestorJuegos.Views.Panels.BackgroundView">
+
+    <Panel Name="PnlBackground" IsHitTestVisible="False">
+        <!-- 1. Fondo del Tema (Estatico del tema) -->
+        <Image Name="ImgThemeBackground" Stretch="UniformToFill" Opacity="0.5" IsVisible="False">
+            <Image.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.8" Easing="CubicEaseInOut"/>
+                </Transitions>
+            </Image.Transitions>
+        </Image>
+        
+        <!-- 2. Overlay del Tema (Vignette/Textura) -->
+        <Image Name="ImgThemeOverlay" Stretch="UniformToFill" Opacity="0.7" IsVisible="False">
+            <Image.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.8" Easing="CubicEaseInOut"/>
+                </Transitions>
+            </Image.Transitions>
+        </Image>
+        
+        <!-- 3. Fondo del Juego (Cambia al seleccionar juego) -->
+        <Image Name="ImgBackground" Stretch="UniformToFill" Opacity="0.3">
+            <Image.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
+                </Transitions>
+            </Image.Transitions>
+        </Image>
+        
+        <!-- 4. Tinte de legibilidad -->
+        <Border Background="{DynamicResource DeepDarkBrush}" Opacity="0.4"/>
+    </Panel>
+</UserControl>

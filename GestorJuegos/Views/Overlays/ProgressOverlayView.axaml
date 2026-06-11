@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+             x:Class="GestorJuegos.Views.Overlays.ProgressOverlayView">
+
+    <Panel Background="#AA000000">
+        <Border Background="{DynamicResource PanelBrush}" Width="400" Padding="30" CornerRadius="12" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 10 30 0 #AA000000">
+            <StackPanel Spacing="15">
+                <TextBlock Name="TxtTitle" FontWeight="Bold" FontSize="16" Foreground="White" HorizontalAlignment="Center"/>
+                <ProgressBar Name="ProgBar" Height="15" Minimum="0" Maximum="100" Value="0" ShowProgressText="True"/>
+                <TextBlock Name="TxtDetail" FontSize="11" Foreground="#94a3b8" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                
+                <Button Name="BtnCancel" Content="CANCELAR" Background="#ef4444" Foreground="White" HorizontalAlignment="Center" Padding="20,5"/>
+            </StackPanel>
+        </Border>
+    </Panel>
+</UserControl>

@@ -8,7 +8,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace GestorJuegos;
+namespace GestorJuegos.Views.Windows;
 
 public partial class OpcionesWindow : Window
 {

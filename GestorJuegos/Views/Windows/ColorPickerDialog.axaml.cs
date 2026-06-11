@@ -3,9 +3,9 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using System;
 
-namespace GestorJuegos
-{
-    public partial class ColorPickerDialog : Window
+namespace GestorJuegos.Views.Windows;
+
+public partial class ColorPickerDialog : Window
     {
         private string _currentColorHex = "#ffffff";
         private bool _isUpdating = false;
@@ -173,4 +173,3 @@ namespace GestorJuegos
             Close(null);
         }
     }
-}

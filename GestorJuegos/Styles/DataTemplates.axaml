@@ -3,7 +3,8 @@
                     xmlns:models="clr-namespace:GestorJuegos.Models"
                     xmlns:utils="clr-namespace:GestorJuegos.Utils"
                     xmlns:controls="clr-namespace:GestorJuegos.Controls"
-                    xmlns:local="clr-namespace:GestorJuegos">
+                    xmlns:local="clr-namespace:GestorJuegos"
+                    xmlns:items="clr-namespace:GestorJuegos.Views.Items;assembly=GestorJuegos">
 
     <utils:ByteArrayToBitmapConverter x:Key="ByteToBitmap"/>
     <utils:RegionToFlagConverter x:Key="RegionToFlag"/>
@@ -51,6 +52,6 @@
 
     <!-- Plantilla para Rejilla de Juegos (Premium) -->
     <DataTemplate x:Key="GameGridTemplate" x:DataType="models:Game">
-        <local:GameGridItemView/>
+        <items:GameGridItemView/>
     </DataTemplate>
 </ResourceDictionary>

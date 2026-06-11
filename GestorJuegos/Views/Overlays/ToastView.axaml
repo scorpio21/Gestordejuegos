@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="80"
+             x:Class="GestorJuegos.Views.Overlays.ToastView"
+             IsHitTestVisible="False">
+
+    <Canvas Name="ToastContainer">
+        <Border Name="ToastBorder" 
+                Width="320" 
+                Padding="15" 
+                CornerRadius="10" 
+                Background="#1e293b" 
+                BorderThickness="2"
+                Opacity="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom">
+            
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
+                    <ThicknessTransition Property="Margin" Duration="0:0:0.3" Easing="BackEaseOut"/>
+                </Transitions>
+            </Border.Transitions>
+
+            <Grid ColumnDefinitions="Auto, *">
+                <TextBlock Name="IconText" Grid.Column="0" Text="ℹ️" FontSize="24" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Name="TxtTitle" FontWeight="Bold" Foreground="White" FontSize="14" Text="Título"/>
+                    <TextBlock Name="TxtMessage" Foreground="#cbd5e1" FontSize="12" TextWrapping="Wrap" Text="Mensaje de notificación..."/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Canvas>
+</UserControl>

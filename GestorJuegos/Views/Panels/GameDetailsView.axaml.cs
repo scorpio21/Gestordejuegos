@@ -22,6 +22,7 @@ public partial class GameDetailsView : UserControl
     public event EventHandler? RequestExpandAchievements;
     public event EventHandler<string>? RequestPlayStatusChange;
     public event EventHandler<string>? RequestWikiSearch;
+    public event EventHandler<int>? RequestRatingChange;
 
     private Game? _game;
 
@@ -39,10 +40,8 @@ public partial class GameDetailsView : UserControl
         BtnViewFullArt.Click += (s, e) => RequestShowFullArt?.Invoke(this, EventArgs.Empty);
         BtnViewAllImages.Click += (s, e) => RequestViewAllImages?.Invoke(this, EventArgs.Empty);
         BtnExpandAchievements.Click += (s, e) => RequestExpandAchievements?.Invoke(this, EventArgs.Empty);
-        
         BtnWikiSearch.Click += (s, e) => RequestWikiSearch?.Invoke(this, _game?.Name ?? "");
         
-        // Menú de estado de juego
         var playStatusItems = BtnProgressQuick.Flyout as MenuFlyout;
         if (playStatusItems != null)
         {
@@ -52,7 +51,6 @@ public partial class GameDetailsView : UserControl
             }
         }
 
-        // Más opciones
         var moreOptionsItems = BtnMoreOptions.Flyout as MenuFlyout;
         if (moreOptionsItems != null)
         {
@@ -70,138 +68,73 @@ public partial class GameDetailsView : UserControl
         TxtInfoName.Text = game.Name;
         TxtInfoPlatform.Text = game.Platform?.Name ?? "DESCONOCIDA";
         
-        // Fecha de lanzamiento
-        string releaseDateStr = "--";
-        if (!string.IsNullOrEmpty(game.ReleaseDate))
-        {
-            if (DateTime.TryParse(game.ReleaseDate, out DateTime releaseDateVal))
-                releaseDateStr = releaseDateVal.ToString("dd/MM/yyyy");
-            else
-                releaseDateStr = game.ReleaseDate;
-        }
-        else if (game.Year > 0)
-        {
-            releaseDateStr = game.Year.ToString();
-        }
-        TxtBaseReleaseDate.Text = releaseDateStr;
-        
+        TxtBaseReleaseDate.Text = !string.IsNullOrEmpty(game.ReleaseDate) ? game.ReleaseDate : (game.Year > 0 ? game.Year.ToString() : "--");
         TxtBaseDeveloper.Text = game.Developer ?? "--";
         TxtBasePublisher.Text = game.Publisher ?? "--";
         TxtBasePlaytime.Text = $"{game.PlayCount} partidas ({game.PlayStatus})";
         
-        TxtInfoRatingText.Text = game.Rating.ToString("F1");
-        TxtInfoRatingStars.Text = GetStars(game.Rating);
+        TxtInfoRatingText.Text = (game.Rating / 20.0).ToString("F1");
+        UpdateStarsDisplay(game.Rating);
         
         TxtInfoEsrb.Text = game.ESRB ?? "--";
         TxtInfoGenre.Text = game.Genre ?? "--";
-        
-        // Modo de Juego
-        string playMode = "Un Jugador";
-        if (game.Cooperative) playMode = "Cooperativo";
-        else if (game.MaxPlayers.HasValue && game.MaxPlayers.Value > 1) playMode = $"Multijugador ({game.MaxPlayers.Value} jugadores)";
-        TxtInfoPlayMode.Text = playMode;
-        
         TxtInfoProgress.Text = game.PlayStatus;
         TxtInfoRegion.Text = game.Region ?? "--";
-        TxtInfoStatus.Text = !string.IsNullOrEmpty(game.RomPath) ? "ROM importado" : "No instalado";
-        TxtInfoPortable.Text = "No"; 
         TxtInfoFile.Text = System.IO.Path.GetFileName(game.RomPath);
-        TxtInfoLastPlayed.Text = game.LastPlayed?.ToString("dd/MM/yyyy HH:mm") ?? "Nunca";
-        TxtInfoReleaseDate.Text = TxtBaseReleaseDate.Text;
-        TxtInfoReleaseType.Text = game.ReleaseType ?? "--";
-        TxtInfoMaxPlayers.Text = game.MaxPlayers.HasValue ? game.MaxPlayers.ToString() : "--";
-        
         TxtInfoDescription.Text = game.Description ?? "Sin descripción disponible.";
-        
-        // Playtime commitment
-        TxtPlaytimeMain.Text = game.PlaytimeMain ?? "--";
-        TxtPlaytimeExtra.Text = game.PlaytimeExtra ?? "--";
-        TxtPlaytimeCompletionist.Text = game.PlaytimeCompletionist ?? "--";
 
         UpdateFavoriteIcon(game.IsFavorite);
         LoadGameAchievements(game);
         
-        // Cargar capturas si existen
-        var images = gameService.GetGameExtraImages(game.Id);
-        LstScreenshots.ItemsSource = images;
-        
-        // Cargar juegos relacionados (misma plataforma)
-        var related = gameService.GetGamesByPlatform(game.PlatformId).Where(g => g.Id != game.Id).Take(10).ToList();
-        LstRelatedGames.ItemsSource = related;
-        TxtNoRelatedGames.IsVisible = !related.Any();
+        LstScreenshots.ItemsSource = gameService.GetGameExtraImages(game.Id);
+        LstRelatedGames.ItemsSource = gameService.GetGamesByPlatform(game.PlatformId).Where(g => g.Id != game.Id).Take(10).ToList();
     }
 
     private void LoadGameAchievements(Game game)
     {
         StackAchievementIcons.Children.Clear();
-
-        if (game.Achievements == null || game.Achievements.Count == 0)
-        {
-            game.Achievements = new List<Achievement>
-            {
-                new Achievement { Title = "Héroe de Agrabah", Description = "Escapa de los guardias en el nivel 1", IsUnlocked = true },
-                new Achievement { Title = "Cueva de las Maravillas", Description = "Entra en la cueva sin ser detectado", IsUnlocked = true },
-                new Achievement { Title = "El Genio", Description = "Frota la lámpara por primera vez", IsUnlocked = true },
-                new Achievement { Title = "Príncipe Ali", Description = "Entra en el palacio disfrazado", IsUnlocked = false },
-                new Achievement { Title = "Jafar el Terrible", Description = "Derrota a Jafar en su forma de serpiente", IsUnlocked = false }
-            };
-        }
+        if (game.Achievements == null) return;
 
         int unlocked = game.Achievements.Count(a => a.IsUnlocked);
         int total = game.Achievements.Count;
-
         TxtAchievementsTitle.Text = $"RETRO ACHIEVEMENTS ({unlocked}/{total})";
         ProgAchievements.Value = total > 0 ? (unlocked * 100) / total : 0;
 
         foreach (var achievement in game.Achievements.Take(4))
         {
-            var border = new Border
-            {
-                Width = 36,
-                Height = 36,
-                CornerRadius = new CornerRadius(6),
-                ClipToBounds = true,
-                Background = Avalonia.Media.Brush.Parse("#1e1e22")
-            };
-
-            var img = new Image 
-            { 
-                Stretch = Avalonia.Media.Stretch.UniformToFill,
-                Opacity = achievement.IsUnlocked ? 1.0 : 0.3
-            };
-            
-            border.Child = img;
+            var border = new Border { Width = 36, Height = 36, CornerRadius = new CornerRadius(6), ClipToBounds = true, Background = Avalonia.Media.Brush.Parse("#1e1e22") };
+            border.Child = new Image { Stretch = Avalonia.Media.Stretch.UniformToFill, Opacity = achievement.IsUnlocked ? 1.0 : 0.3 };
             StackAchievementIcons.Children.Add(border);
-        }
-
-        if (total > 4)
-        {
-            var moreBorder = new Border
-            {
-                Width = 36,
-                Height = 36,
-                CornerRadius = new CornerRadius(6),
-                BorderBrush = Avalonia.Media.Brush.Parse("#475569"),
-                BorderThickness = new Thickness(1),
-                Background = Avalonia.Media.Brush.Parse("#161618")
-            };
-            moreBorder.Child = new TextBlock 
-            { 
-                Text = $"+ {total - 4}", 
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                FontSize = 11,
-                Foreground = Avalonia.Media.Brush.Parse("#94a3b8"),
-                FontWeight = Avalonia.Media.FontWeight.Bold
-            };
-            StackAchievementIcons.Children.Add(moreBorder);
         }
     }
 
-    private string GetStars(double rating)
+    private void UpdateStarsDisplay(int rating)
     {
-        int stars = (int)Math.Round(rating / 2.0);
-        return new string('★', stars) + new string('☆', 5 - stars);
+        var stars = new List<StarItem>();
+        int activeStars = (int)Math.Round(rating / 20.0);
+        for (int i = 1; i <= 5; i++)
+        {
+            bool isActive = i <= activeStars;
+            stars.Add(new StarItem 
+            { 
+                Value = i, 
+                StarChar = isActive ? "★" : "☆", 
+                Color = isActive ? "#38bdf8" : "#475569" // Azul si activa, Gris si no
+            });
+        }
+        ItemsRatingStars.ItemsSource = stars;
+    }
+
+    private void OnStarClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is StarItem star && _game != null)
+        {
+            int newRating = star.Value * 20;
+            _game.Rating = newRating;
+            TxtInfoRatingText.Text = star.Value.ToString("F1");
+            UpdateStarsDisplay(newRating);
+            RequestRatingChange?.Invoke(this, newRating);
+        }
     }
 
     public void UpdateFavoriteIcon(bool isFavorite)
@@ -218,6 +151,8 @@ public partial class GameDetailsView : UserControl
     public void SetLogo(Avalonia.Media.Imaging.Bitmap? bitmap)
     {
         ImgDetailLogo.Source = bitmap;
-        BrdDetailLogo.IsVisible = bitmap != null;
+        bool hasLogo = bitmap != null;
+        BrdDetailLogo.IsVisible = hasLogo;
+        BtnViewAllImages.IsVisible = !hasLogo;
     }
 }

@@ -5,7 +5,7 @@
         xmlns:models="clr-namespace:GestorJuegos.Models"
         xmlns:local="clr-namespace:GestorJuegos"
         mc:Ignorable="d" d:DesignWidth="950" d:DesignHeight="700"
-        x:Class="GestorJuegos.OpcionesWindow"
+        x:Class="GestorJuegos.Views.Windows.OpcionesWindow"
         Title="Opciones"
         Width="950"
         Height="700"
