@@ -10,5 +10,10 @@ namespace GestorJuegos.Models
         public bool IsUnlocked { get; set; }
         public int Points { get; set; }
         public DateTime? UnlockDate { get; set; }
+        public string? Type { get; set; }
+
+        public bool IsWin => !string.IsNullOrEmpty(Type) && (Type.Equals("win_condition", StringComparison.OrdinalIgnoreCase) || Type.Contains("win"));
+        public bool IsNormalUnlock => IsUnlocked && !IsWin;
+        public bool IsWinUnlock => IsUnlocked && IsWin;
     }
 }

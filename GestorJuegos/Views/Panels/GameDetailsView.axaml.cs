@@ -40,7 +40,6 @@ public partial class GameDetailsView : UserControl
         BtnViewFullArt.Click += (s, e) => RequestShowFullArt?.Invoke(this, EventArgs.Empty);
         BtnViewAllImages.Click += (s, e) => RequestViewAllImages?.Invoke(this, EventArgs.Empty);
         BtnExpandAchievements.Click += (s, e) => RequestExpandAchievements?.Invoke(this, EventArgs.Empty);
-        BtnWikiSearch.Click += (s, e) => RequestWikiSearch?.Invoke(this, _game?.Name ?? "");
         
         var playStatusItems = BtnProgressQuick.Flyout as MenuFlyout;
         if (playStatusItems != null)
@@ -88,7 +87,7 @@ public partial class GameDetailsView : UserControl
         TxtPlaytimeCompletionist.Text = game.PlaytimeCompletionist ?? "--";
 
         UpdateFavoriteIcon(game.IsFavorite);
-        LoadGameAchievements(game);
+        LoadGameAchievements(game, gameService);
         
         LstScreenshots.ItemsSource = gameService.GetGameExtraImages(game.Id);
         LstRelatedGames.ItemsSource = gameService.GetGamesByPlatform(game.PlatformId).Where(g => g.Id != game.Id).Take(10).ToList();
@@ -96,59 +95,127 @@ public partial class GameDetailsView : UserControl
 
     private readonly RetroAchievementsService _raService = new();
 
-    private async void LoadGameAchievements(Game game)
+    private async void LoadGameAchievements(Game game, GameService gameService)
     {
         StackAchievementIcons.Children.Clear();
 
-        // Si ya tiene logros cargados en memoria, usarlos
-        if (game.Achievements != null && game.Achievements.Any())
+        // 1. Mostrar estado inicial o cargado de logros si ya están en memoria
+        bool hasAchievementsInMemory = game.Achievements != null && game.Achievements.Any();
+        if (hasAchievementsInMemory)
         {
-            DisplayAchievements(game.Achievements);
-            return;
+            DisplayAchievements(game.Achievements!);
         }
 
-        // Si no tiene logros, intentar cargarlos de la API si hay ID de RA
+        // 2. Si hay ID de RetroAchievements, intentar cargar datos en caliente
         if (int.TryParse(game.ExternalDbId, out int raId))
         {
             string configPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
             if (System.IO.File.Exists(configPath))
             {
-                var json = System.IO.File.ReadAllText(configPath);
-                var settings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
-                if (settings != null && settings.EnableRetroAchievements)
+                try
                 {
-                    _raService.Initialize(settings.RetroUsername, settings.RetroApiKey);
-                    var achievements = await _raService.GetGameAchievements(raId);
-                    if (achievements.Any())
+                    var json = System.IO.File.ReadAllText(configPath);
+                    var settings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
+                    if (settings != null && settings.EnableRetroAchievements)
                     {
-                        game.Achievements = achievements;
-                        DisplayAchievements(achievements);
+                        _raService.Initialize(settings.RetroUsername, settings.RetroApiKey);
+
+                        // Si no están en memoria, descargar los logros
+                        if (!hasAchievementsInMemory)
+                        {
+                            var achievements = await _raService.GetGameAchievements(raId);
+                            if (achievements.Any())
+                            {
+                                game.Achievements = achievements;
+                                DisplayAchievements(achievements);
+                            }
+                            else
+                            {
+                                TxtAchievementsTitle.Text = "RETRO ACHIEVEMENTS (0/0)";
+                                ProgAchievements.Value = 0;
+                            }
+                        }
+
+                        // Descargar progresión de tiempos de juego y número de jugadores
+                        var progression = await _raService.GetGameProgression(raId);
+                        if (progression != null)
+                        {
+                            game.PlaytimeMain = FormatDuration(progression.MedianTimeToBeat);
+                            game.PlaytimeCompletionist = FormatDuration(progression.MedianTimeToMaster);
+
+                            TxtPlaytimeMain.Text = game.PlaytimeMain;
+                            TxtPlaytimeCompletionist.Text = game.PlaytimeCompletionist;
+                            TxtPlaytimeProvider.Text = $"Provided by RetroAchievements ({progression.NumDistinctPlayers} players)";
+
+                            // Guardar metadatos actualizados en la base de datos local
+                            gameService.UpdateGameMetadata(game);
+                        }
                         return;
                     }
                 }
+                catch { }
             }
         }
 
-        TxtAchievementsTitle.Text = "RETRO ACHIEVEMENTS (SIN VINCULAR)";
-        ProgAchievements.Value = 0;
+        // Si no hay vinculación válida o falla
+        if (!hasAchievementsInMemory)
+        {
+            TxtAchievementsTitle.Text = "RETRO ACHIEVEMENTS (SIN VINCULAR)";
+            ProgAchievements.Value = 0;
+        }
+        TxtPlaytimeMain.Text = game.PlaytimeMain ?? "--";
+        TxtPlaytimeCompletionist.Text = game.PlaytimeCompletionist ?? "--";
+        TxtPlaytimeProvider.Text = "Provided by RetroAchievements";
+    }
+
+    private string FormatDuration(double seconds)
+    {
+        if (seconds <= 0) return "--";
+        var time = TimeSpan.FromSeconds(seconds);
+        if (time.TotalHours >= 1)
+        {
+            int hours = (int)time.TotalHours;
+            int minutes = time.Minutes;
+            return minutes > 0 ? $"{hours}h {minutes}m" : $"{hours}h";
+        }
+        else
+        {
+            int minutes = time.Minutes;
+            return minutes > 0 ? $"{minutes}m" : "--";
+        }
     }
 
     private void DisplayAchievements(List<Achievement> achievements)
     {
-        int unlocked = achievements.Count(a => a.IsUnlocked);
+        int unlockedCount = achievements.Count(a => a.IsUnlocked);
         int total = achievements.Count;
-        TxtAchievementsTitle.Text = $"RETRO ACHIEVEMENTS ({unlocked}/{total})";
-        ProgAchievements.Value = total > 0 ? (unlocked * 100) / total : 0;
+        TxtAchievementsTitle.Text = $"RETRO ACHIEVEMENTS ({unlockedCount}/{total})";
+        ProgAchievements.Value = total > 0 ? (unlockedCount * 100) / total : 0;
 
-        foreach (var achievement in achievements.Take(4))
+        // Limpiar iconos anteriores
+        StackAchievementIcons.Children.Clear();
+
+        if (total == 0)
+        {
+            var txtEmpty = new TextBlock { Text = "No hay logros disponibles", Foreground = Avalonia.Media.Brush.Parse("#475569"), FontSize = 11, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
+            StackAchievementIcons.Children.Add(txtEmpty);
+            return;
+        }
+
+        // Ordenar logros: desbloqueados primero (ordenados por fecha de desbloqueo más reciente), luego bloqueados
+        var orderedAchievements = achievements
+            .OrderByDescending(a => a.IsUnlocked)
+            .ThenByDescending(a => a.UnlockDate ?? DateTime.MinValue)
+            .ToList();
+
+        // Mostrar hasta 4 miniaturas
+        foreach (var achievement in orderedAchievements.Take(4))
         {
             var border = new Border { Width = 36, Height = 36, CornerRadius = new CornerRadius(6), ClipToBounds = true, Background = Avalonia.Media.Brush.Parse("#1e1e22") };
             
-            // Usamos un control de imagen que cargará la URL
+            // Si el logro no está desbloqueado, aplicar opacidad
             var img = new Image { Stretch = Avalonia.Media.Stretch.UniformToFill, Opacity = achievement.IsUnlocked ? 1.0 : 0.3 };
             
-            // Dado que no podemos usar el converter aquí fácilmente de forma programática 
-            // de la misma manera que en XAML, simplemente intentamos cargar la imagen si hay una URL.
             if (!string.IsNullOrEmpty(achievement.IconUrl))
             {
                 Task.Run(async () => {
@@ -162,8 +229,43 @@ public partial class GameDetailsView : UserControl
                 });
             }
 
+            // Crear el ToolTip del logro (título + descripción + estado)
+            var tooltipStack = new StackPanel { Spacing = 4, MaxWidth = 220 };
+            tooltipStack.Children.Add(new TextBlock { Text = achievement.Title, FontWeight = Avalonia.Media.FontWeight.Bold, Foreground = Avalonia.Media.Brush.Parse("White"), FontSize = 12 });
+            tooltipStack.Children.Add(new TextBlock { Text = achievement.Description, Foreground = Avalonia.Media.Brush.Parse("#cbd5e1"), FontSize = 11, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
+            
+            if (achievement.IsUnlocked && achievement.UnlockDate.HasValue)
+            {
+                tooltipStack.Children.Add(new TextBlock { Text = $"✓ Desbloqueado: {achievement.UnlockDate.Value.ToString("dd/MM/yyyy HH:mm")}", Foreground = Avalonia.Media.Brush.Parse("#10b981"), FontSize = 10 });
+            }
+            else
+            {
+                tooltipStack.Children.Add(new TextBlock { Text = "🔒 Bloqueado", Foreground = Avalonia.Media.Brush.Parse("#ef4444"), FontSize = 10 });
+            }
+            
+            ToolTip.SetTip(border, tooltipStack);
+
             border.Child = img;
             StackAchievementIcons.Children.Add(border);
+        }
+
+        // Si hay más de 4 logros, añadir el badge "+ X"
+        if (total > 4)
+        {
+            var borderText = new Border {
+                Width = 36, Height = 36, CornerRadius = new CornerRadius(6),
+                Background = Avalonia.Media.Brush.Parse("#1e1e22"),
+                BorderBrush = Avalonia.Media.Brush.Parse("#475569"), BorderThickness = new Thickness(1),
+                Padding = new Thickness(2)
+            };
+            var textBlock = new TextBlock {
+                Text = $"+ {total - 4}", Foreground = Avalonia.Media.Brush.Parse("White"),
+                FontSize = 11, FontWeight = Avalonia.Media.FontWeight.Bold,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            borderText.Child = textBlock;
+            StackAchievementIcons.Children.Add(borderText);
         }
     }
 
@@ -212,5 +314,13 @@ public partial class GameDetailsView : UserControl
         bool hasLogo = bitmap != null;
         BrdDetailLogo.IsVisible = hasLogo;
         BtnViewAllImages.IsVisible = !hasLogo;
+    }
+
+    private void OnWikiSearchClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_game != null)
+        {
+            RequestWikiSearch?.Invoke(this, _game.Name ?? "");
+        }
     }
 }

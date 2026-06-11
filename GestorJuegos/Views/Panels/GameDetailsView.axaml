@@ -56,7 +56,7 @@
                     </Button>
 
                     <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="15">
-                        <Button Name="BtnWikiSearch" Background="#70000000" Foreground="White" Width="36" Height="36" CornerRadius="18" Padding="0">
+                        <Button Click="OnWikiSearchClick" Background="#70000000" Foreground="White" Width="36" Height="36" CornerRadius="18" Padding="0">
                             <TextBlock Text="🔍" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14"/>
                         </Button>
                     </StackPanel>
@@ -161,7 +161,7 @@
                                             <Button Name="BtnVideoUrl" Background="Transparent" Padding="0" ToolTip.Tip="Ver video/tráiler" IsVisible="False">
                                                 <TextBlock Text="▶" Foreground="#ef4444" FontSize="14"/>
                                             </Button>
-                                            <Button Name="BtnWikiSearch" Background="Transparent" Padding="0" ToolTip.Tip="Buscar en Wikipedia (Genérico)">
+                                            <Button Click="OnWikiSearchClick" Background="Transparent" Padding="0" ToolTip.Tip="Buscar en Wikipedia (Genérico)">
                                                 <TextBlock Text="🔍" FontSize="14" Foreground="#94a3b8"/>
                                             </Button>
                                         </StackPanel>
@@ -273,7 +273,7 @@
                                                     </StackPanel>
                                                 </Border>
                                             </Grid>
-                                            <TextBlock Text="Provided by RetroAchievements" Foreground="#475569" FontSize="9" HorizontalAlignment="Center"/>
+                                            <TextBlock Name="TxtPlaytimeProvider" Text="Provided by RetroAchievements" Foreground="#475569" FontSize="9" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>

@@ -294,12 +294,24 @@ namespace GestorJuegos.Services
                     var doc = XDocument.Load(xmlFile);
                     var gamesNodes = doc.Descendants("Game").ToList();
                     var gamesToImport = new List<Game>();
+                    var gamesToUpdate = new List<Game>();
                     
                     using (var context = new AppDbContext())
                     {
-                        var existingGameKeys = new HashSet<string>(context.Games
+                        // Cargar todos los juegos existentes de la plataforma en un diccionario en memoria
+                        var existingGames = context.Games
                             .Where(g => g.PlatformId == platform.Id)
-                            .Select(g => $"{g.Name}|{g.Region}"), StringComparer.OrdinalIgnoreCase);
+                            .ToList();
+                        
+                        var existingGamesDict = new Dictionary<string, Game>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var g in existingGames)
+                        {
+                            string key = $"{g.Name}|{g.Region}";
+                            if (!existingGamesDict.ContainsKey(key))
+                            {
+                                existingGamesDict[key] = g;
+                            }
+                        }
 
                         foreach (var node in gamesNodes)
                         {
@@ -316,7 +328,48 @@ namespace GestorJuegos.Services
                             else if (region.Contains("Spain", StringComparison.OrdinalIgnoreCase)) region = "🇪🇸 ES";
 
                             string uniqueKey = $"{title}|{region}";
-                            if (existingGameKeys.Contains(uniqueKey)) continue;
+                            
+                            string raId = node.Element("RetroAchievementsId")?.Value ?? "";
+                            string developer = node.Element("Developer")?.Value ?? "";
+                            string publisher = node.Element("Publisher")?.Value ?? "";
+                            string notes = node.Element("Notes")?.Value ?? "";
+                            string wikiUrl = node.Element("WikipediaURL")?.Value ?? "";
+                            string videoUrl = node.Element("VideoUrl")?.Value ?? "";
+                            int? maxPlayers = null;
+                            if (int.TryParse(node.Element("MaxPlayers")?.Value, out int mp)) maxPlayers = mp;
+                            string releaseDate = node.Element("ReleaseDate")?.Value ?? "";
+                            string communityRating = node.Element("CommunityStarRating")?.Value ?? "";
+                            int commRatingCount = 0;
+                            if (int.TryParse(node.Element("CommunityStarRatingTotalVotes")?.Value, out int crc)) commRatingCount = crc;
+
+                            if (existingGamesDict.TryGetValue(uniqueKey, out var existingGame))
+                            {
+                                bool needsUpdate = false;
+                                
+                                // Si no tiene ID de logros, y el XML sí lo tiene, actualizamos
+                                if (string.IsNullOrEmpty(existingGame.ExternalDbId) && !string.IsNullOrEmpty(raId))
+                                {
+                                    existingGame.ExternalDbId = raId;
+                                    needsUpdate = true;
+                                }
+
+                                // Enriquecer otros campos vacíos si existen en el XML
+                                if (string.IsNullOrEmpty(existingGame.Developer) && !string.IsNullOrEmpty(developer)) { existingGame.Developer = developer; needsUpdate = true; }
+                                if (string.IsNullOrEmpty(existingGame.Publisher) && !string.IsNullOrEmpty(publisher)) { existingGame.Publisher = publisher; needsUpdate = true; }
+                                if (string.IsNullOrEmpty(existingGame.Description) && !string.IsNullOrEmpty(notes)) { existingGame.Description = notes; needsUpdate = true; }
+                                if (string.IsNullOrEmpty(existingGame.WikipediaURL) && !string.IsNullOrEmpty(wikiUrl)) { existingGame.WikipediaURL = wikiUrl; needsUpdate = true; }
+                                if (string.IsNullOrEmpty(existingGame.VideoURL) && !string.IsNullOrEmpty(videoUrl)) { existingGame.VideoURL = videoUrl; needsUpdate = true; }
+                                if (existingGame.MaxPlayers == null && maxPlayers != null) { existingGame.MaxPlayers = maxPlayers; needsUpdate = true; }
+                                if (string.IsNullOrEmpty(existingGame.ReleaseDate) && !string.IsNullOrEmpty(releaseDate)) { existingGame.ReleaseDate = releaseDate; needsUpdate = true; }
+                                if (string.IsNullOrEmpty(existingGame.CommunityRating) && !string.IsNullOrEmpty(communityRating)) { existingGame.CommunityRating = communityRating; needsUpdate = true; }
+                                if (existingGame.CommunityRatingCount == 0 && commRatingCount != 0) { existingGame.CommunityRatingCount = commRatingCount; needsUpdate = true; }
+
+                                if (needsUpdate)
+                                {
+                                    gamesToUpdate.Add(existingGame);
+                                }
+                                continue;
+                            }
 
                             string genre = node.Element("Genre")?.Value ?? "";
                             string appPath = node.Element("ApplicationPath")?.Value ?? "";
@@ -344,7 +397,17 @@ namespace GestorJuegos.Services
                                 Genre = genre,
                                 RomPath = appPath,
                                 IsFavorite = isFavorite,
-                                DateAdded = DateTime.Now
+                                DateAdded = DateTime.Now,
+                                Developer = developer,
+                                Publisher = publisher,
+                                Description = notes,
+                                WikipediaURL = wikiUrl,
+                                VideoURL = videoUrl,
+                                MaxPlayers = maxPlayers,
+                                ReleaseDate = releaseDate,
+                                CommunityRating = communityRating,
+                                CommunityRatingCount = commRatingCount,
+                                ExternalDbId = raId
                             });
 
                             if (gamesToImport.Count >= 500)
@@ -353,6 +416,12 @@ namespace GestorJuegos.Services
                                 totalGamesAdded += gamesToImport.Count;
                                 gamesToImport.Clear();
                             }
+
+                            if (gamesToUpdate.Count >= 500)
+                            {
+                                _gameService.UpdateGamesMetadataBatch(gamesToUpdate);
+                                gamesToUpdate.Clear();
+                            }
                         }
 
                         if (gamesToImport.Any())
@@ -360,7 +429,13 @@ namespace GestorJuegos.Services
                             _gameService.AddGamesBatch(gamesToImport);
                             totalGamesAdded += gamesToImport.Count;
                         }
+
+                        if (gamesToUpdate.Any())
+                        {
+                            _gameService.UpdateGamesMetadataBatch(gamesToUpdate);
+                        }
                     }
+
                 }
                 catch { }
             }

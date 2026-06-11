@@ -63,8 +63,21 @@ namespace GestorJuegos.Services
                 IconUrl = $"https://retroachievements.org/Badge/{a.BadgeName}.png",
                 IsUnlocked = !string.IsNullOrEmpty(a.DateAwarded),
                 Points = a.Points,
-                UnlockDate = string.IsNullOrEmpty(a.DateAwarded) ? null : DateTime.TryParse(a.DateAwarded, out var d) ? d : null
+                UnlockDate = string.IsNullOrEmpty(a.DateAwarded) ? null : DateTime.TryParse(a.DateAwarded, out var d) ? d : null,
+                Type = a.Type
             }).ToList();
+        }
+
+        public async Task<RAGameProgression?> GetGameProgression(int gameId)
+        {
+            if (string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_apiKey)) return null;
+
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<RAGameProgression>(
+                    $"API_GetGameProgression.php?u={_username}&z={_username}&y={_apiKey}&i={gameId}");
+            }
+            catch { return null; }
         }
     }
 
@@ -123,6 +136,9 @@ namespace GestorJuegos.Services
 
         [JsonPropertyName("DateAwarded")]
         public string? DateAwarded { get; set; }
+
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
     }
 
     public class RARecentAchievement
@@ -145,4 +161,23 @@ namespace GestorJuegos.Services
         [JsonPropertyName("BadgeName")]
         public string? BadgeName { get; set; }
     }
+
+    public class RAGameProgression
+    {
+        [JsonPropertyName("ID")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("Title")]
+        public string? Title { get; set; }
+
+        [JsonPropertyName("NumDistinctPlayers")]
+        public int NumDistinctPlayers { get; set; }
+
+        [JsonPropertyName("MedianTimeToBeat")]
+        public double MedianTimeToBeat { get; set; }
+
+        [JsonPropertyName("MedianTimeToMaster")]
+        public double MedianTimeToMaster { get; set; }
+    }
+
 }

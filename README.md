@@ -192,7 +192,14 @@ Organizador de colecciones de videojuegos para Windows, optimizado para grandes 
 *   **Botón JUGAR Multi-Disco Inteligente**: Reemplazado por un botón verde gigante con degradado premium y un menú desplegable dinámico que detecta automáticamente los discos/ROMs en juegos multi-disco para iniciarlos individualmente.
 *   **Fichas de Datos Técnicos e Internet**: Cuadrícula de detalles técnicos estilo tarjeta (Clasificación, Género, Series, Modo, Progreso coloreado, Estado, Archivo) e iconos de acceso rápido para buscar trailers en YouTube y artículos en Wikipedia.
 
+### v1.1.2.3-Dev
+*   **Barra Lateral de Logros Expandida**: Rediseñado el overlay de logros para abrirse en el lateral derecho de la pantalla, estirado verticalmente, con bordes redondeados a la izquierda y el botón de cerrar en la esquina superior izquierda.
+*   **Corrección de API de Progresión**: Solucionado el bug en `RetroAchievementsService` donde se utilizaba el parámetro URL erróneo `&g=` en vez de `&i=`, y corregida la deserialización de `RAGameProgression` a PascalCase.
+*   **Sincronización Automática de Logros**: El escáner de LaunchBox ahora lee y guarda de forma nativa la etiqueta `<RetroAchievementsId>` desde el XML de plataforma de LaunchBox directamente a `ExternalDbId` enriqueciendo en lote los registros de juegos nuevos y existentes en la base de datos local.
+*   **Refresco de UI en Caliente**: La vista de detalles se actualiza de forma inmediata al guardar cambios en la edición del juego, iniciando al instante la descarga de logros asociados.
+
 ### v1.1.2.2-Dev
+
 *   **Navegación Sonora Inmersiva**: Los efectos de sonido ahora se reproducen al pasar el ratón por las listas de juegos y plataformas, no solo al hacer clic.
 *   **Optimización de Carga Crítica**: Eliminado el retardo al abrir plataformas mediante una precarga más eficiente de la base de datos y paginación optimizada.
 *   **Sonido de Alta Velocidad**: Implementado sistema de caché en memoria para los sonidos (`SoundHelper`), eliminando latencias de disco durante la navegación rápida.

@@ -130,7 +130,15 @@ public partial class MainWindow : Window
 
         // 6. Otros Overlays
         OverlayEditGame.RequestClose += (s, e) => OverlayEditGame.IsVisible = false;
-        OverlayEditGame.GameSaved += (s, e) => LoadGames();
+        OverlayEditGame.GameSaved += (s, e) => {
+            LoadGames();
+            if (_selectedGame != null)
+            {
+                GameDetails.UpdateDetails(_selectedGame, _gameService);
+            }
+        };
+
+
         OverlayEditGame.RequestMessage += (msg) => ShowMessage(msg);
         OverlayAchievements.RequestClose += (s, e) => OverlayAchievements.IsVisible = false;
         OverlayManagePlatforms.RequestClose += (s, e) => OverlayManagePlatforms.IsVisible = false;
