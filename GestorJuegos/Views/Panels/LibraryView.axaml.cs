@@ -43,6 +43,8 @@ namespace GestorJuegos.Views.Panels
 
         public event EventHandler<Game>? GameSelected;
         public event EventHandler? PlatformsWallRequested;
+        public event EventHandler<Game>? EditGameRequested;
+        public event EventHandler<Game>? DeleteGameRequested;
 
         public LibraryView()
         {
@@ -290,6 +292,33 @@ namespace GestorJuegos.Views.Panels
             if (first == null) return;
             if (LstGames.IsVisible) LstGames.ScrollIntoView(first);
             if (LstGamesGrid.IsVisible) LstGamesGrid.ScrollIntoView(first);
+        }
+
+        private void MenuContextEdit_Click(object? sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item && item.DataContext is Game game)
+            {
+                SelectGameInActiveList(game);
+                EditGameRequested?.Invoke(this, game);
+            }
+        }
+
+        private void MenuContextDelete_Click(object? sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item && item.DataContext is Game game)
+            {
+                SelectGameInActiveList(game);
+                DeleteGameRequested?.Invoke(this, game);
+            }
+        }
+
+        private void SelectGameInActiveList(Game game)
+        {
+            if (LstGames.IsVisible) LstGames.SelectedItem = game;
+            else if (LstGamesGrid.IsVisible) LstGamesGrid.SelectedItem = game;
+            else if (LstGamesWheelVertical.IsVisible) LstGamesWheelVertical.SelectedItem = game;
+            else if (LstGamesWheelHorizontal.IsVisible) LstGamesWheelHorizontal.SelectedItem = game;
+            else if (PnlGlobalSearch.IsVisible) LstGlobalSearchResults.SelectedItem = game;
         }
     }
 }

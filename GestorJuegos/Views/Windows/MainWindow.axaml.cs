@@ -100,6 +100,8 @@ public partial class MainWindow : Window
         // 2. Eventos de Galería (Library)
         Library.GameSelected += Library_GameSelected;
         Library.PlatformsWallRequested += (s, e) => LoadPlatformsWall();
+        Library.EditGameRequested += (s, game) => { _selectedGame = game; BtnEditGame_Click(null, new RoutedEventArgs()); };
+        Library.DeleteGameRequested += (s, game) => { _selectedGame = game; BtnDelete_Click(null, new RoutedEventArgs()); };
 
         // 3. Eventos de Barra Superior (TopBar)
         TopBar.SearchTextChanged += (s, search) => Library.SetSearchText(search);
@@ -331,15 +333,13 @@ public partial class MainWindow : Window
 
     private void BtnEditGame_Click(object? sender, RoutedEventArgs e)
     {
-        if (_selectedGame == null || _selectedPlatform == null) return;
-        OverlayEditGame.Initialize(_selectedGame, _selectedPlatform!, _gameService, _settings);
-        OverlayEditGame.IsVisible = true;
+        var p = _selectedGame == null ? null : (_selectedPlatform ?? _gameService.GetPlatforms().FirstOrDefault(x => x.Id == _selectedGame.PlatformId));
+        if (p != null) { OverlayEditGame.Initialize(_selectedGame!, p, _gameService, _settings); OverlayEditGame.IsVisible = true; }
     }
 
     private void BtnDelete_Click(object? sender, RoutedEventArgs e)
     {
-        if (_selectedGame == null) return;
-        OverlayDeleteConfirm.Show($"¿Borrar {_selectedGame.Name}?");
+        if (_selectedGame != null) OverlayDeleteConfirm.Show($"¿Borrar {_selectedGame.Name}?");
     }
 
     private void ApplyTheme()

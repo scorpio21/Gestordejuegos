@@ -6,6 +6,17 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="GestorJuegos.Views.Panels.LibraryView">
 
+    <UserControl.Styles>
+        <Style Selector="ListBoxItem">
+            <Setter Property="ContextMenu">
+                <ContextMenu>
+                    <MenuItem Header="✏ Editar Juego" Click="MenuContextEdit_Click"/>
+                    <MenuItem Header="🗑 Eliminar Juego" Click="MenuContextDelete_Click"/>
+                </ContextMenu>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+
     <Border Padding="15">
         <DockPanel>
             <!-- Cabecera de la Galería -->
